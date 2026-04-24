@@ -2,7 +2,7 @@
 FROM node:20-alpine AS deps
 RUN npm install -g pnpm@9 --quiet
 WORKDIR /app
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 
 # ---- builder stage ----

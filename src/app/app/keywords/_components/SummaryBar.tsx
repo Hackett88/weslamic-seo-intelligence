@@ -12,13 +12,13 @@ type Stats = {
 };
 
 const cards = [
-  { label: "总词数", key: "total" as const, color: "text-white" },
-  { label: "L1 骨架", key: "l1" as const, color: "text-amber-400" },
-  { label: "L2 候选", key: "l2" as const, color: "text-blue-400" },
-  { label: "L3 附属", key: "l3" as const, color: "text-purple-400" },
-  { label: "L4 暂缓", key: "l4" as const, color: "text-zinc-400" },
-  { label: "待评估", key: "pending" as const, color: "text-yellow-400" },
-  { label: "已排除", key: "excluded" as const, color: "text-red-400" },
+  { label: "总词数", key: "total" as const, color: "text-gray-900" },
+  { label: "L1 骨架", key: "l1" as const, color: "text-amber-600" },
+  { label: "L2 候选", key: "l2" as const, color: "text-blue-600" },
+  { label: "L3 附属", key: "l3" as const, color: "text-purple-600" },
+  { label: "L4 暂缓", key: "l4" as const, color: "text-gray-500" },
+  { label: "待评估", key: "pending" as const, color: "text-yellow-600" },
+  { label: "已排除", key: "excluded" as const, color: "text-red-600" },
 ];
 
 interface SummaryBarProps {
@@ -38,9 +38,9 @@ export function SummaryBar({ stats }: SummaryBarProps) {
       {cards.map((card) => (
         <div
           key={card.key}
-          className="flex-shrink-0 bg-zinc-900 border border-zinc-800 rounded px-3 py-2 min-w-[80px] hover:border-zinc-700 transition-colors cursor-pointer"
+          className="flex-shrink-0 bg-white border border-gray-200 rounded px-3 py-2 min-w-[80px] hover:border-gray-300 transition-colors cursor-pointer"
         >
-          <p className="text-zinc-500 text-xs mb-1">{card.label}</p>
+          <p className="text-gray-400 text-xs mb-1">{card.label}</p>
           <p className={`text-lg font-semibold ${card.color}`}>
             {stats[card.key]}
           </p>
@@ -48,9 +48,9 @@ export function SummaryBar({ stats }: SummaryBarProps) {
       ))}
 
       {/* 最近同步 */}
-      <div className="flex-shrink-0 bg-zinc-900 border border-zinc-800 rounded px-3 py-2 min-w-[96px]">
-        <p className="text-zinc-500 text-xs mb-1">最近同步</p>
-        <p className="text-sm font-medium text-zinc-300">{syncTime}</p>
+      <div className="flex-shrink-0 bg-white border border-gray-200 rounded px-3 py-2 min-w-[96px]">
+        <p className="text-gray-400 text-xs mb-1">最近同步</p>
+        <p className="text-sm font-medium text-gray-600">{syncTime}</p>
       </div>
     </div>
   );

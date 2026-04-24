@@ -32,7 +32,7 @@ export function AppSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed left-0 top-12 h-[calc(100vh-3rem)] w-52 bg-zinc-900 border-r border-zinc-800 overflow-y-auto z-40">
+    <aside className="fixed left-0 top-12 h-[calc(100vh-3rem)] w-52 bg-white border-r border-gray-200 overflow-y-auto z-40">
       <nav className="py-2">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -45,8 +45,8 @@ export function AppSidebar() {
                 "flex items-center gap-3 px-4 py-2 text-sm transition-colors",
                 "border-l-2",
                 isActive
-                  ? "bg-zinc-800 border-amber-500 text-white"
-                  : "border-transparent text-zinc-400 hover:bg-zinc-800 hover:text-white",
+                  ? "bg-emerald-50 border-emerald-500 text-emerald-700"
+                  : "border-transparent text-gray-500 hover:bg-gray-50 hover:text-gray-900",
               ].join(" ")}
             >
               <Icon size={15} />

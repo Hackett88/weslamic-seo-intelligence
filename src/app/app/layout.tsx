@@ -13,22 +13,22 @@ export default async function AppLayout({
   const session = await auth();
 
   return (
-    <div className="min-h-screen bg-zinc-950">
+    <div className="min-h-screen bg-gray-50">
       {/* 固定顶栏 */}
-      <header className="fixed top-0 left-0 right-0 h-12 bg-zinc-900 border-b border-zinc-800 z-50 flex items-center px-4 gap-4">
+      <header className="fixed top-0 left-0 right-0 h-12 bg-white border-b border-gray-200 z-50 flex items-center px-4 gap-4">
         {/* 品牌区 */}
         <div className="flex items-center gap-3 w-52 shrink-0">
-          <span className="text-amber-400 font-bold text-sm tracking-wide">
+          <span className="text-emerald-600 font-bold text-sm tracking-wide">
             WESLAMIC
           </span>
-          <span className="text-zinc-700 text-xs">|</span>
-          <span className="text-zinc-400 text-xs">SEO Intelligence</span>
+          <span className="text-gray-300 text-xs">|</span>
+          <span className="text-gray-400 text-xs">SEO Intelligence</span>
         </div>
 
         {/* 全局搜索 */}
         <div className="flex-1 flex justify-center">
           <Input
-            className="w-64 h-7 bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 text-xs focus-visible:ring-amber-500 focus-visible:border-amber-500"
+            className="w-64 h-7 bg-gray-50 border-gray-300 text-gray-900 placeholder:text-gray-400 text-xs focus-visible:ring-emerald-500 focus-visible:border-emerald-500"
             placeholder="搜索关键词 / 页面 / 词群..."
           />
         </div>
@@ -36,7 +36,7 @@ export default async function AppLayout({
         {/* 右侧工具区 */}
         <div className="flex items-center gap-3">
           <CurrentTime />
-          <button className="text-zinc-400 hover:text-white transition-colors">
+          <button className="text-gray-400 hover:text-gray-700 transition-colors">
             <Bell size={15} />
           </button>
           <UserMenu
@@ -50,7 +50,7 @@ export default async function AppLayout({
       <AppSidebar />
 
       {/* 主内容区 */}
-      <main className="ml-52 pt-12 min-h-screen overflow-auto">
+      <main className="ml-52 pt-12 h-screen overflow-hidden flex flex-col">
         {children}
       </main>
     </div>

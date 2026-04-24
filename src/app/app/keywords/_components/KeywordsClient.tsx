@@ -48,34 +48,42 @@ export function KeywordsClient({ initialData }: KeywordsClientProps) {
     setDrawerOpen(true);
   };
 
+  const handleClose = () => {
+    setDrawerOpen(false);
+  };
+
   return (
-    <div className="flex flex-col flex-1 min-h-0">
-      {/* 筛选栏 */}
-      <div className="px-4 py-2 border-b border-zinc-800 bg-zinc-950">
-        <FilterBar filters={filters} onFilterChange={setFilters} />
+    <div className="flex flex-1 min-h-0 overflow-hidden">
+      {/* 左侧：筛选 + 表格 */}
+      <div className="flex flex-col flex-1 min-h-0 min-w-0">
+        <div className="px-4 py-2 border-b border-gray-200 bg-white">
+          <FilterBar filters={filters} onFilterChange={setFilters} />
+        </div>
+        <div className="px-4 py-1.5 border-b border-gray-100 bg-white">
+          <span className="text-xs text-gray-400">
+            共 <span className="text-gray-700">{filteredData.length}</span> 条
+            {filteredData.length !== initialData.length && (
+              <span>（已筛选，总计 {initialData.length} 条）</span>
+            )}
+          </span>
+        </div>
+        <div className="flex-1 overflow-auto bg-white">
+          <KeywordTable data={filteredData} onRowClick={handleRowClick} />
+        </div>
       </div>
 
-      {/* 数据统计行 */}
-      <div className="px-4 py-1.5 border-b border-zinc-800 bg-zinc-900/50">
-        <span className="text-xs text-zinc-500">
-          共 <span className="text-zinc-300">{filteredData.length}</span> 条
-          {filteredData.length !== initialData.length && (
-            <span>（已筛选，总计 {initialData.length} 条）</span>
-          )}
-        </span>
+      {/* 右侧：内联详情面板（推挤效果，无覆盖层） */}
+      <div
+        className={[
+          "flex-shrink-0 border-l border-gray-200 bg-white overflow-y-auto",
+          "transition-[width] duration-300 ease-in-out",
+          drawerOpen ? "w-[440px]" : "w-0 overflow-hidden",
+        ].join(" ")}
+      >
+        {selectedKeyword && (
+          <DetailDrawer keyword={selectedKeyword} onClose={handleClose} />
+        )}
       </div>
-
-      {/* 表格 */}
-      <div className="flex-1 overflow-auto">
-        <KeywordTable data={filteredData} onRowClick={handleRowClick} />
-      </div>
-
-      {/* 详情抽屉 */}
-      <DetailDrawer
-        keyword={selectedKeyword}
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-      />
     </div>
   );
 }

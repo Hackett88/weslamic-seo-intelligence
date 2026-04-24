@@ -21,13 +21,13 @@ const LAYER_ORDER: Record<string, number> = {
 };
 
 function layerBadge(layer: string | null) {
-  if (!layer) return <span className="text-zinc-600">—</span>;
+  if (!layer) return <span className="text-gray-300">—</span>;
   const colorMap: Record<string, string> = {
-    L1: "bg-amber-500/20 text-amber-400 border-amber-500/30",
-    L2: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-    L3: "bg-purple-500/20 text-purple-400 border-purple-500/30",
-    L4: "bg-zinc-700/50 text-zinc-400 border-zinc-600/30",
-    pending: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
+    L1: "bg-amber-50 text-amber-700 border-amber-200",
+    L2: "bg-blue-50 text-blue-700 border-blue-200",
+    L3: "bg-purple-50 text-purple-700 border-purple-200",
+    L4: "bg-gray-100 text-gray-500 border-gray-200",
+    pending: "bg-yellow-50 text-yellow-700 border-yellow-200",
   };
   return (
     <span
@@ -39,12 +39,12 @@ function layerBadge(layer: string | null) {
 }
 
 function handlingBadge(handling: string | null) {
-  if (!handling) return <span className="text-zinc-600">—</span>;
+  if (!handling) return <span className="text-gray-300">—</span>;
   const colorMap: Record<string, string> = {
-    independent: "bg-green-500/20 text-green-400 border-green-500/30",
-    merge: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-    defer: "bg-zinc-700/50 text-zinc-400 border-zinc-600/30",
-    exclude: "bg-red-500/20 text-red-400 border-red-500/30",
+    independent: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    merge: "bg-blue-50 text-blue-700 border-blue-200",
+    defer: "bg-gray-100 text-gray-500 border-gray-200",
+    exclude: "bg-red-50 text-red-700 border-red-200",
   };
   const labelMap: Record<string, string> = {
     independent: "独立",
@@ -62,11 +62,11 @@ function handlingBadge(handling: string | null) {
 }
 
 function cannibalizationBadge(risk: string | null) {
-  if (!risk) return <span className="text-zinc-600">—</span>;
+  if (!risk) return <span className="text-gray-300">—</span>;
   const colorMap: Record<string, string> = {
-    low: "bg-green-500/20 text-green-400 border-green-500/30",
-    medium: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
-    high: "bg-red-500/20 text-red-400 border-red-500/30",
+    low: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    medium: "bg-yellow-50 text-yellow-700 border-yellow-200",
+    high: "bg-red-50 text-red-700 border-red-200",
   };
   const labelMap: Record<string, string> = {
     low: "低",
@@ -83,12 +83,12 @@ function cannibalizationBadge(risk: string | null) {
 }
 
 function statusBadge(status: string | null) {
-  if (!status) return <span className="text-zinc-600">—</span>;
+  if (!status) return <span className="text-gray-300">—</span>;
   const colorMap: Record<string, string> = {
-    pending: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
-    evaluated: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-    clustered: "bg-green-500/20 text-green-400 border-green-500/30",
-    excluded: "bg-red-500/20 text-red-400 border-red-500/30",
+    pending: "bg-yellow-50 text-yellow-700 border-yellow-200",
+    evaluated: "bg-blue-50 text-blue-700 border-blue-200",
+    clustered: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    excluded: "bg-red-50 text-red-700 border-red-200",
   };
   const labelMap: Record<string, string> = {
     pending: "待评估",
@@ -130,7 +130,7 @@ export function KeywordTable({ data, onRowClick }: KeywordTableProps) {
       header: "词条 ID",
       size: 128,
       cell: ({ getValue }) => (
-        <span className="font-mono text-amber-400 text-xs">
+        <span className="font-mono text-emerald-700 text-xs">
           {getValue() as string}
         </span>
       ),
@@ -140,7 +140,7 @@ export function KeywordTable({ data, onRowClick }: KeywordTableProps) {
       header: "关键词原文",
       size: 192,
       cell: ({ getValue }) => (
-        <span className="font-medium text-white text-xs">
+        <span className="font-medium text-gray-900 text-xs">
           {getValue() as string}
         </span>
       ),
@@ -150,7 +150,7 @@ export function KeywordTable({ data, onRowClick }: KeywordTableProps) {
       header: "标准化",
       size: 192,
       cell: ({ getValue }) => (
-        <span className="text-zinc-400 text-xs">{getValue() as string}</span>
+        <span className="text-gray-500 text-xs">{getValue() as string}</span>
       ),
     },
     {
@@ -158,7 +158,7 @@ export function KeywordTable({ data, onRowClick }: KeywordTableProps) {
       header: "语言",
       size: 64,
       cell: ({ getValue }) => (
-        <span className="text-center block text-xs text-zinc-300">
+        <span className="text-center block text-xs text-gray-600">
           {(getValue() as string) ?? "—"}
         </span>
       ),
@@ -179,7 +179,7 @@ export function KeywordTable({ data, onRowClick }: KeywordTableProps) {
       header: "词群编号",
       size: 112,
       cell: ({ getValue }) => (
-        <span className="text-zinc-400 text-xs font-mono">
+        <span className="text-gray-500 text-xs font-mono">
           {(getValue() as string) ?? "—"}
         </span>
       ),
@@ -189,7 +189,7 @@ export function KeywordTable({ data, onRowClick }: KeywordTableProps) {
       header: "主词",
       size: 160,
       cell: ({ getValue }) => (
-        <span className="text-xs text-zinc-300">{(getValue() as string) ?? "—"}</span>
+        <span className="text-xs text-gray-700">{(getValue() as string) ?? "—"}</span>
       ),
     },
     {
@@ -215,7 +215,7 @@ export function KeywordTable({ data, onRowClick }: KeywordTableProps) {
       header: "更新时间",
       size: 128,
       cell: ({ getValue }) => (
-        <span className="text-zinc-500 text-xs">
+        <span className="text-gray-400 text-xs">
           {formatDate(getValue() as Date | null)}
         </span>
       ),
@@ -236,11 +236,11 @@ export function KeywordTable({ data, onRowClick }: KeywordTableProps) {
       <table className="min-w-max w-full border-collapse">
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
-            <tr key={headerGroup.id} className="bg-zinc-900 h-8">
+            <tr key={headerGroup.id} className="bg-gray-50 h-8">
               {headerGroup.headers.map((header) => (
                 <th
                   key={header.id}
-                  className="px-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider whitespace-nowrap border-b border-zinc-800 cursor-pointer select-none hover:text-white transition-colors"
+                  className="px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap border-b border-gray-200 cursor-pointer select-none hover:text-gray-900 transition-colors"
                   style={{ width: header.getSize() }}
                   onClick={header.column.getToggleSortingHandler()}
                 >
@@ -250,10 +250,10 @@ export function KeywordTable({ data, onRowClick }: KeywordTableProps) {
                       header.getContext()
                     )}
                     {header.column.getIsSorted() === "asc" && (
-                      <span className="text-amber-400">↑</span>
+                      <span className="text-emerald-500">↑</span>
                     )}
                     {header.column.getIsSorted() === "desc" && (
-                      <span className="text-amber-400">↓</span>
+                      <span className="text-emerald-500">↓</span>
                     )}
                   </span>
                 </th>
@@ -266,7 +266,7 @@ export function KeywordTable({ data, onRowClick }: KeywordTableProps) {
             <tr>
               <td
                 colSpan={columns.length}
-                className="text-center py-12 text-zinc-600 text-sm"
+                className="text-center py-12 text-gray-400 text-sm"
               >
                 暂无数据
               </td>
@@ -275,7 +275,7 @@ export function KeywordTable({ data, onRowClick }: KeywordTableProps) {
             table.getRowModel().rows.map((row) => (
               <tr
                 key={row.id}
-                className="h-9 hover:bg-zinc-900 cursor-pointer border-b border-zinc-800 transition-colors"
+                className="h-9 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition-colors"
                 onClick={() => onRowClick(row.original)}
               >
                 {row.getVisibleCells().map((cell) => (

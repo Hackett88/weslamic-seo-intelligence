@@ -2,12 +2,14 @@ import { auth } from "@/lib/auth";
 
 export default auth((req) => {
   const isLoggedIn = !!req.auth;
-  const isAppRoute = req.nextUrl.pathname.startsWith("/app");
-  if (isAppRoute && !isLoggedIn) {
+  const { pathname } = req.nextUrl;
+  const isAppRoute = pathname.startsWith("/app");
+  const isRoot = pathname === "/";
+  if ((isAppRoute || isRoot) && !isLoggedIn) {
     return Response.redirect(new URL("/login", req.nextUrl));
   }
 });
 
 export const config = {
-  matcher: ["/app/:path*"],
+  matcher: ["/", "/app/:path*"],
 };

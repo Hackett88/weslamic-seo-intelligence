@@ -28,14 +28,12 @@ export function UserMenu({ name, email }: UserMenuProps) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button className="flex items-center gap-2 outline-none">
-          <Avatar className="h-7 w-7 cursor-pointer">
-            <AvatarFallback className="bg-amber-500 text-zinc-950 text-xs font-semibold">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-        </button>
+      <DropdownMenuTrigger className="flex items-center gap-2 outline-none bg-transparent border-none cursor-pointer">
+        <Avatar className="h-7 w-7">
+          <AvatarFallback className="bg-amber-500 text-zinc-950 text-xs font-semibold">
+            {initials}
+          </AvatarFallback>
+        </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"

@@ -20,6 +20,7 @@ export const cannibalizationEnum = pgEnum("cannibalization_risk", ["low","medium
 export const clusterRoleEnum = pgEnum("cluster_role", ["head","modifier","variant"]);
 export const behaviorIntentEnum = pgEnum("behavior_intent", ["buy","compare","learn","navigate","tool"]);
 export const pagePlanIntentEnum = pgEnum("page_plan_intent", ["product","category","content","tool","landing"]);
+export const regionEnum = pgEnum("region", ["SA","ID","AE","MY","GB","FR","DE","ES"]);
 
 // ---- Main keyword table ----
 export const keywords = pgTable("keywords", {
@@ -76,6 +77,9 @@ export const keywords = pgTable("keywords", {
   coverageMethod:    text("coverage_method"),
   cannibalization:   cannibalizationEnum("cannibalization_risk"),
   handling:          handlingEnum("handling"),
+
+  // Region targeting
+  region:            regionEnum("region"),
 
   // Status
   status:            statusEnum("keyword_status").default("pending"),

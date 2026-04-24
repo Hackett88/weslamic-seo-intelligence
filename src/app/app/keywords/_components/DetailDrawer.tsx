@@ -10,22 +10,24 @@ interface DetailDrawerProps {
 
 function Field({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-0.5">
-      <span className="text-gray-400 text-xs">{label}</span>
-      <span className="text-gray-900 text-xs">{value ?? "—"}</span>
+    <div className="flex flex-col gap-1">
+      <span className="text-[10px] text-gray-400 uppercase tracking-wider leading-none">{label}</span>
+      <div className="text-gray-800 text-sm font-medium leading-snug">
+        {value ?? <span className="text-gray-300 font-normal">—</span>}
+      </div>
     </div>
   );
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="border border-gray-200 rounded-lg overflow-hidden">
-      <div className="bg-gray-50 px-3 py-1.5 border-b border-gray-100">
-        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+    <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+      <div className="bg-emerald-50 px-3 py-1.5 border-b border-emerald-100">
+        <h3 className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">
           {title}
         </h3>
       </div>
-      <div className="p-3 grid grid-cols-2 gap-x-4 gap-y-3 text-xs">
+      <div className="p-3 grid grid-cols-2 gap-x-4 gap-y-3 text-xs bg-white">
         {children}
       </div>
     </div>
@@ -75,41 +77,70 @@ function HandlingBadgeLarge({ handling }: { handling: string | null }) {
 
 function KdBar({ kd }: { kd: number | null }) {
   if (kd === null || kd === undefined) return <span className="text-gray-300">—</span>;
-  const color = kd >= 70 ? "bg-red-500" : kd >= 40 ? "bg-yellow-500" : "bg-emerald-500";
+  const color = kd >= 70 ? "bg-red-500" : kd >= 40 ? "bg-amber-400" : "bg-emerald-500";
+  const textCls = kd >= 70 ? "text-red-500" : kd >= 40 ? "text-amber-500" : "text-emerald-600";
+  const diffLabel = kd >= 70 ? "高难" : kd >= 40 ? "中等" : "较易";
   return (
     <div className="flex items-center gap-2">
       <div className="flex-1 bg-gray-100 rounded-full h-1.5">
-        <div
-          className={`h-1.5 rounded-full ${color}`}
-          style={{ width: `${Math.min(kd, 100)}%` }}
-        />
+        <div className={`h-1.5 rounded-full ${color}`} style={{ width: `${Math.min(kd, 100)}%` }} />
       </div>
-      <span className="text-gray-700 text-xs w-6">{kd}</span>
+      <span className={`text-xs font-semibold w-5 text-right ${textCls}`}>{kd}</span>
+      <span className={`text-[10px] ${textCls} w-7`}>{diffLabel}</span>
     </div>
   );
 }
 
-function growthBadge(growth: string | null) {
+function GrowthBadge({ growth }: { growth: string | null }) {
   if (!growth) return <span className="text-gray-300">—</span>;
-  const map: Record<string, { label: string; cls: string }> = {
-    rising: { label: "上升", cls: "text-emerald-600" },
-    stable: { label: "稳定", cls: "text-gray-500" },
-    declining: { label: "下降", cls: "text-red-500" },
+  const map: Record<string, { label: string; cls: string; arrow: string }> = {
+    rising:   { label: "上升", cls: "text-emerald-700 bg-emerald-50 border-emerald-200", arrow: "↑" },
+    stable:   { label: "稳定", cls: "text-gray-500 bg-gray-100 border-gray-200",         arrow: "→" },
+    declining:{ label: "下降", cls: "text-red-600 bg-red-50 border-red-200",             arrow: "↓" },
   };
   const cfg = map[growth];
-  return <span className={`text-xs ${cfg?.cls ?? "text-gray-500"}`}>{cfg?.label ?? growth}</span>;
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded border text-xs font-medium ${cfg?.cls ?? "bg-gray-100 text-gray-500 border-gray-200"}`}>
+      <span>{cfg?.arrow}</span>
+      <span>{cfg?.label ?? growth}</span>
+    </span>
+  );
+}
+
+function BpBadge({ bp }: { bp: string | null }) {
+  const level = bp ? parseInt(bp) : 0;
+  const dotCls = ["bg-gray-200", "bg-blue-400", "bg-amber-400", "bg-red-400"][level] ?? "bg-gray-200";
+  const labels: Record<string, string> = { "0": "无优先", "1": "低", "2": "中", "3": "高" };
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex gap-0.5">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className={`w-2 h-2 rounded-full ${i <= level ? dotCls : "bg-gray-200"}`} />
+        ))}
+      </div>
+      <span className="text-sm font-medium text-gray-800">{labels[bp ?? ""] ?? "—"}</span>
+    </div>
+  );
+}
+
+function MiniTag({ label, cls }: { label: string; cls: string }) {
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded border text-xs font-medium ${cls}`}>
+      {label}
+    </span>
+  );
 }
 
 const SOURCE_NUM_LABELS: Record<string, string> = {
-  "0": "手动录入",
-  "1": "Ahrefs 关键词",
-  "2": "Ahrefs 竞品",
-  "3": "Google SC",
-  "4": "Google Ads",
-  "5": "用户调研",
-  "6": "SEMrush",
-  "7": "内容规划",
-  "8": "其他工具",
+  "0": "第一方数据词",
+  "1": "内部词根",
+  "2": "一级竞品词",
+  "3": "二级竞品词",
+  "4": "SERP 特征词",
+  "5": "工具扩展词",
+  "6": "社交听取词",
+  "7": "搜索行为词",
+  "8": "AI 可见度词",
 };
 
 const WORD_TYPE_LABELS: Record<string, string> = {
@@ -189,12 +220,12 @@ export function DetailDrawer({ keyword, onClose }: DetailDrawerProps) {
   return (
     <div className="flex flex-col min-w-[440px]">
       {/* 面板顶部 */}
-      <div className="px-5 py-4 border-b border-gray-200 sticky top-0 bg-white z-10 flex items-start justify-between">
+      <div className="px-5 py-4 border-b border-gray-200 sticky top-0 bg-gray-100 z-10 flex items-start justify-between">
         <div>
-          <h2 className="text-gray-900 text-sm font-semibold leading-tight">
+          <h2 className="text-gray-900 text-base font-semibold leading-tight">
             {keyword.rawKeyword}
           </h2>
-          <p className="text-gray-400 text-xs font-mono mt-0.5">{keyword.kwId}</p>
+          <p className="text-gray-400 text-[10px] font-mono mt-2">{keyword.kwId}</p>
         </div>
         <button
           onClick={onClose}
@@ -228,18 +259,44 @@ export function DetailDrawer({ keyword, onClose }: DetailDrawerProps) {
 
         {/* 区块3 - 量化判断 */}
         <Section title="量化判断">
-          <Field label="BP 优先级" value={BP_LABELS[keyword.bp ?? ""] ?? keyword.bp} />
-          <Field label="月均 SV" value={keyword.sv != null ? String(keyword.sv) : "—"} />
-          <Field label="流量潜力 TP" value={keyword.tp != null ? String(keyword.tp) : "—"} />
+          <Field label="BP 优先级" value={<BpBadge bp={keyword.bp} />} />
+          <Field label="月均 SV" value={keyword.sv != null ? keyword.sv.toLocaleString() : null} />
+          <Field label="流量潜力 TP" value={keyword.tp != null ? keyword.tp.toLocaleString() : null} />
+          <Field label="CPC ($)" value={keyword.cpc != null ? `$${keyword.cpc.toFixed(2)}` : null} />
           <div className="col-span-2">
-            <span className="text-gray-400 text-xs block mb-1">关键词难度 KD</span>
-            <KdBar kd={keyword.kd} />
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[10px] text-gray-400 uppercase tracking-wider">关键词难度 KD</span>
+              <KdBar kd={keyword.kd} />
+            </div>
           </div>
-          <Field label="CPC ($)" value={keyword.cpc?.toFixed(2) ?? "—"} />
-          <Field label="增长趋势" value={growthBadge(keyword.growth)} />
-          <Field label="竞争程度 CP" value={CP_LABELS[keyword.cp ?? ""] ?? keyword.cp} />
-          <Field label="搜索意图 CS" value={CS_LABELS[keyword.cs ?? ""] ?? keyword.cs} />
-          <Field label="攻入难度 SA" value={SA_LABELS[keyword.sa ?? ""] ?? keyword.sa} />
+          <Field label="增长趋势" value={<GrowthBadge growth={keyword.growth} />} />
+          <Field label="竞争程度 CP" value={
+            keyword.cp
+              ? <MiniTag label={CP_LABELS[keyword.cp] ?? keyword.cp} cls={
+                  keyword.cp === "high" ? "text-red-600 bg-red-50 border-red-200" :
+                  keyword.cp === "medium" ? "text-amber-600 bg-amber-50 border-amber-200" :
+                  "text-emerald-600 bg-emerald-50 border-emerald-200"
+                } />
+              : null
+          } />
+          <Field label="搜索意图 CS" value={
+            keyword.cs
+              ? <MiniTag label={CS_LABELS[keyword.cs] ?? keyword.cs} cls={
+                  keyword.cs === "commercial" ? "text-purple-700 bg-purple-50 border-purple-200" :
+                  keyword.cs === "mixed" ? "text-blue-600 bg-blue-50 border-blue-200" :
+                  "text-teal-600 bg-teal-50 border-teal-200"
+                } />
+              : null
+          } />
+          <Field label="攻入难度 SA" value={
+            keyword.sa
+              ? <MiniTag label={SA_LABELS[keyword.sa] ?? keyword.sa} cls={
+                  keyword.sa === "enterable" ? "text-emerald-700 bg-emerald-50 border-emerald-200" :
+                  keyword.sa === "cautious" ? "text-amber-600 bg-amber-50 border-amber-200" :
+                  "text-red-600 bg-red-50 border-red-200"
+                } />
+              : null
+          } />
         </Section>
 
         {/* 区块4 - 聚类判断 */}
@@ -284,10 +341,15 @@ export function DetailDrawer({ keyword, onClose }: DetailDrawerProps) {
           <Field label="主攻页面" value={keyword.mainPage} />
           <Field label="并入目标页面" value={keyword.mergeTargetPage} />
           <Field label="覆盖方式" value={keyword.coverageMethod} />
-          <Field
-            label="蚕食风险"
-            value={CANNIB_LABELS[keyword.cannibalization ?? ""] ?? keyword.cannibalization}
-          />
+          <Field label="蚕食风险" value={
+            keyword.cannibalization
+              ? <MiniTag label={CANNIB_LABELS[keyword.cannibalization] ?? keyword.cannibalization} cls={
+                  keyword.cannibalization === "high" ? "text-red-600 bg-red-50 border-red-200" :
+                  keyword.cannibalization === "medium" ? "text-amber-600 bg-amber-50 border-amber-200" :
+                  "text-emerald-600 bg-emerald-50 border-emerald-200"
+                } />
+              : null
+          } />
         </Section>
 
         {/* 区块8 - 处理建议 */}

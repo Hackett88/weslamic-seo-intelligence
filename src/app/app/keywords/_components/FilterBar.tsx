@@ -1,6 +1,5 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -17,6 +16,7 @@ export interface FilterState {
   status: string;
   sourceNum: string;
   language: string;
+  region: string;
   handling: string;
 }
 
@@ -24,6 +24,27 @@ interface FilterBarProps {
   filters: FilterState;
   onFilterChange: (filters: FilterState) => void;
 }
+
+const LANGUAGES = [
+  { value: "EN", flag: "🇬🇧", label: "英文" },
+  { value: "AR", flag: "🇸🇦", label: "阿拉伯文" },
+  { value: "ID", flag: "🇮🇩", label: "印尼文" },
+  { value: "MS", flag: "🇲🇾", label: "马来文" },
+  { value: "FR", flag: "🇫🇷", label: "法文" },
+  { value: "DE", flag: "🇩🇪", label: "德文" },
+  { value: "ES", flag: "🇪🇸", label: "西班牙文" },
+];
+
+const REGIONS = [
+  { value: "SA", flag: "🇸🇦", label: "沙特阿拉伯" },
+  { value: "ID", flag: "🇮🇩", label: "印度尼西亚" },
+  { value: "AE", flag: "🇦🇪", label: "阿联酋" },
+  { value: "MY", flag: "🇲🇾", label: "马来西亚" },
+  { value: "GB", flag: "🇬🇧", label: "英国" },
+  { value: "FR", flag: "🇫🇷", label: "法国" },
+  { value: "DE", flag: "🇩🇪", label: "德国" },
+  { value: "ES", flag: "🇪🇸", label: "西班牙" },
+];
 
 export function FilterBar({ filters, onFilterChange }: FilterBarProps) {
   const update = (key: keyof FilterState, value: string | null) => {
@@ -37,6 +58,7 @@ export function FilterBar({ filters, onFilterChange }: FilterBarProps) {
       status: "all",
       sourceNum: "all",
       language: "all",
+      region: "all",
       handling: "all",
     });
   };
@@ -47,23 +69,23 @@ export function FilterBar({ filters, onFilterChange }: FilterBarProps) {
     filters.status !== "all" ||
     filters.sourceNum !== "all" ||
     filters.language !== "all" ||
+    filters.region !== "all" ||
     filters.handling !== "all";
+
+  const selectedLang = LANGUAGES.find((l) => l.value === filters.language);
+  const selectedRegion = REGIONS.find((r) => r.value === filters.region);
 
   return (
     <div className="flex items-center gap-2 overflow-x-auto pb-1 min-w-0">
-      <Input
-        className="w-48 h-7 shrink-0 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 text-xs focus-visible:ring-emerald-500 focus-visible:border-emerald-500"
-        placeholder="搜索关键词..."
-        value={filters.search}
-        onChange={(e) => update("search", e.target.value)}
-      />
-
+      {/* 层级 */}
       <Select value={filters.layer} onValueChange={(v) => update("layer", v)}>
         <SelectTrigger className="w-32 h-7 shrink-0 bg-white border-gray-300 text-gray-900 text-xs">
-          <SelectValue placeholder="分层级别" />
+          {filters.layer === "all"
+            ? <span className="text-xs text-gray-500">层级</span>
+            : <SelectValue />}
         </SelectTrigger>
         <SelectContent className="bg-white border-gray-200 text-gray-900">
-          <SelectItem value="all" className="text-xs">全部层级</SelectItem>
+          <SelectItem value="all" className="text-xs">全部</SelectItem>
           <SelectItem value="L1" className="text-xs">L1 骨架</SelectItem>
           <SelectItem value="L2" className="text-xs">L2 独立候选</SelectItem>
           <SelectItem value="L3" className="text-xs">L3 附属</SelectItem>
@@ -72,12 +94,15 @@ export function FilterBar({ filters, onFilterChange }: FilterBarProps) {
         </SelectContent>
       </Select>
 
+      {/* 状态 */}
       <Select value={filters.status} onValueChange={(v) => update("status", v)}>
         <SelectTrigger className="w-32 h-7 shrink-0 bg-white border-gray-300 text-gray-900 text-xs">
-          <SelectValue placeholder="词条状态" />
+          {filters.status === "all"
+            ? <span className="text-xs text-gray-500">状态</span>
+            : <SelectValue />}
         </SelectTrigger>
         <SelectContent className="bg-white border-gray-200 text-gray-900">
-          <SelectItem value="all" className="text-xs">全部状态</SelectItem>
+          <SelectItem value="all" className="text-xs">全部</SelectItem>
           <SelectItem value="pending" className="text-xs">待评估</SelectItem>
           <SelectItem value="evaluated" className="text-xs">已评估</SelectItem>
           <SelectItem value="clustered" className="text-xs">已聚类</SelectItem>
@@ -85,38 +110,86 @@ export function FilterBar({ filters, onFilterChange }: FilterBarProps) {
         </SelectContent>
       </Select>
 
+      {/* 来源 */}
       <Select value={filters.sourceNum} onValueChange={(v) => update("sourceNum", v)}>
         <SelectTrigger className="w-28 h-7 shrink-0 bg-white border-gray-300 text-gray-900 text-xs">
-          <SelectValue placeholder="来源" />
+          {filters.sourceNum === "all"
+            ? <span className="text-xs text-gray-500">来源</span>
+            : <SelectValue />}
         </SelectTrigger>
         <SelectContent className="bg-white border-gray-200 text-gray-900">
-          <SelectItem value="all" className="text-xs">全部来源</SelectItem>
-          {["0", "1", "2", "3", "4", "5", "6", "7", "8"].map((n) => (
-            <SelectItem key={n} value={n} className="text-xs">
-              来源 {n}
+          <SelectItem value="all" className="text-xs">全部</SelectItem>
+          {([
+            ["0", "第一方数据词"],
+            ["1", "内部词根"],
+            ["2", "一级竞品词"],
+            ["3", "二级竞品词"],
+            ["4", "SERP 特征词"],
+            ["5", "工具扩展词"],
+            ["6", "社交听取词"],
+            ["7", "搜索行为词"],
+            ["8", "AI 可见度词"],
+          ] as [string, string][]).map(([n, label]) => (
+            <SelectItem key={n} value={n} className="text-xs">{label}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      {/* 语言（含国旗） */}
+      <Select value={filters.language} onValueChange={(v) => update("language", v)}>
+        <SelectTrigger className="w-32 h-7 shrink-0 bg-white border-gray-300 text-gray-900 text-xs">
+          {filters.language === "all"
+            ? <span className="text-xs text-gray-500">语言</span>
+            : <span className="flex items-center gap-1.5 text-xs">
+                <span>{selectedLang?.flag}</span>
+                <span>{selectedLang?.value}</span>
+              </span>}
+        </SelectTrigger>
+        <SelectContent className="bg-white border-gray-200 text-gray-900">
+          <SelectItem value="all" className="text-xs">全部</SelectItem>
+          {LANGUAGES.map((l) => (
+            <SelectItem key={l.value} value={l.value} className="text-xs">
+              <span className="flex items-center gap-2">
+                <span>{l.flag}</span>
+                <span>{l.value} · {l.label}</span>
+              </span>
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
 
-      <Select value={filters.language} onValueChange={(v) => update("language", v)}>
-        <SelectTrigger className="w-24 h-7 shrink-0 bg-white border-gray-300 text-gray-900 text-xs">
-          <SelectValue placeholder="语言" />
+      {/* 地区（含国旗） */}
+      <Select value={filters.region} onValueChange={(v) => update("region", v)}>
+        <SelectTrigger className="w-32 h-7 shrink-0 bg-white border-gray-300 text-gray-900 text-xs">
+          {filters.region === "all"
+            ? <span className="text-xs text-gray-500">地区</span>
+            : <span className="flex items-center gap-1.5 text-xs">
+                <span>{selectedRegion?.flag}</span>
+                <span>{selectedRegion?.label}</span>
+              </span>}
         </SelectTrigger>
         <SelectContent className="bg-white border-gray-200 text-gray-900">
-          <SelectItem value="all" className="text-xs">全部语言</SelectItem>
-          <SelectItem value="EN" className="text-xs">EN</SelectItem>
-          <SelectItem value="AR" className="text-xs">AR</SelectItem>
-          <SelectItem value="ZH" className="text-xs">ZH</SelectItem>
+          <SelectItem value="all" className="text-xs">全部</SelectItem>
+          {REGIONS.map((r) => (
+            <SelectItem key={r.value} value={r.value} className="text-xs">
+              <span className="flex items-center gap-2">
+                <span>{r.flag}</span>
+                <span>{r.label}</span>
+              </span>
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
 
+      {/* 承接 */}
       <Select value={filters.handling} onValueChange={(v) => update("handling", v)}>
         <SelectTrigger className="w-32 h-7 shrink-0 bg-white border-gray-300 text-gray-900 text-xs">
-          <SelectValue placeholder="承接状态" />
+          {filters.handling === "all"
+            ? <span className="text-xs text-gray-500">承接</span>
+            : <SelectValue />}
         </SelectTrigger>
         <SelectContent className="bg-white border-gray-200 text-gray-900">
-          <SelectItem value="all" className="text-xs">全部承接</SelectItem>
+          <SelectItem value="all" className="text-xs">全部</SelectItem>
           <SelectItem value="independent" className="text-xs">独立建页</SelectItem>
           <SelectItem value="merge" className="text-xs">附属合并</SelectItem>
           <SelectItem value="defer" className="text-xs">暂缓观察</SelectItem>

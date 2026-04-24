@@ -23,9 +23,10 @@ const cards = [
 
 interface SummaryBarProps {
   stats: Stats;
+  onCardClick?: (key: string) => void;
 }
 
-export function SummaryBar({ stats }: SummaryBarProps) {
+export function SummaryBar({ stats, onCardClick }: SummaryBarProps) {
   const syncTime = stats.lastSync
     ? (() => {
         const d = new Date(stats.lastSync!);
@@ -34,11 +35,12 @@ export function SummaryBar({ stats }: SummaryBarProps) {
     : "--:--";
 
   return (
-    <div className="flex items-center gap-3 overflow-x-auto pb-1">
+    <div className="flex items-stretch gap-3">
       {cards.map((card) => (
         <div
           key={card.key}
-          className="flex-shrink-0 bg-white border border-gray-200 rounded px-3 py-2 min-w-[80px] hover:border-gray-300 transition-colors cursor-pointer"
+          className="flex-1 bg-white border border-gray-200 rounded px-3 py-2 hover:border-emerald-400 hover:shadow-sm transition-colors cursor-pointer select-none"
+          onClick={() => onCardClick?.(card.key)}
         >
           <p className="text-gray-400 text-xs mb-1">{card.label}</p>
           <p className={`text-lg font-semibold ${card.color}`}>
@@ -48,7 +50,7 @@ export function SummaryBar({ stats }: SummaryBarProps) {
       ))}
 
       {/* 最近同步 */}
-      <div className="flex-shrink-0 bg-white border border-gray-200 rounded px-3 py-2 min-w-[96px]">
+      <div className="flex-1 bg-white border border-gray-200 rounded px-3 py-2">
         <p className="text-gray-400 text-xs mb-1">最近同步</p>
         <p className="text-sm font-medium text-gray-600">{syncTime}</p>
       </div>

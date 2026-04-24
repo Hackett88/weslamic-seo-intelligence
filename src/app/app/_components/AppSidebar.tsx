@@ -42,7 +42,7 @@ export function AppSidebar() {
               key={item.href}
               href={item.href}
               className={[
-                "flex items-center gap-3 px-4 py-2 text-sm transition-colors",
+                "flex items-center gap-3 px-4 py-2.5 text-xs transition-colors",
                 "border-l-2",
                 isActive
                   ? "bg-emerald-50 border-emerald-500 text-emerald-700"

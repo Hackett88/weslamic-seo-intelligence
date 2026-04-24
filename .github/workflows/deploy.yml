@@ -37,25 +37,4 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tag }}
 
-  deploy:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to idle machine via SSH
-        uses: appleboy/ssh-action@v1
-        env:
-          GHCR_TOKEN: ${{ secrets.GHCR_READ_TOKEN }}
-          GHCR_USER: ${{ github.actor }}
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          port: 22
-          envs: GHCR_TOKEN,GHCR_USER
-          script_stop: true
-          script: |
-            echo %GHCR_TOKEN% | docker login ghcr.io -u %GHCR_USER% --password-stdin
-            cd /d C:\docker-data\weslamic-src
-            docker compose -f docker-compose.prod.yml pull next
-            docker compose -f docker-compose.prod.yml up -d next
-            echo Deploy finished at %DATE% %TIME%
+  # 部署由闲置机上的 Watchtower 容器自动完成（每 60s 轮询 GHCR 新镜像）

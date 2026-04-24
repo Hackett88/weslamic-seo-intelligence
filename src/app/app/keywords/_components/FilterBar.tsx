@@ -26,8 +26,8 @@ interface FilterBarProps {
 }
 
 export function FilterBar({ filters, onFilterChange }: FilterBarProps) {
-  const update = (key: keyof FilterState, value: string) => {
-    onFilterChange({ ...filters, [key]: value });
+  const update = (key: keyof FilterState, value: string | null) => {
+    onFilterChange({ ...filters, [key]: value ?? filters[key] });
   };
 
   const reset = () => {

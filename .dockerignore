@@ -1,0 +1,11 @@
+.git
+.gitignore
+.env*
+.next
+node_modules
+Dockerfile
+docker-compose*.yml
+drizzle
+temp
+*.log
+README.md

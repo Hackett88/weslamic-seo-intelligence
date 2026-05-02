@@ -263,10 +263,15 @@ export async function createSeedKeyword(
     return newRow;
   }
 
+  // N8N DataTable does not auto-fill seed_id, so we generate it here as the
+  // business primary key. All subsequent reads/writes filter by seed_id.
+  const seedId = `SEED-${randomUUID().slice(0, 8)}`;
+  const payload = { ...input, seed_id: seedId };
+
   const insertRes = await n8nFetch(tableRowsUrl(), {
     method: "POST",
     headers: n8nHeaders(),
-    body: JSON.stringify({ data: [input] }),
+    body: JSON.stringify({ data: [payload] }),
   });
   const insertResult = (await insertRes.json()) as {
     success?: boolean;
@@ -274,24 +279,22 @@ export async function createSeedKeyword(
   };
   if (!insertResult.success) throw new Error("N8N create failed");
 
-  // N8N POST /rows returns only {success, insertedRows} — fetch back the
-  // newly-inserted row (largest numeric id matching the keyword we just sent)
+  // POST /rows returns only {success, insertedRows} — look up by seed_id.
   const lookupUrl = new URL(tableRowsUrl());
-  lookupUrl.searchParams.set("limit", "200");
+  lookupUrl.searchParams.set(
+    "filter",
+    JSON.stringify({
+      filters: [{ columnName: "seed_id", condition: "eq", value: seedId }],
+    })
+  );
   const lookupRes = await n8nFetch(lookupUrl.toString(), {
     method: "GET",
     headers: n8nHeaders(),
   });
-  const lookupData = (await lookupRes.json()) as {
-    data?: Array<SeedKeyword & { id?: number }>;
-  };
-  const matches = (lookupData.data ?? []).filter(
-    (r) => r.keyword === input.keyword
-  );
-  matches.sort((a, b) => (b.id ?? 0) - (a.id ?? 0));
-  const row = matches[0];
+  const lookupData = (await lookupRes.json()) as { data?: SeedKeyword[] };
+  const row = lookupData.data?.[0];
   if (!row) {
-    throw new Error("N8N inserted row but lookup returned no match");
+    throw new Error("N8N inserted row but lookup by seed_id returned no match");
   }
   return row;
 }
@@ -312,10 +315,17 @@ export async function updateSeedKeyword(
   const res = await n8nFetch(`${tableRowsUrl()}/update`, {
     method: "PATCH",
     headers: n8nHeaders(),
-    body: JSON.stringify({ filter: { id }, data: patch, returnData: true, dryRun: false }),
+    body: JSON.stringify({
+      filter: {
+        filters: [{ columnName: "seed_id", condition: "eq", value: id }],
+      },
+      data: patch,
+      returnData: true,
+      dryRun: false,
+    }),
   });
-  const data = (await res.json()) as { data?: SeedKeyword[] };
-  const row = data.data?.[0];
+  const data = (await res.json()) as SeedKeyword[] | { data?: SeedKeyword[] };
+  const row = Array.isArray(data) ? data[0] : data.data?.[0];
   if (!row) throw new Error("N8N returned empty data on update");
   return row;
 }
@@ -331,7 +341,12 @@ export async function deleteSeedKeyword(
   }
 
   const url = new URL(`${tableRowsUrl()}/delete`);
-  url.searchParams.set("filter", JSON.stringify({ id }));
+  url.searchParams.set(
+    "filter",
+    JSON.stringify({
+      filters: [{ columnName: "seed_id", condition: "eq", value: id }],
+    })
+  );
   url.searchParams.set("returnData", "false");
   await n8nFetch(url.toString(), {
     method: "DELETE",

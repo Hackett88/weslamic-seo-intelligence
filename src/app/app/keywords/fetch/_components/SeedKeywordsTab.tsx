@@ -180,7 +180,14 @@ export function SeedKeywordsTab() {
     setDeleteError("");
   }
 
-  async function doDelete() {
+  // 删除是破坏性操作 — 每次都强制弹密码门，不复用 cookie
+  function doDelete() {
+    if (!deleteTarget) return;
+    setDeleteError("");
+    setDeleteAuthOpen(true);
+  }
+
+  async function executeDelete() {
     const target = deleteTarget;
     if (!target) return;
     setDeleteLoading(true);
@@ -544,7 +551,7 @@ export function SeedKeywordsTab() {
         open={deleteAuthOpen}
         onSuccess={() => {
           setDeleteAuthOpen(false);
-          doDelete();
+          executeDelete();
         }}
         onCancel={() => {
           setDeleteAuthOpen(false);

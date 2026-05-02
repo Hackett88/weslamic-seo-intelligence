@@ -23,12 +23,15 @@ const EMPTY_FORM: SeedKeywordInput = {
 
 const LAYER_OPTIONS: ReadonlyArray<{ value: string; label: string }> = [
   { value: "", label: "（未分类）" },
-  { value: "brand", label: "品牌词" },
-  { value: "category", label: "品类词" },
-  { value: "product", label: "产品词" },
-  { value: "geo", label: "地域词" },
-  { value: "intent", label: "意图词" },
-  { value: "topical", label: "主题词" },
+  { value: "品牌词", label: "品牌词" },
+  { value: "品类词", label: "品类词" },
+  { value: "产品词", label: "产品词" },
+  { value: "地域词", label: "地域词" },
+  { value: "意图词", label: "意图词" },
+  { value: "主题词", label: "主题词" },
+  { value: "工具词", label: "工具词" },
+  { value: "场景词", label: "场景词" },
+  { value: "知识词", label: "知识词" },
 ];
 
 export function SeedKeywordEditDialog({
@@ -227,22 +230,22 @@ export function SeedKeywordEditDialog({
               />
             </div>
 
-            {/* disabled_reason */}
-            {!form.enabled && (
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700">
-                  禁用原因
+            {/* disabled_reason — 始终可编辑（备注/禁用原因合用） */}
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700">
+                备注 / 禁用原因
+                {!form.enabled && (
                   <span className="text-gray-400 text-xs ml-1">（建议填写）</span>
-                </label>
-                <input
-                  type="text"
-                  value={form.disabled_reason}
-                  onChange={(e) => update("disabled_reason", e.target.value)}
-                  placeholder="禁用原因"
-                  className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                />
-              </div>
-            )}
+                )}
+              </label>
+              <input
+                type="text"
+                value={form.disabled_reason}
+                onChange={(e) => update("disabled_reason", e.target.value)}
+                placeholder={form.enabled ? "可填写备注（选填）" : "禁用原因"}
+                className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
 
             {error && (
               <p className="text-sm text-red-600 bg-red-50 rounded-md px-3 py-2">

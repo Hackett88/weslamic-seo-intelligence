@@ -19,6 +19,7 @@ export const SeedKeywordInputSchema = z.object({
   enabled: z.boolean().default(true),
   anchor: z.string().default(""),
   disabled_reason: z.string().default(""),
+  layer_main: z.string().default(""),
 });
 
 export type SeedKeywordInput = z.infer<typeof SeedKeywordInputSchema>;

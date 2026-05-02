@@ -16,7 +16,6 @@ export function SecondaryAuthDialog({
   onSuccess,
   onCancel,
 }: SecondaryAuthDialogProps) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -25,7 +24,6 @@ export function SecondaryAuthDialog({
   const [lockedUntil, setLockedUntil] = useState<number | null>(null);
   const [countdown, setCountdown] = useState(0);
 
-  // countdown timer
   useEffect(() => {
     if (!lockedUntil) return;
     const tick = () => {
@@ -44,19 +42,22 @@ export function SecondaryAuthDialog({
     return () => clearInterval(t);
   }, [lockedUntil]);
 
-  // open/close dialog element
   useEffect(() => {
-    const el = dialogRef.current;
-    if (!el) return;
-    if (open) {
-      if (!el.open) el.showModal();
-      setPassword("");
-      setError("");
-      setTimeout(() => inputRef.current?.focus(), 50);
-    } else {
-      if (el.open) el.close();
-    }
+    if (!open) return;
+    setPassword("");
+    setError("");
+    const t = setTimeout(() => inputRef.current?.focus(), 50);
+    return () => clearTimeout(t);
   }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onCancel();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onCancel]);
 
   const isLocked = !!lockedUntil && Date.now() < lockedUntil;
 
@@ -102,59 +103,67 @@ export function SecondaryAuthDialog({
     }
   }
 
+  if (!open) return null;
+
   return (
-    <dialog
-      ref={dialogRef}
-      onCancel={onCancel}
-      className="rounded-xl shadow-2xl w-full max-w-sm p-0 bg-white backdrop:bg-black/40 backdrop:backdrop-blur-sm"
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+      onClick={onCancel}
     >
-      <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4">
-        <div>
-          <h2 className="text-base font-semibold text-gray-900">二次验证</h2>
-          <p className="text-sm text-gray-500 mt-1">写操作需要输入操作密码</p>
-        </div>
+      <div
+        role="dialog"
+        aria-modal="true"
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-sm rounded-xl bg-white shadow-2xl"
+      >
+        <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4">
+          <div>
+            <h2 className="text-base font-semibold text-gray-900">二次验证</h2>
+            <p className="text-sm text-gray-500 mt-1">写操作需要输入操作密码</p>
+          </div>
 
-        <div className="flex flex-col gap-1">
-          <label htmlFor="sec-pwd" className="text-sm font-medium text-gray-700">
-            操作密码
-          </label>
-          <input
-            id="sec-pwd"
-            ref={inputRef}
-            type="password"
-            inputMode="numeric"
-            maxLength={8}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={isLocked || loading}
-            placeholder="请输入 8 位密码"
-            className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:bg-gray-100 disabled:text-gray-400"
-          />
-        </div>
+          <div className="flex flex-col gap-1">
+            <label htmlFor="sec-pwd" className="text-sm font-medium text-gray-700">
+              操作密码
+            </label>
+            <input
+              id="sec-pwd"
+              ref={inputRef}
+              type="password"
+              inputMode="numeric"
+              maxLength={8}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={isLocked || loading}
+              placeholder="请输入 8 位密码"
+              className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:bg-gray-100 disabled:text-gray-400"
+            />
+          </div>
 
-        {error && (
-          <p className="text-sm text-red-600 bg-red-50 rounded-md px-3 py-2">
-            {isLocked ? `账号已锁定，请等待 ${countdown} 秒` : error}
-          </p>
-        )}
+          {error && (
+            <p className="text-sm text-red-600 bg-red-50 rounded-md px-3 py-2">
+              {isLocked ? `账号已锁定，请等待 ${countdown} 秒` : error}
+            </p>
+          )}
 
-        <div className="flex justify-end gap-2 pt-2">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-4 py-2 text-sm rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
-          >
-            取消
-          </button>
-          <button
-            type="submit"
-            disabled={isLocked || loading || !password}
-            className="px-4 py-2 text-sm rounded-lg bg-emerald-600 text-white font-medium hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {loading ? "验证中..." : "确认"}
-          </button>
-        </div>
-      </form>
-    </dialog>
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="px-4 py-2 text-sm rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              取消
+            </button>
+            <button
+              type="submit"
+              disabled={isLocked || loading || !password}
+              className="px-4 py-2 text-sm rounded-lg bg-emerald-600 text-white font-medium hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {loading ? "验证中..." : "确认"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }

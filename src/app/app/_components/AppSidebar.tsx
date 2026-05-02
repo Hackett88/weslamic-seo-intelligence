@@ -13,10 +13,12 @@ import {
   BarChart2,
   Zap,
   Plug,
+  Download,
 } from "lucide-react";
 
 const navItems = [
   { label: "总览", href: "/app", icon: LayoutDashboard },
+  { label: "关键词功能库", href: "/app/keywords/fetch", icon: Download },
   { label: "关键词库", href: "/app/keywords", icon: Database },
   { label: "关键词策略", href: "/app/strategy", icon: Target },
   { label: "页面规划", href: "/app/pages", icon: FileText },

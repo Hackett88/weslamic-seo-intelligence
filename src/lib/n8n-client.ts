@@ -263,16 +263,36 @@ export async function createSeedKeyword(
     return newRow;
   }
 
-  const url = new URL(tableRowsUrl());
-  url.searchParams.set("returnType", "full");
-  const res = await n8nFetch(url.toString(), {
+  const insertRes = await n8nFetch(tableRowsUrl(), {
     method: "POST",
     headers: n8nHeaders(),
     body: JSON.stringify({ data: [input] }),
   });
-  const data = (await res.json()) as { data?: SeedKeyword[] };
-  const row = data.data?.[0];
-  if (!row) throw new Error("N8N returned empty data on create");
+  const insertResult = (await insertRes.json()) as {
+    success?: boolean;
+    insertedRows?: number;
+  };
+  if (!insertResult.success) throw new Error("N8N create failed");
+
+  // N8N POST /rows returns only {success, insertedRows} — fetch back the
+  // newly-inserted row (largest numeric id matching the keyword we just sent)
+  const lookupUrl = new URL(tableRowsUrl());
+  lookupUrl.searchParams.set("limit", "200");
+  const lookupRes = await n8nFetch(lookupUrl.toString(), {
+    method: "GET",
+    headers: n8nHeaders(),
+  });
+  const lookupData = (await lookupRes.json()) as {
+    data?: Array<SeedKeyword & { id?: number }>;
+  };
+  const matches = (lookupData.data ?? []).filter(
+    (r) => r.keyword === input.keyword
+  );
+  matches.sort((a, b) => (b.id ?? 0) - (a.id ?? 0));
+  const row = matches[0];
+  if (!row) {
+    throw new Error("N8N inserted row but lookup returned no match");
+  }
   return row;
 }
 

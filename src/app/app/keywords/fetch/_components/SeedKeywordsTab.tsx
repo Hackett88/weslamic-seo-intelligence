@@ -74,6 +74,12 @@ export function SeedKeywordsTab() {
   const [switchAuthOpen, setSwitchAuthOpen] = useState(false);
   const pendingSwitchRef = useRef<{ row: SeedKeyword; newVal: boolean } | null>(null);
 
+  // Delete confirmation + secondary auth
+  const [deleteTarget, setDeleteTarget] = useState<SeedKeyword | null>(null);
+  const [deleteAuthOpen, setDeleteAuthOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+
   // Debounce search — reset pagination on change
   useEffect(() => {
     const t = setTimeout(() => {
@@ -168,16 +174,48 @@ export function SeedKeywordsTab() {
     pendingSwitchRef.current = null;
   }
 
-  // Delete handler
-  async function handleDelete(row: SeedKeyword) {
-    if (!confirm(`确认删除「${row.keyword}」？此操作不可撤销。`)) return;
+  // Delete handler — open custom centered confirmation dialog
+  function handleDelete(row: SeedKeyword) {
+    setDeleteTarget(row);
+    setDeleteError("");
+  }
 
-    const res = await fetch(`/api/seed-keywords/${row.seed_id}`, {
-      method: "DELETE",
-    });
-    if (res.ok) {
-      setRows((prev) => prev.filter((r) => r.seed_id !== row.seed_id));
+  async function doDelete() {
+    const target = deleteTarget;
+    if (!target) return;
+    setDeleteLoading(true);
+    setDeleteError("");
+    try {
+      const res = await fetch(`/api/seed-keywords/${target.seed_id}`, {
+        method: "DELETE",
+      });
+
+      if (res.status === 401) {
+        const data = (await res.json().catch(() => ({}))) as { code?: string };
+        if (
+          data.code === "SECONDARY_AUTH_EXPIRED" ||
+          data.code === "SECONDARY_AUTH_REQUIRED"
+        ) {
+          setDeleteAuthOpen(true);
+          return;
+        }
+        setDeleteError("登录已过期，请刷新页面");
+        return;
+      }
+
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as { message?: string };
+        setDeleteError(data.message ?? "删除失败");
+        return;
+      }
+
+      setRows((prev) => prev.filter((r) => r.seed_id !== target.seed_id));
       if (total !== undefined) setTotal((t) => (t !== undefined ? t - 1 : undefined));
+      setDeleteTarget(null);
+    } catch {
+      setDeleteError("网络错误，请重试");
+    } finally {
+      setDeleteLoading(false);
     }
   }
 
@@ -444,6 +482,72 @@ export function SeedKeywordsTab() {
         onCancel={() => {
           setSwitchAuthOpen(false);
           pendingSwitchRef.current = null;
+        }}
+      />
+
+      {/* Delete confirmation (centered) */}
+      {deleteTarget && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+          onClick={() => !deleteLoading && setDeleteTarget(null)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-sm rounded-xl bg-white shadow-2xl"
+          >
+            <div className="p-6 flex flex-col gap-4">
+              <div>
+                <h2 className="text-base font-semibold text-gray-900">确认删除</h2>
+                <p className="text-sm text-gray-600 mt-2">
+                  确认删除「
+                  <span className="font-medium text-gray-900">
+                    {deleteTarget.keyword}
+                  </span>
+                  」？
+                </p>
+                <p className="text-xs text-gray-400 mt-1">此操作不可撤销。</p>
+              </div>
+
+              {deleteError && (
+                <p className="text-sm text-red-600 bg-red-50 rounded-md px-3 py-2">
+                  {deleteError}
+                </p>
+              )}
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setDeleteTarget(null)}
+                  disabled={deleteLoading}
+                  className="px-4 py-2 text-sm rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+                >
+                  取消
+                </button>
+                <button
+                  type="button"
+                  onClick={doDelete}
+                  disabled={deleteLoading}
+                  className="px-4 py-2 text-sm rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {deleteLoading ? "删除中..." : "确认删除"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete secondary auth */}
+      <SecondaryAuthDialog
+        open={deleteAuthOpen}
+        onSuccess={() => {
+          setDeleteAuthOpen(false);
+          doDelete();
+        }}
+        onCancel={() => {
+          setDeleteAuthOpen(false);
         }}
       />
     </div>

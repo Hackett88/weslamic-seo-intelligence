@@ -18,7 +18,18 @@ const EMPTY_FORM: SeedKeywordInput = {
   enabled: true,
   anchor: "",
   disabled_reason: "",
+  layer_main: "",
 };
+
+const LAYER_OPTIONS: ReadonlyArray<{ value: string; label: string }> = [
+  { value: "", label: "（未分类）" },
+  { value: "brand", label: "品牌词" },
+  { value: "category", label: "品类词" },
+  { value: "product", label: "产品词" },
+  { value: "geo", label: "地域词" },
+  { value: "intent", label: "意图词" },
+  { value: "topical", label: "主题词" },
+];
 
 export function SeedKeywordEditDialog({
   open,
@@ -40,6 +51,7 @@ export function SeedKeywordEditDialog({
         enabled: initial.enabled,
         anchor: initial.anchor ?? "",
         disabled_reason: initial.disabled_reason ?? "",
+        layer_main: initial.layer_main ?? "",
       });
     } else {
       setForm(EMPTY_FORM);
@@ -185,6 +197,22 @@ export function SeedKeywordEditDialog({
               <span className="text-sm text-gray-700">
                 {form.enabled ? "启用" : "禁用"}
               </span>
+            </div>
+
+            {/* layer_main */}
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700">主层级 (layer_main)</label>
+              <select
+                value={form.layer_main}
+                onChange={(e) => update("layer_main", e.target.value)}
+                className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+              >
+                {LAYER_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* anchor */}

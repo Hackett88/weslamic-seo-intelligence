@@ -251,7 +251,7 @@ export async function createSeedKeyword(
     const newRow: SeedKeyword = {
       seed_id: `seed-${randomUUID().slice(0, 8)}`,
       keyword: input.keyword,
-      language: input.language,
+      language: "",
       layer_main: input.layer_main,
       enabled: input.enabled ?? true,
       fetch_count: 0,

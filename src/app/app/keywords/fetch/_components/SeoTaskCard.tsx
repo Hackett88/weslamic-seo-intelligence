@@ -92,6 +92,7 @@ export type W06ResultRow = {
   trends: string | null;
   intent: string | null;
   relevance_rate: number | null;
+  keyword_serp_features_codes: string | null;
 };
 
 export type W08ResultRow = {

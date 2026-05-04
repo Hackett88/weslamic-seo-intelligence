@@ -1047,6 +1047,7 @@ export interface W06StagingRow {
   trends: string | null;
   intent: string | null;
   relevance_rate: number | null;
+  keyword_serp_features_codes: string | null;
   batch_id: string;
 }
 
@@ -1061,6 +1062,7 @@ interface RawW06StagingRow {
   trends?: unknown;
   intent?: unknown;
   relevance_rate?: unknown;
+  keyword_serp_features_codes?: unknown;
   batch_id?: unknown;
 }
 
@@ -1212,16 +1214,17 @@ export async function getW06StagingRowsByBatch(
   const data = (await res.json()) as { data?: RawW06StagingRow[] };
   const rows = data.data ?? [];
   return rows.map<W06StagingRow>((r) => ({
-    keyword:            str(r.keyword),
-    market:             str(r.market),
-    search_volume:      num(r.search_volume),
-    keyword_difficulty: num(r.keyword_difficulty),
-    cpc:                num(r.cpc),
-    competition:        num(r.competition),
-    number_of_results:  num(r.number_of_results),
-    trends:             strOrNull(r.trends),
-    intent:             strOrNull(r.intent),
-    relevance_rate:     num(r.relevance_rate),
-    batch_id:           str(r.batch_id),
+    keyword:                     str(r.keyword),
+    market:                      str(r.market),
+    search_volume:               num(r.search_volume),
+    keyword_difficulty:          num(r.keyword_difficulty),
+    cpc:                         num(r.cpc),
+    competition:                 num(r.competition),
+    number_of_results:           num(r.number_of_results),
+    trends:                      strOrNull(r.trends),
+    intent:                      strOrNull(r.intent),
+    relevance_rate:              num(r.relevance_rate),
+    keyword_serp_features_codes: strOrNull(r.keyword_serp_features_codes),
+    batch_id:                    str(r.batch_id),
   }));
 }

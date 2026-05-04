@@ -44,9 +44,25 @@ export default async function AppLayout({
       <AppSidebar />
 
       {/* 主内容区 */}
-      <main className="ml-52 pt-12 h-screen overflow-hidden flex flex-col">
+      <main className="ml-52 pt-12 pb-[50px] h-screen overflow-hidden flex flex-col">
         {children}
       </main>
+
+      {/* 固定底栏 */}
+      <footer className="fixed bottom-0 left-52 right-0 h-[50px] bg-white border-t border-gray-200 z-40 flex items-center justify-between px-6 whitespace-nowrap">
+        <div className="flex items-center gap-2 text-[11px]">
+          <span className="text-gray-900 font-bold tracking-wide">
+            WESLAMIC SEO Intelligence
+          </span>
+          <span className="text-gray-300">·</span>
+          <span className="text-gray-400">基于 Semrush 数据的智能 SEO 工作台</span>
+        </div>
+        <div className="flex items-center gap-2 text-[11px]">
+          <span className="text-gray-500">v1.0.0</span>
+          <span className="text-gray-300">·</span>
+          <span className="text-gray-400">© 2026 WESLAMIC · All rights reserved.</span>
+        </div>
+      </footer>
     </div>
   );
 }

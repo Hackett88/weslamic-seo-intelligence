@@ -7,8 +7,10 @@ export default async function KeywordFetchPage() {
   if (!session) redirect("/login");
 
   return (
-    <div className="p-6">
-      <h1 className="text-xl font-semibold text-gray-900 mb-4">关键词功能库</h1>
+    <div className="flex-1 min-h-0 flex flex-col">
+      <div className="px-6 pt-5 pb-2 shrink-0">
+        <h1 className="text-xl font-semibold text-gray-900">关键词功能库</h1>
+      </div>
       <FetchTabs />
     </div>
   );

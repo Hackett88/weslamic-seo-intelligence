@@ -48,7 +48,7 @@ export function W02Workspace() {
   const isMockUrl = searchParams.get("mock") === "1";
 
   const [keyword, setKeyword] = useState("");
-  const [markets, setMarkets] = useState<Market[]>(["us"]);
+  const [markets, setMarkets] = useState<Market[]>(["sa"]);
   const [progress, setProgress] = useState<ProgressState>({ status: "idle" });
   const [rows, setRows] = useState<W01ResultRow[]>([]);
   const [showAuth, setShowAuth] = useState(false);

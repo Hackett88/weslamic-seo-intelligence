@@ -17,8 +17,8 @@ export function FetchTabs() {
   const [active, setActive] = useState<TabKey>("query");
 
   return (
-    <div className="w-full">
-      <div className="flex gap-1 border-b border-gray-200 mb-4">
+    <div className="flex-1 min-h-0 flex flex-col">
+      <div className="flex gap-1 border-b border-gray-200 px-6 shrink-0">
         {TABS.map((t) => {
           const isActive = t.key === active;
           return (
@@ -39,11 +39,13 @@ export function FetchTabs() {
         })}
       </div>
 
-      {active === "query" && <DataQueryGrid />}
+      <div className="flex-1 min-h-0 overflow-y-auto px-6 py-6">
+        {active === "query" && <DataQueryGrid />}
 
-      {active === "scenario" && <ScenarioGrid />}
+        {active === "scenario" && <ScenarioGrid />}
 
-      {active === "data" && <SeedKeywordsTab />}
+        {active === "data" && <SeedKeywordsTab />}
+      </div>
     </div>
   );
 }

@@ -94,7 +94,7 @@ export function W10Workspace() {
   const [competitorDomains, setCompetitorDomains] = useState<string[]>([]);
   const [competitorError, setCompetitorError] = useState<string | null>(null);
   const [gapTypes, setGapTypes] = useState<GapType[]>(["missing", "common", "untapped", "weak"]);
-  const [markets, setMarkets] = useState<Market[]>(["us"]);
+  const [markets, setMarkets] = useState<Market[]>(["sa"]);
   const [displayLimit, setDisplayLimit] = useState<number>(DEFAULT_LIMIT);
   const [progress, setProgress] = useState<ProgressState>({ status: "idle" });
   const [rows, setRows] = useState<W10ResultRow[]>([]);

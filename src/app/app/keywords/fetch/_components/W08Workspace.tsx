@@ -51,7 +51,7 @@ export function W08Workspace() {
   const isMockUrl = searchParams.get("mock") === "1";
 
   const [advertiserDomain, setAdvertiserDomain] = useState("");
-  const [markets, setMarkets] = useState<Market[]>(["us"]);
+  const [markets, setMarkets] = useState<Market[]>(["sa"]);
   const [displayLimit, setDisplayLimit] = useState<number>(DEFAULT_LIMIT);
   const [progress, setProgress] = useState<ProgressState>({ status: "idle" });
   const [rows, setRows] = useState<W08ResultRow[]>([]);

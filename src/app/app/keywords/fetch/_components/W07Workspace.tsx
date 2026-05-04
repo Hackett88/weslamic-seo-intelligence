@@ -52,7 +52,7 @@ export function W07Workspace() {
   const limitInRange = displayLimit >= MIN_LIMIT && displayLimit <= MAX_LIMIT;
   // phrase_all 跨库返回所有数据库该词搜量，预估 = display_limit × 11 行 × 10u/行
   const units = displayLimit * UNITS_PER_ROW * ROWS_PER_LIMIT;
-  const needsSecondaryAuth = units >= UNITS_PASSWORD_THRESHOLD;
+  const needsSecondaryAuth = units > UNITS_PASSWORD_THRESHOLD;
 
   useEffect(() => {
     return () => {
@@ -462,7 +462,7 @@ export function W07Workspace() {
             onClick={(e) => e.stopPropagation()}
           >
             <h4 className="mb-2 text-sm font-semibold text-gray-900">
-              二次验证（≥ {UNITS_PASSWORD_THRESHOLD}u）
+              二次验证（&gt; {UNITS_PASSWORD_THRESHOLD}u）
             </h4>
             <p className="mb-3 text-xs text-gray-500">
               请输入 8 位数字密码以继续。

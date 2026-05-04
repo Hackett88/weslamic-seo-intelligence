@@ -51,7 +51,7 @@ export function W05Workspace() {
   const isMockUrl = searchParams.get("mock") === "1";
 
   const [seedKeyword, setSeedKeyword] = useState("");
-  const [market, setMarket] = useState<Market>("us");
+  const [markets, setMarkets] = useState<Market[]>(["us"]);
   const [displayLimit, setDisplayLimit] = useState<number>(DEFAULT_LIMIT);
   const [progress, setProgress] = useState<ProgressState>({ status: "idle" });
   const [rows, setRows] = useState<W05ResultRow[]>([]);
@@ -65,7 +65,7 @@ export function W05Workspace() {
   const [historyMode, setHistoryMode] = useState(false);
   const recordedRef = useRef(false);
   const submittedSeedRef = useRef("");
-  const submittedMarketRef = useRef<Market>("us");
+  const submittedMarketsRef = useRef<Market[]>([]);
   const submittedDisplayLimitRef = useRef<number>(DEFAULT_LIMIT);
 
   useEffect(() => {
@@ -74,10 +74,17 @@ export function W05Workspace() {
 
   const trimmedSeed = seedKeyword.trim();
   const noSeed = trimmedSeed.length === 0;
-  const noMarket = !market;
+  const marketCount = markets.length;
+  const noMarket = marketCount === 0;
   const limitInRange = displayLimit >= MIN_LIMIT && displayLimit <= MAX_LIMIT;
-  const units = displayLimit * UNITS_PER_ROW;
+  const units = displayLimit * UNITS_PER_ROW * marketCount;
   const needsSecondaryAuth = units >= UNITS_PASSWORD_THRESHOLD;
+
+  function toggleMarket(value: Market) {
+    setMarkets((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
+    );
+  }
 
   useEffect(() => {
     return () => {
@@ -94,6 +101,7 @@ export function W05Workspace() {
       recordedRef.current = true;
       const next = appendHistory<W05ResultRow>(ENDPOINT_KEY, {
         label: submittedSeedRef.current || "(空关键词)",
+        tooltip: `${submittedSeedRef.current} · ${submittedMarketsRef.current.map(m => m.toUpperCase()).join(",")}`,
         rows,
         summary: {
           rowsTotal: rows.length,
@@ -106,7 +114,7 @@ export function W05Workspace() {
         dataSource: DATA_SOURCE,
         params: {
           seedKeyword: submittedSeedRef.current,
-          market: submittedMarketRef.current,
+          markets: submittedMarketsRef.current,
           displayLimit: submittedDisplayLimitRef.current,
         },
       });
@@ -127,7 +135,7 @@ export function W05Workspace() {
     const params = new URLSearchParams({
       endpoint: "W05",
       seed_keyword: trimmedSeed,
-      market,
+      markets: markets.join(","),
       display_limit: String(displayLimit),
     });
     if (isMockUrl) params.set("mock", "1");
@@ -137,7 +145,7 @@ export function W05Workspace() {
     setHistoryMode(false);
     recordedRef.current = false;
     submittedSeedRef.current = trimmedSeed;
-    submittedMarketRef.current = market;
+    submittedMarketsRef.current = [...markets];
     submittedDisplayLimitRef.current = displayLimit;
     esRef.current?.close();
     const es = new EventSource(url);
@@ -338,10 +346,10 @@ export function W05Workspace() {
         </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-3">
-          {/* 市场单选 */}
+          {/* 市场多选 */}
           <div className="flex flex-wrap items-center gap-1.5">
             {MARKETS.map((m) => {
-              const checked = market === m.value;
+              const checked = markets.includes(m.value);
               return (
                 <label
                   key={m.value}
@@ -353,10 +361,9 @@ export function W05Workspace() {
                   ].join(" ")}
                 >
                   <input
-                    type="radio"
-                    name="w05-market"
+                    type="checkbox"
                     checked={checked}
-                    onChange={() => setMarket(m.value)}
+                    onChange={() => toggleMarket(m.value)}
                     className="h-3 w-3 accent-emerald-600"
                   />
                   <span>
@@ -369,10 +376,13 @@ export function W05Workspace() {
 
           {/* units 估算 */}
           <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-[11px] text-gray-500">
-            {displayLimit} 行 × 1 市场 · 预估 {units}u
+            {displayLimit} 行 × {marketCount} 市场 · 预估 {units}u
           </span>
           {needsSecondaryAuth && (
             <span className="text-[11px] text-amber-600">需密码门</span>
+          )}
+          {noMarket && (
+            <span className="text-[11px] text-red-600">至少选 1 个市场</span>
           )}
           {!limitInRange && (
             <span className="text-[11px] text-red-600">

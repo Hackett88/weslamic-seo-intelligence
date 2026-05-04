@@ -51,7 +51,7 @@ export function W03Workspace() {
   const isMockUrl = searchParams.get("mock") === "1";
 
   const [keyword, setKeyword] = useState("");
-  const [market, setMarket] = useState<Market>("us");
+  const [markets, setMarkets] = useState<Market[]>(["us"]);
   const [displayLimit, setDisplayLimit] = useState<number>(DEFAULT_LIMIT);
   const [progress, setProgress] = useState<ProgressState>({ status: "idle" });
   const [rows, setRows] = useState<W03ResultRow[]>([]);
@@ -65,7 +65,7 @@ export function W03Workspace() {
   const [historyMode, setHistoryMode] = useState(false);
   const recordedRef = useRef(false);
   const submittedKeywordRef = useRef("");
-  const submittedMarketRef = useRef<Market>("us");
+  const submittedMarketsRef = useRef<Market[]>([]);
   const submittedDisplayLimitRef = useRef<number>(DEFAULT_LIMIT);
 
   useEffect(() => {
@@ -74,10 +74,17 @@ export function W03Workspace() {
 
   const trimmedKeyword = keyword.trim();
   const noKeyword = trimmedKeyword.length === 0;
-  const noMarket = !market;
+  const marketCount = markets.length;
+  const noMarket = marketCount === 0;
   const limitInRange = displayLimit >= MIN_LIMIT && displayLimit <= MAX_LIMIT;
-  const units = displayLimit * UNITS_PER_ROW;
+  const units = displayLimit * UNITS_PER_ROW * marketCount;
   const needsSecondaryAuth = units >= UNITS_PASSWORD_THRESHOLD;
+
+  function toggleMarket(value: Market) {
+    setMarkets((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
+    );
+  }
 
   useEffect(() => {
     return () => {
@@ -94,6 +101,7 @@ export function W03Workspace() {
       recordedRef.current = true;
       const next = appendHistory<W03ResultRow>(ENDPOINT_KEY, {
         label: submittedKeywordRef.current || "(空关键词)",
+        tooltip: `${submittedKeywordRef.current} · ${submittedMarketsRef.current.map(m => m.toUpperCase()).join(",")}`,
         rows,
         summary: {
           rowsTotal: rows.length,
@@ -106,7 +114,7 @@ export function W03Workspace() {
         dataSource: DATA_SOURCE,
         params: {
           keyword: submittedKeywordRef.current,
-          market: submittedMarketRef.current,
+          markets: submittedMarketsRef.current,
           displayLimit: submittedDisplayLimitRef.current,
         },
       });
@@ -127,7 +135,7 @@ export function W03Workspace() {
     const params = new URLSearchParams({
       endpoint: "W03",
       keyword: trimmedKeyword,
-      market,
+      markets: markets.join(","),
       display_limit: String(displayLimit),
     });
     if (isMockUrl) params.set("mock", "1");
@@ -137,7 +145,7 @@ export function W03Workspace() {
     setHistoryMode(false);
     recordedRef.current = false;
     submittedKeywordRef.current = trimmedKeyword;
-    submittedMarketRef.current = market;
+    submittedMarketsRef.current = [...markets];
     submittedDisplayLimitRef.current = displayLimit;
     esRef.current?.close();
     const es = new EventSource(url);
@@ -225,7 +233,7 @@ export function W03Workspace() {
   }
 
   async function handleSubmit() {
-    if (noKeyword || noMarket || !limitInRange) return;
+    if (noKeyword || noMarket || !limitInRange) return; // noMarket now means markets.length === 0
     if (needsSecondaryAuth) {
       const checkRes = await fetch("/api/n8n/secondary-auth/check");
       if (!checkRes.ok) {
@@ -266,6 +274,7 @@ export function W03Workspace() {
     !noMarket &&
     limitInRange &&
     (status === "idle" || status === "succeeded" || status === "failed");
+
 
   let btnLabel = "开始查询";
   let btnExtraCls = "bg-emerald-600 hover:bg-emerald-700 text-white";
@@ -344,10 +353,10 @@ export function W03Workspace() {
         </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-3">
-          {/* 市场单选（radio 风格 chips） */}
+          {/* 市场多选 */}
           <div className="flex flex-wrap items-center gap-1.5">
             {MARKETS.map((m) => {
-              const checked = market === m.value;
+              const checked = markets.includes(m.value);
               return (
                 <label
                   key={m.value}
@@ -359,10 +368,9 @@ export function W03Workspace() {
                   ].join(" ")}
                 >
                   <input
-                    type="radio"
-                    name="w03-market"
+                    type="checkbox"
                     checked={checked}
-                    onChange={() => setMarket(m.value)}
+                    onChange={() => toggleMarket(m.value)}
                     className="h-3 w-3 accent-emerald-600"
                   />
                   <span>
@@ -375,10 +383,13 @@ export function W03Workspace() {
 
           {/* units 估算徽章 */}
           <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-[11px] text-gray-500">
-            {displayLimit} 行 × 1 市场 · 预估 {units}u
+            {displayLimit} 行 × {marketCount} 市场 · 预估 {units}u
           </span>
           {needsSecondaryAuth && (
             <span className="text-[11px] text-amber-600">需密码门</span>
+          )}
+          {noMarket && (
+            <span className="text-[11px] text-red-600">至少选 1 个市场</span>
           )}
           {!limitInRange && (
             <span className="text-[11px] text-red-600">

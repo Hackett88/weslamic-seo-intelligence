@@ -75,10 +75,11 @@ function normalizeDomain(raw: string): string {
 function calcUnits(
   competitorCount: number,
   gapTypes: GapType[],
-  displayLimit: number
+  displayLimit: number,
+  marketCount: number
 ): number {
   const nonWeakCount = gapTypes.filter((t) => t !== "weak").length;
-  return competitorCount * nonWeakCount * displayLimit * 80 + 200;
+  return competitorCount * nonWeakCount * displayLimit * 80 * marketCount + 200;
 }
 
 export function W10Workspace() {
@@ -90,7 +91,7 @@ export function W10Workspace() {
   const [competitorDomains, setCompetitorDomains] = useState<string[]>([]);
   const [competitorError, setCompetitorError] = useState<string | null>(null);
   const [gapTypes, setGapTypes] = useState<GapType[]>(["missing", "common", "untapped", "weak"]);
-  const [market, setMarket] = useState<Market>("us");
+  const [markets, setMarkets] = useState<Market[]>(["us"]);
   const [displayLimit, setDisplayLimit] = useState<number>(DEFAULT_LIMIT);
   const [progress, setProgress] = useState<ProgressState>({ status: "idle" });
   const [rows, setRows] = useState<W10ResultRow[]>([]);
@@ -106,7 +107,7 @@ export function W10Workspace() {
   const submittedOurDomainRef = useRef("");
   const submittedCompetitorDomainsRef = useRef<string[]>([]);
   const submittedGapTypesRef = useRef<GapType[]>([]);
-  const submittedMarketRef = useRef<Market>("us");
+  const submittedMarketsRef = useRef<Market[]>([]);
   const submittedDisplayLimitRef = useRef<number>(DEFAULT_LIMIT);
 
   useEffect(() => {
@@ -125,13 +126,22 @@ export function W10Workspace() {
 
   const noCompetitor = competitorDomains.length === 0;
   const noGapTypes = gapTypes.length === 0;
+  const marketCount = markets.length;
+  const noMarket = marketCount === 0;
   const limitInRange = displayLimit >= MIN_LIMIT && displayLimit <= MAX_LIMIT;
   const units = calcUnits(
     Math.max(competitorDomains.length, 1),
     gapTypes.length > 0 ? gapTypes : ["missing"],
-    displayLimit
+    displayLimit,
+    Math.max(marketCount, 1)
   );
   const needsSecondaryAuth = units >= UNITS_PASSWORD_THRESHOLD;
+
+  function toggleMarket(value: Market) {
+    setMarkets((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
+    );
+  }
 
   useEffect(() => {
     return () => {
@@ -149,6 +159,7 @@ export function W10Workspace() {
       const label = `${submittedOurDomainRef.current} vs ${submittedCompetitorDomainsRef.current.length} 个竞品`;
       const next = appendHistory<W10ResultRow>(ENDPOINT_KEY, {
         label,
+        tooltip: `${submittedOurDomainRef.current} · ${submittedMarketsRef.current.map(m => m.toUpperCase()).join(",")}`,
         rows,
         summary: {
           rowsTotal: rows.length,
@@ -163,7 +174,7 @@ export function W10Workspace() {
           ourDomain: submittedOurDomainRef.current,
           competitorDomains: submittedCompetitorDomainsRef.current,
           gapTypes: submittedGapTypesRef.current,
-          market: submittedMarketRef.current,
+          markets: submittedMarketsRef.current,
           displayLimit: submittedDisplayLimitRef.current,
         },
       });
@@ -214,7 +225,7 @@ export function W10Workspace() {
       our_domain: trimmedOurDomain,
       competitor_domains: competitorDomains.join(","),
       gap_types: gapTypes.join(","),
-      market,
+      markets: markets.join(","),
       display_limit: String(displayLimit),
     });
     if (isMockUrl) params.set("mock", "1");
@@ -226,7 +237,7 @@ export function W10Workspace() {
     submittedOurDomainRef.current = trimmedOurDomain;
     submittedCompetitorDomainsRef.current = [...competitorDomains];
     submittedGapTypesRef.current = [...gapTypes];
-    submittedMarketRef.current = market;
+    submittedMarketsRef.current = [...markets];
     submittedDisplayLimitRef.current = displayLimit;
     esRef.current?.close();
     const es = new EventSource(url);
@@ -310,7 +321,7 @@ export function W10Workspace() {
   }
 
   async function handleSubmit() {
-    if (isOurDomainInvalid || noCompetitor || noGapTypes || !limitInRange) return;
+    if (isOurDomainInvalid || noCompetitor || noGapTypes || noMarket || !limitInRange) return;
     if (needsSecondaryAuth) {
       const checkRes = await fetch("/api/n8n/secondary-auth/check");
       if (!checkRes.ok) {
@@ -350,6 +361,7 @@ export function W10Workspace() {
     !isOurDomainInvalid &&
     !noCompetitor &&
     !noGapTypes &&
+    !noMarket &&
     limitInRange &&
     (status === "idle" || status === "succeeded" || status === "failed");
 
@@ -549,12 +561,12 @@ export function W10Workspace() {
             )}
           </div>
 
-          {/* 市场单选 */}
+          {/* 市场多选 */}
           <div>
             <p className="mb-1 text-[11px] font-medium text-gray-500">市场</p>
             <div className="flex flex-wrap items-center gap-1.5">
               {MARKETS.map((m) => {
-                const checked = market === m.value;
+                const checked = markets.includes(m.value);
                 return (
                   <label
                     key={m.value}
@@ -566,10 +578,9 @@ export function W10Workspace() {
                     ].join(" ")}
                   >
                     <input
-                      type="radio"
-                      name="w10-market"
+                      type="checkbox"
                       checked={checked}
-                      onChange={() => setMarket(m.value)}
+                      onChange={() => toggleMarket(m.value)}
                       className="h-3 w-3 accent-emerald-600"
                     />
                     <span>
@@ -579,13 +590,16 @@ export function W10Workspace() {
                 );
               })}
             </div>
+            {noMarket && (
+              <p className="mt-1 text-[11px] text-red-500">至少选 1 个市场</p>
+            )}
           </div>
         </div>
 
         {/* 行 4：units 估算 + 操作区 */}
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-[11px] text-gray-500">
-            {competitorDomains.length} 竞品 × {gapTypes.filter((t) => t !== "weak").length} API维度 × {displayLimit} 条 × 80u ≈ 预估 {units.toLocaleString()}u
+            {competitorDomains.length} 竞品 × {gapTypes.filter((t) => t !== "weak").length} API维度 × {displayLimit} 条 × 80u × {marketCount} 市场 ≈ 预估 {units.toLocaleString()}u
           </span>
           {needsSecondaryAuth && (
             <span className="text-[11px] text-amber-600">需密码门</span>

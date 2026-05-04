@@ -50,7 +50,7 @@ export function W09Workspace() {
   const isMockUrl = searchParams.get("mock") === "1";
 
   const [advertiserDomain, setAdvertiserDomain] = useState("");
-  const [market, setMarket] = useState<Market>("us");
+  const [markets, setMarkets] = useState<Market[]>(["us"]);
   const [displayLimit, setDisplayLimit] = useState<number>(DEFAULT_LIMIT);
   const [progress, setProgress] = useState<ProgressState>({ status: "idle" });
   const [rows, setRows] = useState<W09ResultRow[]>([]);
@@ -64,7 +64,7 @@ export function W09Workspace() {
   const [historyMode, setHistoryMode] = useState(false);
   const recordedRef = useRef(false);
   const submittedDomainRef = useRef("");
-  const submittedMarketRef = useRef<Market>("us");
+  const submittedMarketsRef = useRef<Market[]>([]);
   const submittedDisplayLimitRef = useRef<number>(DEFAULT_LIMIT);
 
   useEffect(() => {
@@ -77,10 +77,17 @@ export function W09Workspace() {
     trimmedDomain.includes("/") ||
     trimmedDomain.includes(" ") ||
     !trimmedDomain.includes(".");
-  const noMarket = !market;
+  const marketCount = markets.length;
+  const noMarket = marketCount === 0;
   const limitInRange = displayLimit >= MIN_LIMIT && displayLimit <= MAX_LIMIT;
-  const units = displayLimit * UNITS_PER_ROW;
+  const units = displayLimit * UNITS_PER_ROW * marketCount;
   const needsSecondaryAuth = units >= UNITS_PASSWORD_THRESHOLD;
+
+  function toggleMarket(value: Market) {
+    setMarkets((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
+    );
+  }
 
   useEffect(() => {
     return () => {
@@ -97,6 +104,7 @@ export function W09Workspace() {
       recordedRef.current = true;
       const next = appendHistory<W09ResultRow>(ENDPOINT_KEY, {
         label: submittedDomainRef.current || "(空域名)",
+        tooltip: `${submittedDomainRef.current} · ${submittedMarketsRef.current.map(m => m.toUpperCase()).join(",")}`,
         rows,
         summary: {
           rowsTotal: rows.length,
@@ -109,7 +117,7 @@ export function W09Workspace() {
         dataSource: DATA_SOURCE,
         params: {
           advertiserDomain: submittedDomainRef.current,
-          market: submittedMarketRef.current,
+          markets: submittedMarketsRef.current,
           displayLimit: submittedDisplayLimitRef.current,
         },
       });
@@ -130,7 +138,7 @@ export function W09Workspace() {
     const params = new URLSearchParams({
       endpoint: "W09",
       advertiser_domain: trimmedDomain,
-      market,
+      markets: markets.join(","),
       display_limit: String(displayLimit),
     });
     if (isMockUrl) params.set("mock", "1");
@@ -140,7 +148,7 @@ export function W09Workspace() {
     setHistoryMode(false);
     recordedRef.current = false;
     submittedDomainRef.current = trimmedDomain;
-    submittedMarketRef.current = market;
+    submittedMarketsRef.current = [...markets];
     submittedDisplayLimitRef.current = displayLimit;
     esRef.current?.close();
     const es = new EventSource(url);
@@ -351,10 +359,10 @@ export function W09Workspace() {
         </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-3">
-          {/* 市场单选 */}
+          {/* 市场多选 */}
           <div className="flex flex-wrap items-center gap-1.5">
             {MARKETS.map((m) => {
-              const checked = market === m.value;
+              const checked = markets.includes(m.value);
               return (
                 <label
                   key={m.value}
@@ -366,10 +374,9 @@ export function W09Workspace() {
                   ].join(" ")}
                 >
                   <input
-                    type="radio"
-                    name="w09-market"
+                    type="checkbox"
                     checked={checked}
-                    onChange={() => setMarket(m.value)}
+                    onChange={() => toggleMarket(m.value)}
                     className="h-3 w-3 accent-emerald-600"
                   />
                   <span>
@@ -382,13 +389,16 @@ export function W09Workspace() {
 
           {/* units 估算 + 单价提醒 */}
           <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-[11px] text-gray-500">
-            {displayLimit} 行 × 1 市场 · 预估 {units}u
+            {displayLimit} 行 × {marketCount} 市场 · 预估 {units}u
           </span>
           <span className="text-[11px] font-medium text-red-500">
             单价 100u/行 · 单次最大 1200u
           </span>
           {needsSecondaryAuth && (
             <span className="text-[11px] text-amber-600">需密码门</span>
+          )}
+          {noMarket && (
+            <span className="text-[11px] text-red-600">至少选 1 个市场</span>
           )}
           {!limitInRange && (
             <span className="text-[11px] text-red-600">

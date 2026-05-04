@@ -151,81 +151,89 @@ export async function GET(req: NextRequest) {
     const seedKeyword = (req.nextUrl.searchParams.get("seed_keyword") ?? "")
       .trim()
       .toLowerCase();
-    const marketRaw = (req.nextUrl.searchParams.get("market") ?? "")
-      .trim()
-      .toLowerCase() as W01Market;
+    const marketsRaw = req.nextUrl.searchParams.get("markets") ?? "";
+    const markets = marketsRaw
+      .split(",")
+      .map((s) => s.toLowerCase().trim())
+      .filter((s): s is W01Market => ALLOWED_MARKETS.includes(s as W01Market));
     const displayLimitRaw = req.nextUrl.searchParams.get("display_limit") ?? "25";
     const displayLimit = Math.max(1, Math.min(100, Number(displayLimitRaw) || 25));
 
     if (!seedKeyword) {
       return new Response("seed_keyword required\n", { status: 400 });
     }
-    if (!ALLOWED_MARKETS.includes(marketRaw)) {
-      return new Response("valid market required\n", { status: 400 });
+    if (markets.length === 0) {
+      return new Response("at least one market required\n", { status: 400 });
     }
 
     if (isMockEnabled(req)) {
       return mockEndpointStream(req, "W04");
     }
 
-    return realW04Stream(req, seedKeyword, marketRaw, displayLimit);
+    return realW04Stream(req, seedKeyword, markets, displayLimit);
   }
 
   if (ep === "W05") {
     const seedKeyword = (req.nextUrl.searchParams.get("seed_keyword") ?? "")
       .trim()
       .toLowerCase();
-    const marketRaw = (req.nextUrl.searchParams.get("market") ?? "")
-      .trim()
-      .toLowerCase() as W01Market;
+    const marketsRaw = req.nextUrl.searchParams.get("markets") ?? "";
+    const markets = marketsRaw
+      .split(",")
+      .map((s) => s.toLowerCase().trim())
+      .filter((s): s is W01Market => ALLOWED_MARKETS.includes(s as W01Market));
     const displayLimitRaw = req.nextUrl.searchParams.get("display_limit") ?? "25";
     const displayLimit = Math.max(1, Math.min(100, Number(displayLimitRaw) || 25));
 
     if (!seedKeyword) {
       return new Response("seed_keyword required\n", { status: 400 });
     }
-    if (!ALLOWED_MARKETS.includes(marketRaw)) {
-      return new Response("valid market required\n", { status: 400 });
+    if (markets.length === 0) {
+      return new Response("at least one market required\n", { status: 400 });
     }
 
     if (isMockEnabled(req)) {
       return mockEndpointStream(req, "W05");
     }
 
-    return realW05Stream(req, seedKeyword, marketRaw, displayLimit);
+    return realW05Stream(req, seedKeyword, markets, displayLimit);
   }
 
   if (ep === "W06") {
     const seedKeyword = (req.nextUrl.searchParams.get("seed_keyword") ?? "")
       .trim()
       .toLowerCase();
-    const marketRaw = (req.nextUrl.searchParams.get("market") ?? "")
-      .trim()
-      .toLowerCase() as W01Market;
+    const marketsRaw = req.nextUrl.searchParams.get("markets") ?? "";
+    const markets = marketsRaw
+      .split(",")
+      .map((s) => s.toLowerCase().trim())
+      .filter((s): s is W01Market => ALLOWED_MARKETS.includes(s as W01Market));
     const displayLimitRaw = req.nextUrl.searchParams.get("display_limit") ?? "25";
     const displayLimit = Math.max(1, Math.min(100, Number(displayLimitRaw) || 25));
 
     if (!seedKeyword) {
       return new Response("seed_keyword required\n", { status: 400 });
     }
-    if (!ALLOWED_MARKETS.includes(marketRaw)) {
-      return new Response("valid market required\n", { status: 400 });
+    if (markets.length === 0) {
+      return new Response("at least one market required\n", { status: 400 });
     }
 
     if (isMockEnabled(req)) {
       return mockEndpointStream(req, "W06");
     }
 
-    return realW06Stream(req, seedKeyword, marketRaw, displayLimit);
+    return realW06Stream(req, seedKeyword, markets, displayLimit);
   }
 
   if (ep === "W08") {
     const advertiserDomain = (req.nextUrl.searchParams.get("advertiser_domain") ?? "")
       .trim()
       .toLowerCase();
-    const marketRaw = (req.nextUrl.searchParams.get("market") ?? "")
-      .trim()
-      .toLowerCase() as W01Market;
+    const marketsRaw = req.nextUrl.searchParams.get("markets") ?? "";
+    const markets = marketsRaw
+      .split(",")
+      .map((s) => s.toLowerCase().trim())
+      .filter((s): s is W01Market => ALLOWED_MARKETS.includes(s as W01Market));
     const displayLimitRaw = req.nextUrl.searchParams.get("display_limit") ?? "25";
     const displayLimit = Math.max(1, Math.min(100, Number(displayLimitRaw) || 25));
 
@@ -235,24 +243,26 @@ export async function GET(req: NextRequest) {
     if (advertiserDomain.includes("/") || advertiserDomain.includes(" ") || !advertiserDomain.includes(".")) {
       return new Response("advertiser_domain must be a bare domain (e.g. amazon.com)\n", { status: 400 });
     }
-    if (!ALLOWED_MARKETS.includes(marketRaw)) {
-      return new Response("valid market required\n", { status: 400 });
+    if (markets.length === 0) {
+      return new Response("at least one market required\n", { status: 400 });
     }
 
     if (isMockEnabled(req)) {
       return mockEndpointStream(req, "W08");
     }
 
-    return realW08Stream(req, advertiserDomain, marketRaw, displayLimit);
+    return realW08Stream(req, advertiserDomain, markets, displayLimit);
   }
 
   if (ep === "W09") {
     const advertiserDomain = (req.nextUrl.searchParams.get("advertiser_domain") ?? "")
       .trim()
       .toLowerCase();
-    const marketRaw = (req.nextUrl.searchParams.get("market") ?? "")
-      .trim()
-      .toLowerCase() as W01Market;
+    const marketsRaw = req.nextUrl.searchParams.get("markets") ?? "";
+    const markets = marketsRaw
+      .split(",")
+      .map((s) => s.toLowerCase().trim())
+      .filter((s): s is W01Market => ALLOWED_MARKETS.includes(s as W01Market));
     const displayLimitRaw = req.nextUrl.searchParams.get("display_limit") ?? "12";
     const displayLimit = Math.max(1, Math.min(12, Number(displayLimitRaw) || 12));
 
@@ -262,15 +272,15 @@ export async function GET(req: NextRequest) {
     if (advertiserDomain.includes("/") || advertiserDomain.includes(" ") || !advertiserDomain.includes(".")) {
       return new Response("advertiser_domain must be a bare domain (e.g. amazon.com)\n", { status: 400 });
     }
-    if (!ALLOWED_MARKETS.includes(marketRaw)) {
-      return new Response("valid market required\n", { status: 400 });
+    if (markets.length === 0) {
+      return new Response("at least one market required\n", { status: 400 });
     }
 
     if (isMockEnabled(req)) {
       return mockEndpointStream(req, "W09");
     }
 
-    return realW09Stream(req, advertiserDomain, marketRaw, displayLimit);
+    return realW09Stream(req, advertiserDomain, markets, displayLimit);
   }
 
   if (ep === "W10") {
@@ -287,9 +297,11 @@ export async function GET(req: NextRequest) {
       .split(",")
       .map((s) => s.trim().toLowerCase())
       .filter(Boolean);
-    const marketRaw = (req.nextUrl.searchParams.get("market") ?? "")
-      .trim()
-      .toLowerCase() as W01Market;
+    const marketsRaw = req.nextUrl.searchParams.get("markets") ?? "";
+    const markets = marketsRaw
+      .split(",")
+      .map((s) => s.toLowerCase().trim())
+      .filter((s): s is W01Market => ALLOWED_MARKETS.includes(s as W01Market));
     const displayLimitRaw = req.nextUrl.searchParams.get("display_limit") ?? "25";
     const displayLimit = Math.max(1, Math.min(100, Number(displayLimitRaw) || 25));
 
@@ -311,24 +323,26 @@ export async function GET(req: NextRequest) {
     if (gapTypes.includes("untapped") && competitorDomains.length < 2) {
       return new Response("gap_type 'untapped' requires at least 2 competitor_domains\n", { status: 400 });
     }
-    if (!ALLOWED_MARKETS.includes(marketRaw)) {
-      return new Response("valid market required\n", { status: 400 });
+    if (markets.length === 0) {
+      return new Response("at least one market required\n", { status: 400 });
     }
 
     if (isMockEnabled(req)) {
       return mockEndpointStream(req, "W10");
     }
 
-    return realW10Stream(req, ourDomain, competitorDomains, gapTypes, marketRaw, displayLimit);
+    return realW10Stream(req, ourDomain, competitorDomains, gapTypes, markets, displayLimit);
   }
 
   if (ep === "W03") {
     const keyword = (req.nextUrl.searchParams.get("keyword") ?? "")
       .trim()
       .toLowerCase();
-    const marketRaw = (req.nextUrl.searchParams.get("market") ?? "")
-      .trim()
-      .toLowerCase() as W01Market;
+    const marketsRaw = req.nextUrl.searchParams.get("markets") ?? "";
+    const markets = marketsRaw
+      .split(",")
+      .map((s) => s.toLowerCase().trim())
+      .filter((s): s is W01Market => ALLOWED_MARKETS.includes(s as W01Market));
     const displayLimitRaw = req.nextUrl.searchParams.get("display_limit") ?? "3";
     const displayLimit = Math.max(1, Math.min(10, Number(displayLimitRaw) || 3));
     const seedKeyword =
@@ -338,15 +352,15 @@ export async function GET(req: NextRequest) {
     if (!keyword) {
       return new Response("keyword required\n", { status: 400 });
     }
-    if (!ALLOWED_MARKETS.includes(marketRaw)) {
-      return new Response("valid market required\n", { status: 400 });
+    if (markets.length === 0) {
+      return new Response("at least one market required\n", { status: 400 });
     }
 
     if (isMockEnabled(req)) {
       return mockEndpointStream(req, "W03");
     }
 
-    return realW03Stream(req, keyword, marketRaw, displayLimit, seedKeyword);
+    return realW03Stream(req, keyword, markets, displayLimit, seedKeyword);
   }
 
   const keywordsRaw = req.nextUrl.searchParams.get("keywords") ?? "";
@@ -807,13 +821,12 @@ function realW02Stream(
 function realW03Stream(
   req: NextRequest,
   keyword: string,
-  market: W01Market,
+  markets: W01Market[],
   displayLimit: number,
   seedKeyword: string | undefined
 ): Response {
   const encoder = new TextEncoder();
-  const batchId = buildW03BatchId(market);
-  const batches = [{ batchId, market }];
+  const batches = markets.map((m) => ({ batchId: buildW03BatchId(m), market: m }));
 
   const stream = new ReadableStream({
     async start(controller) {
@@ -850,31 +863,39 @@ function realW03Stream(
           mock: false,
           batches,
           keyword,
-          market,
+          markets_count: markets.length,
           display_limit: displayLimit,
         })}\n\n`
       );
 
-      const triggerErrors: Record<string, string> = {};
-      try {
-        const r = await triggerW03PhraseOrganic({
-          batchId,
-          keyword,
-          market,
-          seedKeyword,
-          displayLimit,
-        });
-        if (!r.webhookOk) {
-          triggerErrors[batchId] = `webhook ${r.webhookStatus}`;
-        }
-      } catch (err) {
-        triggerErrors[batchId] =
-          err instanceof Error ? err.message : String(err);
-      }
+      const triggerResults = await Promise.allSettled(
+        batches.map((b) =>
+          triggerW03PhraseOrganic({
+            batchId: b.batchId,
+            keyword,
+            market: b.market,
+            seedKeyword,
+            displayLimit,
+          })
+        )
+      );
 
       const finishedBatches = new Set<string>();
-      if (triggerErrors[batchId]) {
-        finishedBatches.add(batchId);
+      const triggerErrors: Record<string, string> = {};
+      triggerResults.forEach((r, i) => {
+        const batchId = batches[i].batchId;
+        if (r.status === "rejected") {
+          finishedBatches.add(batchId);
+          triggerErrors[batchId] =
+            r.reason instanceof Error ? r.reason.message : String(r.reason);
+        } else if (!r.value.webhookOk) {
+          finishedBatches.add(batchId);
+          triggerErrors[batchId] = `webhook ${r.value.webhookStatus}`;
+        }
+      });
+
+      for (const [batchId, errMsg] of Object.entries(triggerErrors)) {
+        const market = batches.find((b) => b.batchId === batchId)?.market ?? "";
         const evt = {
           version: "2025-01" as const,
           event_id: `${batchId}-trigger-failed`,
@@ -885,18 +906,14 @@ function realW03Stream(
           execution_id: "trigger",
           node_name: "Trigger Failed",
           node_status: "failed" as const,
-          payload: {
-            error: {
-              code: "WEBHOOK_TRIGGER_FAILED",
-              message: triggerErrors[batchId],
-              market,
-            },
-          },
+          payload: { error: { code: "WEBHOOK_TRIGGER_FAILED", message: errMsg, market } },
         };
         enqueue(`id: ${evt.event_id}\ndata: ${JSON.stringify(evt)}\n\n`);
       }
 
-      const lastSeqByBatch: Record<string, number> = { [batchId]: -1 };
+      const lastSeqByBatch: Record<string, number> = {};
+      for (const b of batches) lastSeqByBatch[b.batchId] = -1;
+
       const startedAt = Date.now();
       while (!cancelled && finishedBatches.size < batches.length) {
         if (Date.now() - startedAt > HARD_TIMEOUT_MS) {
@@ -970,15 +987,16 @@ function realW03Stream(
       }
 
       const allRows: W03StagingRow[] = [];
-      if (!triggerErrors[batchId]) {
+      for (const b of batches) {
+        if (triggerErrors[b.batchId]) continue;
         try {
-          const rows = await getW03StagingRowsByBatch(batchId);
+          const rows = await getW03StagingRowsByBatch(b.batchId);
           allRows.push(...rows);
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
           enqueue(
             `event: error\ndata: ${JSON.stringify({
-              error: `staging fetch failed for ${batchId}: ${msg}`,
+              error: `staging fetch failed for ${b.batchId}: ${msg}`,
             })}\n\n`
           );
         }
@@ -992,7 +1010,7 @@ function realW03Stream(
         event_id: `_done-${randomUUID().slice(0, 8)}`,
         seq: 99,
         ts: new Date().toISOString(),
-        batch_id: batchId,
+        batch_id: batches[0]?.batchId ?? "unknown",
         workflow_id: "W03",
         execution_id: "_done",
         node_name: "_done",
@@ -1001,7 +1019,7 @@ function realW03Stream(
           rows_new: allRows.length,
           total_batches: batches.length,
           failed_batches: Object.keys(triggerErrors).length,
-          units_actual: displayLimit * 10,
+          units_actual: displayLimit * 10 * markets.length,
         },
       };
       enqueue(`data: ${JSON.stringify(doneEvt)}\n\n`);
@@ -1221,12 +1239,11 @@ function realW07Stream(
 function realW04Stream(
   req: NextRequest,
   seedKeyword: string,
-  market: W01Market,
+  markets: W01Market[],
   displayLimit: number
 ): Response {
   const encoder = new TextEncoder();
-  const batchId = buildW04BatchId(market);
-  const batches = [{ batchId, market }];
+  const batches = markets.map((m) => ({ batchId: buildW04BatchId(m), market: m }));
 
   const stream = new ReadableStream({
     async start(controller) {
@@ -1263,30 +1280,38 @@ function realW04Stream(
           mock: false,
           batches,
           seed_keyword: seedKeyword,
-          market,
+          markets_count: markets.length,
           display_limit: displayLimit,
         })}\n\n`
       );
 
-      const triggerErrors: Record<string, string> = {};
-      try {
-        const r = await triggerW04PhraseQuestions({
-          batchId,
-          seedKeyword,
-          market,
-          displayLimit,
-        });
-        if (!r.webhookOk) {
-          triggerErrors[batchId] = `webhook ${r.webhookStatus}`;
-        }
-      } catch (err) {
-        triggerErrors[batchId] =
-          err instanceof Error ? err.message : String(err);
-      }
+      const triggerResults = await Promise.allSettled(
+        batches.map((b) =>
+          triggerW04PhraseQuestions({
+            batchId: b.batchId,
+            seedKeyword,
+            market: b.market,
+            displayLimit,
+          })
+        )
+      );
 
       const finishedBatches = new Set<string>();
-      if (triggerErrors[batchId]) {
-        finishedBatches.add(batchId);
+      const triggerErrors: Record<string, string> = {};
+      triggerResults.forEach((r, i) => {
+        const batchId = batches[i].batchId;
+        if (r.status === "rejected") {
+          finishedBatches.add(batchId);
+          triggerErrors[batchId] =
+            r.reason instanceof Error ? r.reason.message : String(r.reason);
+        } else if (!r.value.webhookOk) {
+          finishedBatches.add(batchId);
+          triggerErrors[batchId] = `webhook ${r.value.webhookStatus}`;
+        }
+      });
+
+      for (const [batchId, errMsg] of Object.entries(triggerErrors)) {
+        const market = batches.find((b) => b.batchId === batchId)?.market ?? "";
         const evt = {
           version: "2025-01" as const,
           event_id: `${batchId}-trigger-failed`,
@@ -1297,18 +1322,14 @@ function realW04Stream(
           execution_id: "trigger",
           node_name: "Trigger Failed",
           node_status: "failed" as const,
-          payload: {
-            error: {
-              code: "WEBHOOK_TRIGGER_FAILED",
-              message: triggerErrors[batchId],
-              market,
-            },
-          },
+          payload: { error: { code: "WEBHOOK_TRIGGER_FAILED", message: errMsg, market } },
         };
         enqueue(`id: ${evt.event_id}\ndata: ${JSON.stringify(evt)}\n\n`);
       }
 
-      const lastSeqByBatch: Record<string, number> = { [batchId]: -1 };
+      const lastSeqByBatch: Record<string, number> = {};
+      for (const b of batches) lastSeqByBatch[b.batchId] = -1;
+
       const startedAt = Date.now();
       while (!cancelled && finishedBatches.size < batches.length) {
         if (Date.now() - startedAt > HARD_TIMEOUT_MS) {
@@ -1382,15 +1403,16 @@ function realW04Stream(
       }
 
       const allRows: W04StagingRow[] = [];
-      if (!triggerErrors[batchId]) {
+      for (const b of batches) {
+        if (triggerErrors[b.batchId]) continue;
         try {
-          const rows = await getW04StagingRowsByBatch(batchId);
+          const rows = await getW04StagingRowsByBatch(b.batchId);
           allRows.push(...rows);
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
           enqueue(
             `event: error\ndata: ${JSON.stringify({
-              error: `staging fetch failed for ${batchId}: ${msg}`,
+              error: `staging fetch failed for ${b.batchId}: ${msg}`,
             })}\n\n`
           );
         }
@@ -1404,7 +1426,7 @@ function realW04Stream(
         event_id: `_done-${randomUUID().slice(0, 8)}`,
         seq: 99,
         ts: new Date().toISOString(),
-        batch_id: batchId,
+        batch_id: batches[0]?.batchId ?? "unknown",
         workflow_id: "W04",
         execution_id: "_done",
         node_name: "_done",
@@ -1413,7 +1435,7 @@ function realW04Stream(
           rows_new: allRows.length,
           total_batches: batches.length,
           failed_batches: Object.keys(triggerErrors).length,
-          units_actual: displayLimit * 40,
+          units_actual: displayLimit * 40 * markets.length,
         },
       };
       enqueue(`data: ${JSON.stringify(doneEvt)}\n\n`);
@@ -1429,12 +1451,11 @@ function realW04Stream(
 function realW05Stream(
   req: NextRequest,
   seedKeyword: string,
-  market: W01Market,
+  markets: W01Market[],
   displayLimit: number
 ): Response {
   const encoder = new TextEncoder();
-  const batchId = buildW05BatchId(market);
-  const batches = [{ batchId, market }];
+  const batches = markets.map((m) => ({ batchId: buildW05BatchId(m), market: m }));
 
   const stream = new ReadableStream({
     async start(controller) {
@@ -1471,30 +1492,38 @@ function realW05Stream(
           mock: false,
           batches,
           seed_keyword: seedKeyword,
-          market,
+          markets_count: markets.length,
           display_limit: displayLimit,
         })}\n\n`
       );
 
-      const triggerErrors: Record<string, string> = {};
-      try {
-        const r = await triggerW05PhraseRelated({
-          batchId,
-          seedKeyword,
-          market,
-          displayLimit,
-        });
-        if (!r.webhookOk) {
-          triggerErrors[batchId] = `webhook ${r.webhookStatus}`;
-        }
-      } catch (err) {
-        triggerErrors[batchId] =
-          err instanceof Error ? err.message : String(err);
-      }
+      const triggerResults = await Promise.allSettled(
+        batches.map((b) =>
+          triggerW05PhraseRelated({
+            batchId: b.batchId,
+            seedKeyword,
+            market: b.market,
+            displayLimit,
+          })
+        )
+      );
 
       const finishedBatches = new Set<string>();
-      if (triggerErrors[batchId]) {
-        finishedBatches.add(batchId);
+      const triggerErrors: Record<string, string> = {};
+      triggerResults.forEach((r, i) => {
+        const batchId = batches[i].batchId;
+        if (r.status === "rejected") {
+          finishedBatches.add(batchId);
+          triggerErrors[batchId] =
+            r.reason instanceof Error ? r.reason.message : String(r.reason);
+        } else if (!r.value.webhookOk) {
+          finishedBatches.add(batchId);
+          triggerErrors[batchId] = `webhook ${r.value.webhookStatus}`;
+        }
+      });
+
+      for (const [batchId, errMsg] of Object.entries(triggerErrors)) {
+        const market = batches.find((b) => b.batchId === batchId)?.market ?? "";
         const evt = {
           version: "2025-01" as const,
           event_id: `${batchId}-trigger-failed`,
@@ -1505,18 +1534,14 @@ function realW05Stream(
           execution_id: "trigger",
           node_name: "Trigger Failed",
           node_status: "failed" as const,
-          payload: {
-            error: {
-              code: "WEBHOOK_TRIGGER_FAILED",
-              message: triggerErrors[batchId],
-              market,
-            },
-          },
+          payload: { error: { code: "WEBHOOK_TRIGGER_FAILED", message: errMsg, market } },
         };
         enqueue(`id: ${evt.event_id}\ndata: ${JSON.stringify(evt)}\n\n`);
       }
 
-      const lastSeqByBatch: Record<string, number> = { [batchId]: -1 };
+      const lastSeqByBatch: Record<string, number> = {};
+      for (const b of batches) lastSeqByBatch[b.batchId] = -1;
+
       const startedAt = Date.now();
       while (!cancelled && finishedBatches.size < batches.length) {
         if (Date.now() - startedAt > HARD_TIMEOUT_MS) {
@@ -1590,15 +1615,16 @@ function realW05Stream(
       }
 
       const allRows: W05StagingRow[] = [];
-      if (!triggerErrors[batchId]) {
+      for (const b of batches) {
+        if (triggerErrors[b.batchId]) continue;
         try {
-          const rows = await getW05StagingRowsByBatch(batchId);
+          const rows = await getW05StagingRowsByBatch(b.batchId);
           allRows.push(...rows);
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
           enqueue(
             `event: error\ndata: ${JSON.stringify({
-              error: `staging fetch failed for ${batchId}: ${msg}`,
+              error: `staging fetch failed for ${b.batchId}: ${msg}`,
             })}\n\n`
           );
         }
@@ -1612,7 +1638,7 @@ function realW05Stream(
         event_id: `_done-${randomUUID().slice(0, 8)}`,
         seq: 99,
         ts: new Date().toISOString(),
-        batch_id: batchId,
+        batch_id: batches[0]?.batchId ?? "unknown",
         workflow_id: "W05",
         execution_id: "_done",
         node_name: "_done",
@@ -1621,7 +1647,7 @@ function realW05Stream(
           rows_new: allRows.length,
           total_batches: batches.length,
           failed_batches: Object.keys(triggerErrors).length,
-          units_actual: displayLimit * 40,
+          units_actual: displayLimit * 40 * markets.length,
         },
       };
       enqueue(`data: ${JSON.stringify(doneEvt)}\n\n`);
@@ -1637,12 +1663,11 @@ function realW05Stream(
 function realW06Stream(
   req: NextRequest,
   seedKeyword: string,
-  market: W01Market,
+  markets: W01Market[],
   displayLimit: number
 ): Response {
   const encoder = new TextEncoder();
-  const batchId = buildW06BatchId(market);
-  const batches = [{ batchId, market }];
+  const batches = markets.map((m) => ({ batchId: buildW06BatchId(m), market: m }));
 
   const stream = new ReadableStream({
     async start(controller) {
@@ -1679,30 +1704,38 @@ function realW06Stream(
           mock: false,
           batches,
           seed_keyword: seedKeyword,
-          market,
+          markets_count: markets.length,
           display_limit: displayLimit,
         })}\n\n`
       );
 
-      const triggerErrors: Record<string, string> = {};
-      try {
-        const r = await triggerW06PhraseFullsearch({
-          batchId,
-          seedKeyword,
-          market,
-          displayLimit,
-        });
-        if (!r.webhookOk) {
-          triggerErrors[batchId] = `webhook ${r.webhookStatus}`;
-        }
-      } catch (err) {
-        triggerErrors[batchId] =
-          err instanceof Error ? err.message : String(err);
-      }
+      const triggerResults = await Promise.allSettled(
+        batches.map((b) =>
+          triggerW06PhraseFullsearch({
+            batchId: b.batchId,
+            seedKeyword,
+            market: b.market,
+            displayLimit,
+          })
+        )
+      );
 
       const finishedBatches = new Set<string>();
-      if (triggerErrors[batchId]) {
-        finishedBatches.add(batchId);
+      const triggerErrors: Record<string, string> = {};
+      triggerResults.forEach((r, i) => {
+        const batchId = batches[i].batchId;
+        if (r.status === "rejected") {
+          finishedBatches.add(batchId);
+          triggerErrors[batchId] =
+            r.reason instanceof Error ? r.reason.message : String(r.reason);
+        } else if (!r.value.webhookOk) {
+          finishedBatches.add(batchId);
+          triggerErrors[batchId] = `webhook ${r.value.webhookStatus}`;
+        }
+      });
+
+      for (const [batchId, errMsg] of Object.entries(triggerErrors)) {
+        const market = batches.find((b) => b.batchId === batchId)?.market ?? "";
         const evt = {
           version: "2025-01" as const,
           event_id: `${batchId}-trigger-failed`,
@@ -1713,18 +1746,14 @@ function realW06Stream(
           execution_id: "trigger",
           node_name: "Trigger Failed",
           node_status: "failed" as const,
-          payload: {
-            error: {
-              code: "WEBHOOK_TRIGGER_FAILED",
-              message: triggerErrors[batchId],
-              market,
-            },
-          },
+          payload: { error: { code: "WEBHOOK_TRIGGER_FAILED", message: errMsg, market } },
         };
         enqueue(`id: ${evt.event_id}\ndata: ${JSON.stringify(evt)}\n\n`);
       }
 
-      const lastSeqByBatch: Record<string, number> = { [batchId]: -1 };
+      const lastSeqByBatch: Record<string, number> = {};
+      for (const b of batches) lastSeqByBatch[b.batchId] = -1;
+
       const startedAt = Date.now();
       while (!cancelled && finishedBatches.size < batches.length) {
         if (Date.now() - startedAt > HARD_TIMEOUT_MS) {
@@ -1798,15 +1827,16 @@ function realW06Stream(
       }
 
       const allRows: W06StagingRow[] = [];
-      if (!triggerErrors[batchId]) {
+      for (const b of batches) {
+        if (triggerErrors[b.batchId]) continue;
         try {
-          const rows = await getW06StagingRowsByBatch(batchId);
+          const rows = await getW06StagingRowsByBatch(b.batchId);
           allRows.push(...rows);
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
           enqueue(
             `event: error\ndata: ${JSON.stringify({
-              error: `staging fetch failed for ${batchId}: ${msg}`,
+              error: `staging fetch failed for ${b.batchId}: ${msg}`,
             })}\n\n`
           );
         }
@@ -1820,7 +1850,7 @@ function realW06Stream(
         event_id: `_done-${randomUUID().slice(0, 8)}`,
         seq: 99,
         ts: new Date().toISOString(),
-        batch_id: batchId,
+        batch_id: batches[0]?.batchId ?? "unknown",
         workflow_id: "W06",
         execution_id: "_done",
         node_name: "_done",
@@ -1829,7 +1859,7 @@ function realW06Stream(
           rows_new: allRows.length,
           total_batches: batches.length,
           failed_batches: Object.keys(triggerErrors).length,
-          units_actual: displayLimit * 20,
+          units_actual: displayLimit * 20 * markets.length,
         },
       };
       enqueue(`data: ${JSON.stringify(doneEvt)}\n\n`);
@@ -1845,12 +1875,11 @@ function realW06Stream(
 function realW08Stream(
   req: NextRequest,
   advertiserDomain: string,
-  market: W01Market,
+  markets: W01Market[],
   displayLimit: number
 ): Response {
   const encoder = new TextEncoder();
-  const batchId = buildW08BatchId(market);
-  const batches = [{ batchId, market }];
+  const batches = markets.map((m) => ({ batchId: buildW08BatchId(m), market: m }));
 
   const stream = new ReadableStream({
     async start(controller) {
@@ -1887,30 +1916,38 @@ function realW08Stream(
           mock: false,
           batches,
           advertiser_domain: advertiserDomain,
-          market,
+          markets_count: markets.length,
           display_limit: displayLimit,
         })}\n\n`
       );
 
-      const triggerErrors: Record<string, string> = {};
-      try {
-        const r = await triggerW08DomainAdwords({
-          batchId,
-          advertiserDomain,
-          market,
-          displayLimit,
-        });
-        if (!r.webhookOk) {
-          triggerErrors[batchId] = `webhook ${r.webhookStatus}`;
-        }
-      } catch (err) {
-        triggerErrors[batchId] =
-          err instanceof Error ? err.message : String(err);
-      }
+      const triggerResults = await Promise.allSettled(
+        batches.map((b) =>
+          triggerW08DomainAdwords({
+            batchId: b.batchId,
+            advertiserDomain,
+            market: b.market,
+            displayLimit,
+          })
+        )
+      );
 
       const finishedBatches = new Set<string>();
-      if (triggerErrors[batchId]) {
-        finishedBatches.add(batchId);
+      const triggerErrors: Record<string, string> = {};
+      triggerResults.forEach((r, i) => {
+        const batchId = batches[i].batchId;
+        if (r.status === "rejected") {
+          finishedBatches.add(batchId);
+          triggerErrors[batchId] =
+            r.reason instanceof Error ? r.reason.message : String(r.reason);
+        } else if (!r.value.webhookOk) {
+          finishedBatches.add(batchId);
+          triggerErrors[batchId] = `webhook ${r.value.webhookStatus}`;
+        }
+      });
+
+      for (const [batchId, errMsg] of Object.entries(triggerErrors)) {
+        const market = batches.find((b) => b.batchId === batchId)?.market ?? "";
         const evt = {
           version: "2025-01" as const,
           event_id: `${batchId}-trigger-failed`,
@@ -1921,18 +1958,14 @@ function realW08Stream(
           execution_id: "trigger",
           node_name: "Trigger Failed",
           node_status: "failed" as const,
-          payload: {
-            error: {
-              code: "WEBHOOK_TRIGGER_FAILED",
-              message: triggerErrors[batchId],
-              market,
-            },
-          },
+          payload: { error: { code: "WEBHOOK_TRIGGER_FAILED", message: errMsg, market } },
         };
         enqueue(`id: ${evt.event_id}\ndata: ${JSON.stringify(evt)}\n\n`);
       }
 
-      const lastSeqByBatch: Record<string, number> = { [batchId]: -1 };
+      const lastSeqByBatch: Record<string, number> = {};
+      for (const b of batches) lastSeqByBatch[b.batchId] = -1;
+
       const startedAt = Date.now();
       while (!cancelled && finishedBatches.size < batches.length) {
         if (Date.now() - startedAt > HARD_TIMEOUT_MS) {
@@ -2006,15 +2039,16 @@ function realW08Stream(
       }
 
       const allRows: W08StagingRow[] = [];
-      if (!triggerErrors[batchId]) {
+      for (const b of batches) {
+        if (triggerErrors[b.batchId]) continue;
         try {
-          const rows = await getW08StagingRowsByBatch(batchId);
+          const rows = await getW08StagingRowsByBatch(b.batchId);
           allRows.push(...rows);
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
           enqueue(
             `event: error\ndata: ${JSON.stringify({
-              error: `staging fetch failed for ${batchId}: ${msg}`,
+              error: `staging fetch failed for ${b.batchId}: ${msg}`,
             })}\n\n`
           );
         }
@@ -2028,7 +2062,7 @@ function realW08Stream(
         event_id: `_done-${randomUUID().slice(0, 8)}`,
         seq: 99,
         ts: new Date().toISOString(),
-        batch_id: batchId,
+        batch_id: batches[0]?.batchId ?? "unknown",
         workflow_id: "W08",
         execution_id: "_done",
         node_name: "_done",
@@ -2037,7 +2071,7 @@ function realW08Stream(
           rows_new: allRows.length,
           total_batches: batches.length,
           failed_batches: Object.keys(triggerErrors).length,
-          units_actual: displayLimit * 20,
+          units_actual: displayLimit * 20 * markets.length,
         },
       };
       enqueue(`data: ${JSON.stringify(doneEvt)}\n\n`);
@@ -2053,12 +2087,11 @@ function realW08Stream(
 function realW09Stream(
   req: NextRequest,
   advertiserDomain: string,
-  market: W01Market,
+  markets: W01Market[],
   displayLimit: number
 ): Response {
   const encoder = new TextEncoder();
-  const batchId = buildW09BatchId(market);
-  const batches = [{ batchId, market }];
+  const batches = markets.map((m) => ({ batchId: buildW09BatchId(m), market: m }));
 
   const stream = new ReadableStream({
     async start(controller) {
@@ -2095,30 +2128,38 @@ function realW09Stream(
           mock: false,
           batches,
           advertiser_domain: advertiserDomain,
-          market,
+          markets_count: markets.length,
           display_limit: displayLimit,
         })}\n\n`
       );
 
-      const triggerErrors: Record<string, string> = {};
-      try {
-        const r = await triggerW09DomainAdwordsHistorical({
-          batchId,
-          advertiserDomain,
-          market,
-          displayLimit,
-        });
-        if (!r.webhookOk) {
-          triggerErrors[batchId] = `webhook ${r.webhookStatus}`;
-        }
-      } catch (err) {
-        triggerErrors[batchId] =
-          err instanceof Error ? err.message : String(err);
-      }
+      const triggerResults = await Promise.allSettled(
+        batches.map((b) =>
+          triggerW09DomainAdwordsHistorical({
+            batchId: b.batchId,
+            advertiserDomain,
+            market: b.market,
+            displayLimit,
+          })
+        )
+      );
 
       const finishedBatches = new Set<string>();
-      if (triggerErrors[batchId]) {
-        finishedBatches.add(batchId);
+      const triggerErrors: Record<string, string> = {};
+      triggerResults.forEach((r, i) => {
+        const batchId = batches[i].batchId;
+        if (r.status === "rejected") {
+          finishedBatches.add(batchId);
+          triggerErrors[batchId] =
+            r.reason instanceof Error ? r.reason.message : String(r.reason);
+        } else if (!r.value.webhookOk) {
+          finishedBatches.add(batchId);
+          triggerErrors[batchId] = `webhook ${r.value.webhookStatus}`;
+        }
+      });
+
+      for (const [batchId, errMsg] of Object.entries(triggerErrors)) {
+        const market = batches.find((b) => b.batchId === batchId)?.market ?? "";
         const evt = {
           version: "2025-01" as const,
           event_id: `${batchId}-trigger-failed`,
@@ -2129,18 +2170,14 @@ function realW09Stream(
           execution_id: "trigger",
           node_name: "Trigger Failed",
           node_status: "failed" as const,
-          payload: {
-            error: {
-              code: "WEBHOOK_TRIGGER_FAILED",
-              message: triggerErrors[batchId],
-              market,
-            },
-          },
+          payload: { error: { code: "WEBHOOK_TRIGGER_FAILED", message: errMsg, market } },
         };
         enqueue(`id: ${evt.event_id}\ndata: ${JSON.stringify(evt)}\n\n`);
       }
 
-      const lastSeqByBatch: Record<string, number> = { [batchId]: -1 };
+      const lastSeqByBatch: Record<string, number> = {};
+      for (const b of batches) lastSeqByBatch[b.batchId] = -1;
+
       const startedAt = Date.now();
       while (!cancelled && finishedBatches.size < batches.length) {
         if (Date.now() - startedAt > HARD_TIMEOUT_MS) {
@@ -2214,15 +2251,16 @@ function realW09Stream(
       }
 
       const allRows: W09StagingRow[] = [];
-      if (!triggerErrors[batchId]) {
+      for (const b of batches) {
+        if (triggerErrors[b.batchId]) continue;
         try {
-          const rows = await getW09StagingRowsByBatch(batchId);
+          const rows = await getW09StagingRowsByBatch(b.batchId);
           allRows.push(...rows);
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
           enqueue(
             `event: error\ndata: ${JSON.stringify({
-              error: `staging fetch failed for ${batchId}: ${msg}`,
+              error: `staging fetch failed for ${b.batchId}: ${msg}`,
             })}\n\n`
           );
         }
@@ -2236,7 +2274,7 @@ function realW09Stream(
         event_id: `_done-${randomUUID().slice(0, 8)}`,
         seq: 99,
         ts: new Date().toISOString(),
-        batch_id: batchId,
+        batch_id: batches[0]?.batchId ?? "unknown",
         workflow_id: "W09",
         execution_id: "_done",
         node_name: "_done",
@@ -2245,7 +2283,7 @@ function realW09Stream(
           rows_new: allRows.length,
           total_batches: batches.length,
           failed_batches: Object.keys(triggerErrors).length,
-          units_actual: displayLimit * 100,
+          units_actual: displayLimit * 100 * markets.length,
         },
       };
       enqueue(`data: ${JSON.stringify(doneEvt)}\n\n`);
@@ -2263,12 +2301,11 @@ function realW10Stream(
   ourDomain: string,
   competitorDomains: string[],
   gapTypes: string[],
-  market: W01Market,
+  markets: W01Market[],
   displayLimit: number
 ): Response {
   const encoder = new TextEncoder();
-  const batchId = buildW10BatchId(market);
-  const batches = [{ batchId, market }];
+  const batches = markets.map((m) => ({ batchId: buildW10BatchId(m), market: m }));
 
   const stream = new ReadableStream({
     async start(controller) {
@@ -2307,32 +2344,40 @@ function realW10Stream(
           our_domain: ourDomain,
           competitor_domains: competitorDomains,
           gap_types: gapTypes,
-          market,
+          markets_count: markets.length,
           display_limit: displayLimit,
         })}\n\n`
       );
 
-      const triggerErrors: Record<string, string> = {};
-      try {
-        const r = await triggerW10DomainDomains({
-          batchId,
-          ourDomain,
-          competitorDomains,
-          gapTypes,
-          market,
-          displayLimit,
-        });
-        if (!r.webhookOk) {
-          triggerErrors[batchId] = `webhook ${r.webhookStatus}`;
-        }
-      } catch (err) {
-        triggerErrors[batchId] =
-          err instanceof Error ? err.message : String(err);
-      }
+      const triggerResults = await Promise.allSettled(
+        batches.map((b) =>
+          triggerW10DomainDomains({
+            batchId: b.batchId,
+            ourDomain,
+            competitorDomains,
+            gapTypes,
+            market: b.market,
+            displayLimit,
+          })
+        )
+      );
 
       const finishedBatches = new Set<string>();
-      if (triggerErrors[batchId]) {
-        finishedBatches.add(batchId);
+      const triggerErrors: Record<string, string> = {};
+      triggerResults.forEach((r, i) => {
+        const batchId = batches[i].batchId;
+        if (r.status === "rejected") {
+          finishedBatches.add(batchId);
+          triggerErrors[batchId] =
+            r.reason instanceof Error ? r.reason.message : String(r.reason);
+        } else if (!r.value.webhookOk) {
+          finishedBatches.add(batchId);
+          triggerErrors[batchId] = `webhook ${r.value.webhookStatus}`;
+        }
+      });
+
+      for (const [batchId, errMsg] of Object.entries(triggerErrors)) {
+        const market = batches.find((b) => b.batchId === batchId)?.market ?? "";
         const evt = {
           version: "2025-01" as const,
           event_id: `${batchId}-trigger-failed`,
@@ -2343,18 +2388,14 @@ function realW10Stream(
           execution_id: "trigger",
           node_name: "Trigger Failed",
           node_status: "failed" as const,
-          payload: {
-            error: {
-              code: "WEBHOOK_TRIGGER_FAILED",
-              message: triggerErrors[batchId],
-              market,
-            },
-          },
+          payload: { error: { code: "WEBHOOK_TRIGGER_FAILED", message: errMsg, market } },
         };
         enqueue(`id: ${evt.event_id}\ndata: ${JSON.stringify(evt)}\n\n`);
       }
 
-      const lastSeqByBatch: Record<string, number> = { [batchId]: -1 };
+      const lastSeqByBatch: Record<string, number> = {};
+      for (const b of batches) lastSeqByBatch[b.batchId] = -1;
+
       const startedAt = Date.now();
       while (!cancelled && finishedBatches.size < batches.length) {
         if (Date.now() - startedAt > HARD_TIMEOUT_MS) {
@@ -2428,15 +2469,16 @@ function realW10Stream(
       }
 
       const allRows: W10StagingRow[] = [];
-      if (!triggerErrors[batchId]) {
+      for (const b of batches) {
+        if (triggerErrors[b.batchId]) continue;
         try {
-          const rows = await getW10StagingRowsByBatch(batchId);
+          const rows = await getW10StagingRowsByBatch(b.batchId);
           allRows.push(...rows);
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
           enqueue(
             `event: error\ndata: ${JSON.stringify({
-              error: `staging fetch failed for ${batchId}: ${msg}`,
+              error: `staging fetch failed for ${b.batchId}: ${msg}`,
             })}\n\n`
           );
         }
@@ -2451,7 +2493,7 @@ function realW10Stream(
         event_id: `_done-${randomUUID().slice(0, 8)}`,
         seq: 99,
         ts: new Date().toISOString(),
-        batch_id: batchId,
+        batch_id: batches[0]?.batchId ?? "unknown",
         workflow_id: "W10",
         execution_id: "_done",
         node_name: "_done",
@@ -2460,7 +2502,7 @@ function realW10Stream(
           rows_new: allRows.length,
           total_batches: batches.length,
           failed_batches: Object.keys(triggerErrors).length,
-          units_actual: competitorDomains.length * nonWeakCount * displayLimit * 80 + 200,
+          units_actual: competitorDomains.length * nonWeakCount * displayLimit * 80 * markets.length + 200,
         },
       };
       enqueue(`data: ${JSON.stringify(doneEvt)}\n\n`);
@@ -2529,6 +2571,14 @@ function mockEndpointStream(req: NextRequest, endpoint: string) {
   const workflowId = `mock-${endpoint.toLowerCase()}`;
   const baseTs = Date.now();
 
+  // Parse markets for multi-market mock row generation
+  const mockMarketsRaw = req.nextUrl.searchParams.get("markets") ?? "";
+  const mockMarkets = mockMarketsRaw
+    .split(",")
+    .map((s) => s.toLowerCase().trim())
+    .filter((s): s is W01Market => ALLOWED_MARKETS.includes(s as W01Market));
+  const mockMarketList = mockMarkets.length > 0 ? mockMarkets : (["us"] as W01Market[]);
+
   const rawEvents: Array<Record<string, unknown>> = [
     {
       version: "2025-01", event_id: `${executionId}-0-trigger`, seq: 0,
@@ -2593,11 +2643,11 @@ function mockEndpointStream(req: NextRequest, endpoint: string) {
             const ep = endpoint.toUpperCase();
             const mockRows =
               ep === "W03"
-                ? [
-                    { keyword: "zikr ring", market: "us", position: 1, position_type: "Organic", domain: "weslamic.com",          url: "https://weslamic.com/products/zikr-ring",                  keyword_serp_features_codes: "1,2,14",  domain_serp_features_codes: "1,14"  },
-                    { keyword: "zikr ring", market: "us", position: 2, position_type: "Organic", domain: "amazon.com",            url: "https://www.amazon.com/zikr-ring",                         keyword_serp_features_codes: "1,2,14",  domain_serp_features_codes: "1,2"   },
-                    { keyword: "zikr ring", market: "us", position: 3, position_type: "Organic", domain: "muslimfootprints.com",  url: "https://muslimfootprints.com/blog/best-zikr-ring",         keyword_serp_features_codes: "1,2,14",  domain_serp_features_codes: ""      },
-                  ]
+                ? mockMarketList.flatMap((mkt) => [
+                    { keyword: "zikr ring", market: mkt, position: 1, position_type: "Organic", domain: "weslamic.com",          url: "https://weslamic.com/products/zikr-ring",                  keyword_serp_features_codes: "1,2,14",  domain_serp_features_codes: "1,14"  },
+                    { keyword: "zikr ring", market: mkt, position: 2, position_type: "Organic", domain: "amazon.com",            url: "https://www.amazon.com/zikr-ring",                         keyword_serp_features_codes: "1,2,14",  domain_serp_features_codes: "1,2"   },
+                    { keyword: "zikr ring", market: mkt, position: 3, position_type: "Organic", domain: "muslimfootprints.com",  url: "https://muslimfootprints.com/blog/best-zikr-ring",         keyword_serp_features_codes: "1,2,14",  domain_serp_features_codes: ""      },
+                  ])
               : ep === "W07"
                 ? [
                     { keyword: "zikr ring", market: "us", search_volume: 4400,  keyword_difficulty: 28, cpc: 0.92, competition: 0.51, number_of_results: 412000, trends: null, intent: "Commercial" },
@@ -2613,83 +2663,83 @@ function mockEndpointStream(req: NextRequest, endpoint: string) {
                     { keyword: "zikr ring", market: "tr", search_volume: 210,   keyword_difficulty: 12, cpc: 0.24, competition: 0.16, number_of_results: 28000,  trends: null, intent: "Commercial" },
                   ]
               : ep === "W04"
-                ? [
-                    { keyword: "what is a zikr ring",            market: "us", search_volume: 2400,  keyword_difficulty: 18, cpc: 0.42, competition: 0.21, number_of_results: 134000,  trends: "0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.0,1.0,0.9,0.9,1.0", intent: "Informational", question_type: "what" },
-                    { keyword: "how to use zikr ring",           market: "us", search_volume: 1900,  keyword_difficulty: 22, cpc: 0.55, competition: 0.34, number_of_results: 98000,   trends: "0.5,0.6,0.6,0.7,0.8,0.9,0.9,1.0,1.0,1.0,1.0,1.0", intent: "Informational", question_type: "how" },
-                    { keyword: "why muslims wear zikr ring",     market: "us", search_volume: 880,   keyword_difficulty: 14, cpc: 0.28, competition: 0.15, number_of_results: 56000,   trends: "0.6,0.6,0.7,0.7,0.8,0.9,0.9,0.9,1.0,1.0,1.0,1.0", intent: "Informational", question_type: "why" },
-                    { keyword: "where to buy zikr ring",         market: "us", search_volume: 1600,  keyword_difficulty: 31, cpc: 0.94, competition: 0.62, number_of_results: 211000,  trends: "0.4,0.5,0.5,0.6,0.7,0.8,0.9,1.0,1.0,1.0,1.0,1.0", intent: "Commercial",    question_type: "where" },
-                    { keyword: "when to use zikr ring",          market: "us", search_volume: 320,   keyword_difficulty: 12, cpc: 0.21, competition: 0.10, number_of_results: 24000,   trends: "0.5,0.6,0.6,0.7,0.7,0.8,0.9,0.9,1.0,1.0,1.0,1.0", intent: "Informational", question_type: "when" },
-                    { keyword: "who invented zikr ring",         market: "us", search_volume: 210,   keyword_difficulty: 9,  cpc: 0.15, competition: 0.08, number_of_results: 12000,   trends: "0.6,0.6,0.7,0.7,0.8,0.8,0.9,0.9,1.0,1.0,1.0,1.0", intent: "Informational", question_type: "who" },
-                    { keyword: "which zikr ring is best",        market: "us", search_volume: 590,   keyword_difficulty: 28, cpc: 0.78, competition: 0.51, number_of_results: 87000,   trends: "0.5,0.6,0.7,0.7,0.8,0.9,0.9,1.0,1.0,1.0,1.0,1.0", intent: "Commercial",    question_type: "which" },
-                    { keyword: "can zikr ring be wet",           market: "us", search_volume: 480,   keyword_difficulty: 11, cpc: 0.18, competition: 0.09, number_of_results: 31000,   trends: "0.6,0.7,0.7,0.8,0.8,0.9,0.9,1.0,1.0,1.0,1.0,1.0", intent: "Informational", question_type: "can" },
-                    { keyword: "is zikr ring waterproof",        market: "us", search_volume: 720,   keyword_difficulty: 19, cpc: 0.31, competition: 0.18, number_of_results: 47000,   trends: "0.5,0.6,0.7,0.8,0.8,0.9,0.9,1.0,1.0,1.0,1.0,1.0", intent: "Informational", question_type: "is" },
-                    { keyword: "are zikr rings halal",           market: "us", search_volume: 390,   keyword_difficulty: 7,  cpc: 0.12, competition: 0.05, number_of_results: 19000,   trends: "0.7,0.7,0.8,0.8,0.9,0.9,1.0,1.0,1.0,1.0,1.0,1.0", intent: "Informational", question_type: "are" },
-                    { keyword: "do zikr rings need charging",    market: "us", search_volume: 260,   keyword_difficulty: 16, cpc: 0.27, competition: 0.14, number_of_results: 22000,   trends: "0.5,0.6,0.6,0.7,0.7,0.8,0.9,0.9,1.0,1.0,1.0,1.0", intent: "Informational", question_type: "do" },
-                    { keyword: "does zikr ring vibrate",         market: "us", search_volume: 170,   keyword_difficulty: 10, cpc: 0.19, competition: 0.07, number_of_results: 15000,   trends: "0.6,0.6,0.7,0.7,0.8,0.8,0.9,0.9,1.0,1.0,1.0,1.0", intent: "Informational", question_type: "does" },
-                  ]
+                ? mockMarketList.flatMap((mkt) => [
+                    { keyword: "what is a zikr ring",            market: mkt, search_volume: 2400,  keyword_difficulty: 18, cpc: 0.42, competition: 0.21, number_of_results: 134000,  trends: "0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.0,1.0,0.9,0.9,1.0", intent: "Informational", question_type: "what" },
+                    { keyword: "how to use zikr ring",           market: mkt, search_volume: 1900,  keyword_difficulty: 22, cpc: 0.55, competition: 0.34, number_of_results: 98000,   trends: "0.5,0.6,0.6,0.7,0.8,0.9,0.9,1.0,1.0,1.0,1.0,1.0", intent: "Informational", question_type: "how" },
+                    { keyword: "why muslims wear zikr ring",     market: mkt, search_volume: 880,   keyword_difficulty: 14, cpc: 0.28, competition: 0.15, number_of_results: 56000,   trends: "0.6,0.6,0.7,0.7,0.8,0.9,0.9,0.9,1.0,1.0,1.0,1.0", intent: "Informational", question_type: "why" },
+                    { keyword: "where to buy zikr ring",         market: mkt, search_volume: 1600,  keyword_difficulty: 31, cpc: 0.94, competition: 0.62, number_of_results: 211000,  trends: "0.4,0.5,0.5,0.6,0.7,0.8,0.9,1.0,1.0,1.0,1.0,1.0", intent: "Commercial",    question_type: "where" },
+                    { keyword: "when to use zikr ring",          market: mkt, search_volume: 320,   keyword_difficulty: 12, cpc: 0.21, competition: 0.10, number_of_results: 24000,   trends: "0.5,0.6,0.6,0.7,0.7,0.8,0.9,0.9,1.0,1.0,1.0,1.0", intent: "Informational", question_type: "when" },
+                    { keyword: "who invented zikr ring",         market: mkt, search_volume: 210,   keyword_difficulty: 9,  cpc: 0.15, competition: 0.08, number_of_results: 12000,   trends: "0.6,0.6,0.7,0.7,0.8,0.8,0.9,0.9,1.0,1.0,1.0,1.0", intent: "Informational", question_type: "who" },
+                    { keyword: "which zikr ring is best",        market: mkt, search_volume: 590,   keyword_difficulty: 28, cpc: 0.78, competition: 0.51, number_of_results: 87000,   trends: "0.5,0.6,0.7,0.7,0.8,0.9,0.9,1.0,1.0,1.0,1.0,1.0", intent: "Commercial",    question_type: "which" },
+                    { keyword: "can zikr ring be wet",           market: mkt, search_volume: 480,   keyword_difficulty: 11, cpc: 0.18, competition: 0.09, number_of_results: 31000,   trends: "0.6,0.7,0.7,0.8,0.8,0.9,0.9,1.0,1.0,1.0,1.0,1.0", intent: "Informational", question_type: "can" },
+                    { keyword: "is zikr ring waterproof",        market: mkt, search_volume: 720,   keyword_difficulty: 19, cpc: 0.31, competition: 0.18, number_of_results: 47000,   trends: "0.5,0.6,0.7,0.8,0.8,0.9,0.9,1.0,1.0,1.0,1.0,1.0", intent: "Informational", question_type: "is" },
+                    { keyword: "are zikr rings halal",           market: mkt, search_volume: 390,   keyword_difficulty: 7,  cpc: 0.12, competition: 0.05, number_of_results: 19000,   trends: "0.7,0.7,0.8,0.8,0.9,0.9,1.0,1.0,1.0,1.0,1.0,1.0", intent: "Informational", question_type: "are" },
+                    { keyword: "do zikr rings need charging",    market: mkt, search_volume: 260,   keyword_difficulty: 16, cpc: 0.27, competition: 0.14, number_of_results: 22000,   trends: "0.5,0.6,0.6,0.7,0.7,0.8,0.9,0.9,1.0,1.0,1.0,1.0", intent: "Informational", question_type: "do" },
+                    { keyword: "does zikr ring vibrate",         market: mkt, search_volume: 170,   keyword_difficulty: 10, cpc: 0.19, competition: 0.07, number_of_results: 15000,   trends: "0.6,0.6,0.7,0.7,0.8,0.8,0.9,0.9,1.0,1.0,1.0,1.0", intent: "Informational", question_type: "does" },
+                  ])
               : ep === "W05"
-                ? [
-                    { keyword: "muslim digital tasbih",      market: "us", search_volume: 8100,  keyword_difficulty: 22, cpc: 0.88, competition: 0.45, number_of_results: 312000,  trends: "0.5,0.6,0.7,0.8,0.9,1.0,1.0,1.0,1.0,1.0,1.0,1.0", intent: "Commercial",    relevance_rate: 0.95 },
-                    { keyword: "smart prayer counter",       market: "us", search_volume: 6600,  keyword_difficulty: 19, cpc: 0.72, competition: 0.38, number_of_results: 241000,  trends: "0.4,0.5,0.6,0.7,0.8,0.9,0.9,1.0,1.0,1.0,1.0,1.0", intent: "Commercial",    relevance_rate: 0.88 },
-                    { keyword: "electronic dhikr device",   market: "us", search_volume: 4400,  keyword_difficulty: 17, cpc: 0.61, competition: 0.31, number_of_results: 178000,  trends: "0.5,0.5,0.6,0.7,0.8,0.9,0.9,0.9,1.0,1.0,1.0,1.0", intent: "Commercial",    relevance_rate: 0.79 },
-                    { keyword: "wireless tasbih ring",       market: "us", search_volume: 2900,  keyword_difficulty: 14, cpc: 0.54, competition: 0.27, number_of_results: 132000,  trends: "0.4,0.5,0.6,0.6,0.7,0.8,0.9,1.0,1.0,1.0,1.0,1.0", intent: "Commercial",    relevance_rate: 0.71 },
-                    { keyword: "smart islamic ring",         market: "us", search_volume: 1900,  keyword_difficulty: 12, cpc: 0.47, competition: 0.22, number_of_results: 97000,   trends: "0.5,0.6,0.6,0.7,0.8,0.9,0.9,1.0,1.0,1.0,1.0,1.0", intent: "Commercial",    relevance_rate: 0.62 },
-                    { keyword: "muslim wearable",            market: "us", search_volume: 1300,  keyword_difficulty: 28, cpc: 0.83, competition: 0.51, number_of_results: 214000,  trends: "0.6,0.7,0.7,0.8,0.9,1.0,1.0,1.0,1.0,1.0,1.0,1.0", intent: "Informational", relevance_rate: 0.55 },
-                    { keyword: "digital prayer beads",       market: "us", search_volume: 880,   keyword_difficulty: 9,  cpc: 0.31, competition: 0.16, number_of_results: 58000,   trends: "0.4,0.5,0.5,0.6,0.7,0.8,0.8,0.9,1.0,1.0,1.0,1.0", intent: "Commercial",    relevance_rate: 0.48 },
-                    { keyword: "islamic smart jewelry",      market: "us", search_volume: 480,   keyword_difficulty: 6,  cpc: 0.24, competition: 0.11, number_of_results: 34000,   trends: "0.5,0.5,0.6,0.6,0.7,0.8,0.8,0.9,0.9,1.0,1.0,1.0", intent: "Commercial",    relevance_rate: 0.40 },
-                  ]
+                ? mockMarketList.flatMap((mkt) => [
+                    { keyword: "muslim digital tasbih",      market: mkt, search_volume: 8100,  keyword_difficulty: 22, cpc: 0.88, competition: 0.45, number_of_results: 312000,  trends: "0.5,0.6,0.7,0.8,0.9,1.0,1.0,1.0,1.0,1.0,1.0,1.0", intent: "Commercial",    relevance_rate: 0.95 },
+                    { keyword: "smart prayer counter",       market: mkt, search_volume: 6600,  keyword_difficulty: 19, cpc: 0.72, competition: 0.38, number_of_results: 241000,  trends: "0.4,0.5,0.6,0.7,0.8,0.9,0.9,1.0,1.0,1.0,1.0,1.0", intent: "Commercial",    relevance_rate: 0.88 },
+                    { keyword: "electronic dhikr device",   market: mkt, search_volume: 4400,  keyword_difficulty: 17, cpc: 0.61, competition: 0.31, number_of_results: 178000,  trends: "0.5,0.5,0.6,0.7,0.8,0.9,0.9,0.9,1.0,1.0,1.0,1.0", intent: "Commercial",    relevance_rate: 0.79 },
+                    { keyword: "wireless tasbih ring",       market: mkt, search_volume: 2900,  keyword_difficulty: 14, cpc: 0.54, competition: 0.27, number_of_results: 132000,  trends: "0.4,0.5,0.6,0.6,0.7,0.8,0.9,1.0,1.0,1.0,1.0,1.0", intent: "Commercial",    relevance_rate: 0.71 },
+                    { keyword: "smart islamic ring",         market: mkt, search_volume: 1900,  keyword_difficulty: 12, cpc: 0.47, competition: 0.22, number_of_results: 97000,   trends: "0.5,0.6,0.6,0.7,0.8,0.9,0.9,1.0,1.0,1.0,1.0,1.0", intent: "Commercial",    relevance_rate: 0.62 },
+                    { keyword: "muslim wearable",            market: mkt, search_volume: 1300,  keyword_difficulty: 28, cpc: 0.83, competition: 0.51, number_of_results: 214000,  trends: "0.6,0.7,0.7,0.8,0.9,1.0,1.0,1.0,1.0,1.0,1.0,1.0", intent: "Informational", relevance_rate: 0.55 },
+                    { keyword: "digital prayer beads",       market: mkt, search_volume: 880,   keyword_difficulty: 9,  cpc: 0.31, competition: 0.16, number_of_results: 58000,   trends: "0.4,0.5,0.5,0.6,0.7,0.8,0.8,0.9,1.0,1.0,1.0,1.0", intent: "Commercial",    relevance_rate: 0.48 },
+                    { keyword: "islamic smart jewelry",      market: mkt, search_volume: 480,   keyword_difficulty: 6,  cpc: 0.24, competition: 0.11, number_of_results: 34000,   trends: "0.5,0.5,0.6,0.6,0.7,0.8,0.8,0.9,0.9,1.0,1.0,1.0", intent: "Commercial",    relevance_rate: 0.40 },
+                  ])
               : ep === "W06"
-                ? [
-                    { keyword: "best zikr ring 2026",       market: "us", search_volume: 4400, keyword_difficulty: 24, cpc: 0.95, competition: 0.52, number_of_results: 312000, trends: "0.6,0.7,0.8,0.8,0.9,1.0,1.0,1.0,1.0,1.0,1.0,1.0", intent: "Commercial",    relevance_rate: 0.95 },
-                    { keyword: "zikr ring review",          market: "us", search_volume: 2900, keyword_difficulty: 19, cpc: 0.71, competition: 0.41, number_of_results: 188000, trends: "0.5,0.6,0.7,0.8,0.9,0.9,1.0,1.0,1.0,1.0,1.0,1.0", intent: "Informational", relevance_rate: 0.88 },
-                    { keyword: "zikr ring vs tasbih app",   market: "us", search_volume: 1900, keyword_difficulty: 17, cpc: 0.55, competition: 0.31, number_of_results: 92000,  trends: "0.4,0.5,0.6,0.7,0.8,0.8,0.9,1.0,1.0,1.0,1.0,1.0", intent: "Informational", relevance_rate: 0.79 },
-                    { keyword: "where to buy zikr ring",    market: "us", search_volume: 1300, keyword_difficulty: 28, cpc: 0.88, competition: 0.55, number_of_results: 168000, trends: "0.5,0.6,0.7,0.7,0.8,0.9,1.0,1.0,1.0,1.0,1.0,1.0", intent: "Commercial",    relevance_rate: 0.71 },
-                    { keyword: "zikr ring price india",     market: "us", search_volume: 880,  keyword_difficulty: 12, cpc: 0.42, competition: 0.20, number_of_results: 58000,  trends: "0.4,0.5,0.5,0.6,0.7,0.8,0.9,1.0,1.0,1.0,1.0,1.0", intent: "Commercial",    relevance_rate: 0.62 },
-                    { keyword: "buy zikr ring online",      market: "us", search_volume: 720,  keyword_difficulty: 26, cpc: 1.04, competition: 0.61, number_of_results: 145000, trends: "0.5,0.6,0.7,0.8,0.9,1.0,1.0,1.0,1.0,1.0,1.0,1.0", intent: "Transactional", relevance_rate: 0.55 },
-                    { keyword: "zikr ring battery life",    market: "us", search_volume: 480,  keyword_difficulty: 8,  cpc: 0.27, competition: 0.14, number_of_results: 32000,  trends: "0.5,0.5,0.6,0.7,0.7,0.8,0.9,0.9,1.0,1.0,1.0,1.0", intent: "Informational", relevance_rate: 0.48 },
-                    { keyword: "zikr ring discount code",   market: "us", search_volume: 320,  keyword_difficulty: 11, cpc: 0.65, competition: 0.39, number_of_results: 47000,  trends: "0.4,0.5,0.6,0.6,0.7,0.8,0.8,0.9,1.0,1.0,1.0,1.0", intent: "Transactional", relevance_rate: 0.40 },
-                  ]
+                ? mockMarketList.flatMap((mkt) => [
+                    { keyword: "best zikr ring 2026",       market: mkt, search_volume: 4400, keyword_difficulty: 24, cpc: 0.95, competition: 0.52, number_of_results: 312000, trends: "0.6,0.7,0.8,0.8,0.9,1.0,1.0,1.0,1.0,1.0,1.0,1.0", intent: "Commercial",    relevance_rate: 0.95 },
+                    { keyword: "zikr ring review",          market: mkt, search_volume: 2900, keyword_difficulty: 19, cpc: 0.71, competition: 0.41, number_of_results: 188000, trends: "0.5,0.6,0.7,0.8,0.9,0.9,1.0,1.0,1.0,1.0,1.0,1.0", intent: "Informational", relevance_rate: 0.88 },
+                    { keyword: "zikr ring vs tasbih app",   market: mkt, search_volume: 1900, keyword_difficulty: 17, cpc: 0.55, competition: 0.31, number_of_results: 92000,  trends: "0.4,0.5,0.6,0.7,0.8,0.8,0.9,1.0,1.0,1.0,1.0,1.0", intent: "Informational", relevance_rate: 0.79 },
+                    { keyword: "where to buy zikr ring",    market: mkt, search_volume: 1300, keyword_difficulty: 28, cpc: 0.88, competition: 0.55, number_of_results: 168000, trends: "0.5,0.6,0.7,0.7,0.8,0.9,1.0,1.0,1.0,1.0,1.0,1.0", intent: "Commercial",    relevance_rate: 0.71 },
+                    { keyword: "zikr ring price india",     market: mkt, search_volume: 880,  keyword_difficulty: 12, cpc: 0.42, competition: 0.20, number_of_results: 58000,  trends: "0.4,0.5,0.5,0.6,0.7,0.8,0.9,1.0,1.0,1.0,1.0,1.0", intent: "Commercial",    relevance_rate: 0.62 },
+                    { keyword: "buy zikr ring online",      market: mkt, search_volume: 720,  keyword_difficulty: 26, cpc: 1.04, competition: 0.61, number_of_results: 145000, trends: "0.5,0.6,0.7,0.8,0.9,1.0,1.0,1.0,1.0,1.0,1.0,1.0", intent: "Transactional", relevance_rate: 0.55 },
+                    { keyword: "zikr ring battery life",    market: mkt, search_volume: 480,  keyword_difficulty: 8,  cpc: 0.27, competition: 0.14, number_of_results: 32000,  trends: "0.5,0.5,0.6,0.7,0.7,0.8,0.9,0.9,1.0,1.0,1.0,1.0", intent: "Informational", relevance_rate: 0.48 },
+                    { keyword: "zikr ring discount code",   market: mkt, search_volume: 320,  keyword_difficulty: 11, cpc: 0.65, competition: 0.39, number_of_results: 47000,  trends: "0.4,0.5,0.6,0.6,0.7,0.8,0.8,0.9,1.0,1.0,1.0,1.0", intent: "Transactional", relevance_rate: 0.40 },
+                  ])
               : ep === "W08"
-                ? [
-                    { keyword: "wireless headphones",     market: "us", advertiser_domain: "amazon.com", position: 1, visible_url: "amazon.com/electronics",    ad_title: "Wireless Headphones – Free Shipping",        ad_description: "Shop top-rated wireless headphones with Prime free 1-day delivery. Read reviews. Today's deals." },
-                    { keyword: "running shoes",           market: "us", advertiser_domain: "amazon.com", position: 2, visible_url: "amazon.com/shoes",           ad_title: "Running Shoes for Men & Women",              ad_description: "Huge selection of running shoes from top brands. Fast & free shipping with Prime." },
-                    { keyword: "laptop deals",            market: "us", advertiser_domain: "amazon.com", position: 3, visible_url: "amazon.com/computers",       ad_title: "Laptop Deals – Shop Now & Save",            ad_description: "Find the best laptop deals. Compare top brands. Free returns. Shop now at Amazon." },
-                    { keyword: "kitchen appliances",      market: "us", advertiser_domain: "amazon.com", position: 4, visible_url: "amazon.com/kitchen",         ad_title: "Kitchen Appliances – Today Only",           ad_description: "Upgrade your kitchen with our best-selling appliances. Free shipping over $25. Limited time offer." },
-                    { keyword: "fitness tracker",         market: "us", advertiser_domain: "amazon.com", position: 5, visible_url: "amazon.com/fitness",         ad_title: "Fitness Trackers – Best Sellers",           ad_description: "Track your health goals with top-rated fitness bands. Prime members get exclusive deals." },
-                    { keyword: "tablet under 200",        market: "us", advertiser_domain: "amazon.com", position: 6, visible_url: "amazon.com/tablets",         ad_title: "Tablets Under $200 – Shop Today",           ad_description: "Browse affordable tablets from top brands. Free same-day delivery for Prime members." },
-                    { keyword: "books best sellers",      market: "us", advertiser_domain: "amazon.com", position: 7, visible_url: "amazon.com/books",           ad_title: "Best-Selling Books – New Arrivals",         ad_description: "Discover this week's best sellers. Huge selection of fiction, non-fiction & more. Free delivery." },
-                    { keyword: "clothing sale",           market: "us", advertiser_domain: "amazon.com", position: 8, visible_url: "amazon.com/fashion",         ad_title: "Clothing Sale – Up to 50% Off",             ad_description: "Shop men's & women's fashion at unbeatable prices. Free returns. Shop the sale now at Amazon." },
-                  ]
+                ? mockMarketList.flatMap((mkt) => [
+                    { keyword: "wireless headphones",     market: mkt, advertiser_domain: "amazon.com", position: 1, visible_url: "amazon.com/electronics",    ad_title: "Wireless Headphones – Free Shipping",        ad_description: "Shop top-rated wireless headphones with Prime free 1-day delivery. Read reviews. Today's deals." },
+                    { keyword: "running shoes",           market: mkt, advertiser_domain: "amazon.com", position: 2, visible_url: "amazon.com/shoes",           ad_title: "Running Shoes for Men & Women",              ad_description: "Huge selection of running shoes from top brands. Fast & free shipping with Prime." },
+                    { keyword: "laptop deals",            market: mkt, advertiser_domain: "amazon.com", position: 3, visible_url: "amazon.com/computers",       ad_title: "Laptop Deals – Shop Now & Save",            ad_description: "Find the best laptop deals. Compare top brands. Free returns. Shop now at Amazon." },
+                    { keyword: "kitchen appliances",      market: mkt, advertiser_domain: "amazon.com", position: 4, visible_url: "amazon.com/kitchen",         ad_title: "Kitchen Appliances – Today Only",           ad_description: "Upgrade your kitchen with our best-selling appliances. Free shipping over $25. Limited time offer." },
+                    { keyword: "fitness tracker",         market: mkt, advertiser_domain: "amazon.com", position: 5, visible_url: "amazon.com/fitness",         ad_title: "Fitness Trackers – Best Sellers",           ad_description: "Track your health goals with top-rated fitness bands. Prime members get exclusive deals." },
+                    { keyword: "tablet under 200",        market: mkt, advertiser_domain: "amazon.com", position: 6, visible_url: "amazon.com/tablets",         ad_title: "Tablets Under $200 – Shop Today",           ad_description: "Browse affordable tablets from top brands. Free same-day delivery for Prime members." },
+                    { keyword: "books best sellers",      market: mkt, advertiser_domain: "amazon.com", position: 7, visible_url: "amazon.com/books",           ad_title: "Best-Selling Books – New Arrivals",         ad_description: "Discover this week's best sellers. Huge selection of fiction, non-fiction & more. Free delivery." },
+                    { keyword: "clothing sale",           market: mkt, advertiser_domain: "amazon.com", position: 8, visible_url: "amazon.com/fashion",         ad_title: "Clothing Sale – Up to 50% Off",             ad_description: "Shop men's & women's fashion at unbeatable prices. Free returns. Shop the sale now at Amazon." },
+                  ])
               : ep === "W09"
-                ? [
-                    { keyword: "wireless headphones",  market: "us", advertiser_domain: "amazon.com", fetch_date: "20260415", position: 1, visible_url: "amazon.com/electronics", ad_title: "Wireless Headphones – Free Shipping",     ad_description: "Shop top-rated wireless headphones with Prime free 1-day delivery. Today's deals." },
-                    { keyword: "spring fashion sale",  market: "us", advertiser_domain: "amazon.com", fetch_date: "20260415", position: 2, visible_url: "amazon.com/fashion",     ad_title: "Spring Sale – Up to 60% Off",             ad_description: "Refresh your wardrobe with the latest spring trends. Free returns. Shop now." },
-                    { keyword: "outdoor furniture",    market: "us", advertiser_domain: "amazon.com", fetch_date: "20260415", position: 3, visible_url: "amazon.com/garden",      ad_title: "Outdoor Furniture – New Arrivals",         ad_description: "Patio sets, BBQs, and more. Free shipping on orders over $35." },
-                    { keyword: "wireless headphones",  market: "us", advertiser_domain: "amazon.com", fetch_date: "20260315", position: 1, visible_url: "amazon.com/electronics", ad_title: "Wireless Headphones – Best Deals",         ad_description: "Top-rated wireless audio with active noise cancelling. Prime 2-day delivery." },
-                    { keyword: "running shoes",        market: "us", advertiser_domain: "amazon.com", fetch_date: "20260315", position: 2, visible_url: "amazon.com/shoes",       ad_title: "Running Shoes for Men & Women",            ad_description: "Wide selection from top brands. Free returns within 30 days." },
-                    { keyword: "smart watch",          market: "us", advertiser_domain: "amazon.com", fetch_date: "20260315", position: 4, visible_url: "amazon.com/wearable",    ad_title: "Smart Watches – Today's Deals",            ad_description: "Track fitness, get notifications. Latest models from leading brands." },
-                    { keyword: "valentine's day gift", market: "us", advertiser_domain: "amazon.com", fetch_date: "20260215", position: 1, visible_url: "amazon.com/gifts",       ad_title: "Valentine's Day Gifts – Last Chance",      ad_description: "Heartfelt gifts for your loved one. Free 2-day Prime delivery available." },
-                    { keyword: "winter coats",         market: "us", advertiser_domain: "amazon.com", fetch_date: "20260215", position: 3, visible_url: "amazon.com/outerwear",   ad_title: "Winter Coats – Up to 50% Off",             ad_description: "Stay warm with our top-rated outerwear. Easy returns. Shop now." },
-                    { keyword: "wireless headphones",  market: "us", advertiser_domain: "amazon.com", fetch_date: "20260215", position: 5, visible_url: "amazon.com/audio",       ad_title: "Wireless Audio – New Releases",            ad_description: "Latest wireless headphones with industry-leading noise cancellation." },
-                    { keyword: "new year fitness",     market: "us", advertiser_domain: "amazon.com", fetch_date: "20260115", position: 1, visible_url: "amazon.com/fitness",     ad_title: "New Year, New You – Fitness Gear",         ad_description: "Stick to your resolutions with our fitness equipment. Free shipping over $25." },
-                    { keyword: "kitchen appliances",   market: "us", advertiser_domain: "amazon.com", fetch_date: "20260115", position: 2, visible_url: "amazon.com/kitchen",     ad_title: "Kitchen Appliances – Year-End Sale",       ad_description: "Upgrade your kitchen with top brands. Free returns. Today only." },
-                    { keyword: "books best sellers",   market: "us", advertiser_domain: "amazon.com", fetch_date: "20260115", position: 6, visible_url: "amazon.com/books",       ad_title: "Best-Selling Books – Discover Now",        ad_description: "This week's top reads across all genres. Free Kindle app available." },
-                  ]
+                ? mockMarketList.flatMap((mkt) => [
+                    { keyword: "wireless headphones",  market: mkt, advertiser_domain: "amazon.com", fetch_date: "20260415", position: 1, visible_url: "amazon.com/electronics", ad_title: "Wireless Headphones – Free Shipping",     ad_description: "Shop top-rated wireless headphones with Prime free 1-day delivery. Today's deals." },
+                    { keyword: "spring fashion sale",  market: mkt, advertiser_domain: "amazon.com", fetch_date: "20260415", position: 2, visible_url: "amazon.com/fashion",     ad_title: "Spring Sale – Up to 60% Off",             ad_description: "Refresh your wardrobe with the latest spring trends. Free returns. Shop now." },
+                    { keyword: "outdoor furniture",    market: mkt, advertiser_domain: "amazon.com", fetch_date: "20260415", position: 3, visible_url: "amazon.com/garden",      ad_title: "Outdoor Furniture – New Arrivals",         ad_description: "Patio sets, BBQs, and more. Free shipping on orders over $35." },
+                    { keyword: "wireless headphones",  market: mkt, advertiser_domain: "amazon.com", fetch_date: "20260315", position: 1, visible_url: "amazon.com/electronics", ad_title: "Wireless Headphones – Best Deals",         ad_description: "Top-rated wireless audio with active noise cancelling. Prime 2-day delivery." },
+                    { keyword: "running shoes",        market: mkt, advertiser_domain: "amazon.com", fetch_date: "20260315", position: 2, visible_url: "amazon.com/shoes",       ad_title: "Running Shoes for Men & Women",            ad_description: "Wide selection from top brands. Free returns within 30 days." },
+                    { keyword: "smart watch",          market: mkt, advertiser_domain: "amazon.com", fetch_date: "20260315", position: 4, visible_url: "amazon.com/wearable",    ad_title: "Smart Watches – Today's Deals",            ad_description: "Track fitness, get notifications. Latest models from leading brands." },
+                    { keyword: "valentine's day gift", market: mkt, advertiser_domain: "amazon.com", fetch_date: "20260215", position: 1, visible_url: "amazon.com/gifts",       ad_title: "Valentine's Day Gifts – Last Chance",      ad_description: "Heartfelt gifts for your loved one. Free 2-day Prime delivery available." },
+                    { keyword: "winter coats",         market: mkt, advertiser_domain: "amazon.com", fetch_date: "20260215", position: 3, visible_url: "amazon.com/outerwear",   ad_title: "Winter Coats – Up to 50% Off",             ad_description: "Stay warm with our top-rated outerwear. Easy returns. Shop now." },
+                    { keyword: "wireless headphones",  market: mkt, advertiser_domain: "amazon.com", fetch_date: "20260215", position: 5, visible_url: "amazon.com/audio",       ad_title: "Wireless Audio – New Releases",            ad_description: "Latest wireless headphones with industry-leading noise cancellation." },
+                    { keyword: "new year fitness",     market: mkt, advertiser_domain: "amazon.com", fetch_date: "20260115", position: 1, visible_url: "amazon.com/fitness",     ad_title: "New Year, New You – Fitness Gear",         ad_description: "Stick to your resolutions with our fitness equipment. Free shipping over $25." },
+                    { keyword: "kitchen appliances",   market: mkt, advertiser_domain: "amazon.com", fetch_date: "20260115", position: 2, visible_url: "amazon.com/kitchen",     ad_title: "Kitchen Appliances – Year-End Sale",       ad_description: "Upgrade your kitchen with top brands. Free returns. Today only." },
+                    { keyword: "books best sellers",   market: mkt, advertiser_domain: "amazon.com", fetch_date: "20260115", position: 6, visible_url: "amazon.com/books",       ad_title: "Best-Selling Books – Discover Now",        ad_description: "This week's top reads across all genres. Free Kindle app available." },
+                  ])
               : ep === "W10"
-                ? [
-                    { keyword: "smart islamic device",      market: "us", gap_type: "missing",  our_domain: "weslamic.com", competitor_domain: "amazon.com", our_position: 0,  competitor_position: 3,  search_volume: 4400, keyword_difficulty: 28, cpc: 0.92, competition: 0.51, number_of_results: 412000, trends: null },
-                    { keyword: "muslim wearable tech",      market: "us", gap_type: "missing",  our_domain: "weslamic.com", competitor_domain: "ebay.com",   our_position: 0,  competitor_position: 7,  search_volume: 2900, keyword_difficulty: 24, cpc: 0.71, competition: 0.42, number_of_results: 188000, trends: null },
-                    { keyword: "digital tasbih bluetooth",  market: "us", gap_type: "missing",  our_domain: "weslamic.com", competitor_domain: "amazon.com", our_position: 0,  competitor_position: 12, search_volume: 1800, keyword_difficulty: 19, cpc: 0.55, competition: 0.31, number_of_results: 92000,  trends: null },
-                    { keyword: "zikr ring",                 market: "us", gap_type: "common",   our_domain: "weslamic.com", competitor_domain: "amazon.com", our_position: 5,  competitor_position: 2,  search_volume: 8800, keyword_difficulty: 32, cpc: 1.12, competition: 0.62, number_of_results: 524000, trends: null },
-                    { keyword: "muslim ring",               market: "us", gap_type: "common",   our_domain: "weslamic.com", competitor_domain: "ebay.com",   our_position: 8,  competitor_position: 4,  search_volume: 6600, keyword_difficulty: 28, cpc: 0.88, competition: 0.51, number_of_results: 312000, trends: null },
-                    { keyword: "smart prayer counter",      market: "us", gap_type: "untapped", our_domain: "weslamic.com", competitor_domain: "amazon.com", our_position: 0,  competitor_position: 6,  search_volume: 4400, keyword_difficulty: 21, cpc: 0.78, competition: 0.41, number_of_results: 240000, trends: null },
-                    { keyword: "wireless dhikr device",     market: "us", gap_type: "untapped", our_domain: "weslamic.com", competitor_domain: "ebay.com",   our_position: 0,  competitor_position: 14, search_volume: 880,  keyword_difficulty: 12, cpc: 0.43, competition: 0.22, number_of_results: 58000,  trends: null },
-                    { keyword: "halal smart jewelry",       market: "us", gap_type: "weak",     our_domain: "weslamic.com", competitor_domain: "amazon.com", our_position: 28, competitor_position: 8,  search_volume: 1300, keyword_difficulty: 17, cpc: 0.52, competition: 0.30, number_of_results: 124000, trends: null },
-                    { keyword: "muslim digital gift",       market: "us", gap_type: "weak",     our_domain: "weslamic.com", competitor_domain: "ebay.com",   our_position: 35, competitor_position: 11, search_volume: 590,  keyword_difficulty: 9,  cpc: 0.31, competition: 0.18, number_of_results: 45000,  trends: null },
-                    { keyword: "ramadan tech gift",         market: "us", gap_type: "weak",     our_domain: "weslamic.com", competitor_domain: "amazon.com", our_position: 41, competitor_position: 6,  search_volume: 720,  keyword_difficulty: 14, cpc: 0.41, competition: 0.25, number_of_results: 87000,  trends: null },
-                    { keyword: "eid wearable gift",         market: "us", gap_type: "weak",     our_domain: "weslamic.com", competitor_domain: "ebay.com",   our_position: 52, competitor_position: 3,  search_volume: 480,  keyword_difficulty: 8,  cpc: 0.27, competition: 0.14, number_of_results: 32000,  trends: null },
-                    { keyword: "halal smart bracelet",      market: "us", gap_type: "weak",     our_domain: "weslamic.com", competitor_domain: "amazon.com", our_position: 67, competitor_position: 19, search_volume: 320,  keyword_difficulty: 6,  cpc: 0.21, competition: 0.10, number_of_results: 24000,  trends: null },
-                  ]
+                ? mockMarketList.flatMap((mkt) => [
+                    { keyword: "smart islamic device",      market: mkt, gap_type: "missing",  our_domain: "weslamic.com", competitor_domain: "amazon.com", our_position: 0,  competitor_position: 3,  search_volume: 4400, keyword_difficulty: 28, cpc: 0.92, competition: 0.51, number_of_results: 412000, trends: null },
+                    { keyword: "muslim wearable tech",      market: mkt, gap_type: "missing",  our_domain: "weslamic.com", competitor_domain: "ebay.com",   our_position: 0,  competitor_position: 7,  search_volume: 2900, keyword_difficulty: 24, cpc: 0.71, competition: 0.42, number_of_results: 188000, trends: null },
+                    { keyword: "digital tasbih bluetooth",  market: mkt, gap_type: "missing",  our_domain: "weslamic.com", competitor_domain: "amazon.com", our_position: 0,  competitor_position: 12, search_volume: 1800, keyword_difficulty: 19, cpc: 0.55, competition: 0.31, number_of_results: 92000,  trends: null },
+                    { keyword: "zikr ring",                 market: mkt, gap_type: "common",   our_domain: "weslamic.com", competitor_domain: "amazon.com", our_position: 5,  competitor_position: 2,  search_volume: 8800, keyword_difficulty: 32, cpc: 1.12, competition: 0.62, number_of_results: 524000, trends: null },
+                    { keyword: "muslim ring",               market: mkt, gap_type: "common",   our_domain: "weslamic.com", competitor_domain: "ebay.com",   our_position: 8,  competitor_position: 4,  search_volume: 6600, keyword_difficulty: 28, cpc: 0.88, competition: 0.51, number_of_results: 312000, trends: null },
+                    { keyword: "smart prayer counter",      market: mkt, gap_type: "untapped", our_domain: "weslamic.com", competitor_domain: "amazon.com", our_position: 0,  competitor_position: 6,  search_volume: 4400, keyword_difficulty: 21, cpc: 0.78, competition: 0.41, number_of_results: 240000, trends: null },
+                    { keyword: "wireless dhikr device",     market: mkt, gap_type: "untapped", our_domain: "weslamic.com", competitor_domain: "ebay.com",   our_position: 0,  competitor_position: 14, search_volume: 880,  keyword_difficulty: 12, cpc: 0.43, competition: 0.22, number_of_results: 58000,  trends: null },
+                    { keyword: "halal smart jewelry",       market: mkt, gap_type: "weak",     our_domain: "weslamic.com", competitor_domain: "amazon.com", our_position: 28, competitor_position: 8,  search_volume: 1300, keyword_difficulty: 17, cpc: 0.52, competition: 0.30, number_of_results: 124000, trends: null },
+                    { keyword: "muslim digital gift",       market: mkt, gap_type: "weak",     our_domain: "weslamic.com", competitor_domain: "ebay.com",   our_position: 35, competitor_position: 11, search_volume: 590,  keyword_difficulty: 9,  cpc: 0.31, competition: 0.18, number_of_results: 45000,  trends: null },
+                    { keyword: "ramadan tech gift",         market: mkt, gap_type: "weak",     our_domain: "weslamic.com", competitor_domain: "amazon.com", our_position: 41, competitor_position: 6,  search_volume: 720,  keyword_difficulty: 14, cpc: 0.41, competition: 0.25, number_of_results: 87000,  trends: null },
+                    { keyword: "eid wearable gift",         market: mkt, gap_type: "weak",     our_domain: "weslamic.com", competitor_domain: "ebay.com",   our_position: 52, competitor_position: 3,  search_volume: 480,  keyword_difficulty: 8,  cpc: 0.27, competition: 0.14, number_of_results: 32000,  trends: null },
+                    { keyword: "halal smart bracelet",      market: mkt, gap_type: "weak",     our_domain: "weslamic.com", competitor_domain: "amazon.com", our_position: 67, competitor_position: 19, search_volume: 320,  keyword_difficulty: 6,  cpc: 0.21, competition: 0.10, number_of_results: 24000,  trends: null },
+                  ])
                 : [
                     { keyword: "hijab",          market: "sa", search_volume: 110000, keyword_difficulty: 42, cpc: 0.85, competition: 0.62, number_of_results: 12300000, trends: "0.6,0.7,0.8,0.9,1.0,1.0,1.0,0.9,0.9,1.0,1.0,1.0", intent: "Commercial" },
                     { keyword: "abaya",          market: "sa", search_volume: 74000,  keyword_difficulty: 38, cpc: 0.62, competition: 0.55, number_of_results: 8400000,  trends: "0.5,0.6,0.7,0.8,0.9,1.0,1.0,0.9,0.8,0.9,1.0,1.0", intent: "Commercial" },

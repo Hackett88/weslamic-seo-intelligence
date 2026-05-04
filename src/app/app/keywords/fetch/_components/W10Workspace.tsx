@@ -78,8 +78,10 @@ function calcUnits(
   displayLimit: number,
   marketCount: number
 ): number {
+  // domain_domains: 80u/row (Semrush official). No overhead/base charge exists.
+  // The previously included +200 was a fabricated buffer — removed to match real billing.
   const nonWeakCount = gapTypes.filter((t) => t !== "weak").length;
-  return competitorCount * nonWeakCount * displayLimit * 80 * marketCount + 200;
+  return competitorCount * nonWeakCount * displayLimit * 80 * marketCount;
 }
 
 export function W10Workspace() {

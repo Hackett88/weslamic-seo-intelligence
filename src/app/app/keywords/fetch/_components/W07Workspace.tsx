@@ -17,7 +17,11 @@ const ENDPOINT_KEY = "W07";
 const DATA_SOURCE = "semrush_kmt_staging（kmt_mode='all'）";
 
 const UNITS_PER_ROW = 10;
-const ROWS_PER_LIMIT = 11; // phrase_all 真采实测：display_limit=1 返回 11 个 database 行
+// ROWS_PER_LIMIT 是预估下限：phrase_all 按 display_limit 跨 11 个数据库返回结果，
+// 但实际行数事先未知（phrase_all 不受 display_limit 精确控制，Sean 生产实测
+// display_limit=1 返回了 121 行而非 11 行）。前端展示为"下限估算"，
+// 实耗由后端 units_actual 字段（= allRows.length × 10u）准确回报。
+const ROWS_PER_LIMIT = 11; // 下限估算：实际可能远高于此
 const MIN_LIMIT = 1;
 const MAX_LIMIT = 50;
 const DEFAULT_LIMIT = 10;
@@ -50,8 +54,10 @@ export function W07Workspace() {
   const trimmedKeyword = keyword.trim();
   const noKeyword = trimmedKeyword.length === 0;
   const limitInRange = displayLimit >= MIN_LIMIT && displayLimit <= MAX_LIMIT;
-  // phrase_all 跨库返回所有数据库该词搜量，预估 = display_limit × 11 行 × 10u/行
-  const units = displayLimit * UNITS_PER_ROW * ROWS_PER_LIMIT;
+  // phrase_all 跨库返回所有数据库该词搜量。
+  // 预估下限 = display_limit × 11 个库 × 10u/行；实际行数未知（生产实测可达数倍），
+  // 真实耗用由后端 units_actual（= 实际返回行数 × 10u）回报。
+  const units = displayLimit * UNITS_PER_ROW * ROWS_PER_LIMIT; // 下限估算
   const needsSecondaryAuth = units > UNITS_PASSWORD_THRESHOLD;
 
   useEffect(() => {
@@ -308,7 +314,7 @@ export function W07Workspace() {
 
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-[11px] text-gray-500">
-            {displayLimit} × ~{ROWS_PER_LIMIT} 库 · 预估 {units}u
+            {displayLimit} × ~{ROWS_PER_LIMIT} 库 · 下限预估 {units}u（实耗见结果）
           </span>
           <span className="text-[11px] text-gray-400">
             phrase_all 不接受 market 入参；返回市场列表由 Semrush 决定

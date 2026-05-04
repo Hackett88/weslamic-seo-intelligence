@@ -1223,7 +1223,10 @@ function realW07Stream(
           rows_new: allRows.length,
           total_batches: batches.length,
           failed_batches: Object.keys(triggerErrors).length,
-          units_actual: displayLimit * 10 * 11,
+          // phrase_all: 10u/row (Semrush official). Use actual row count from staging,
+          // not displayLimit × 11 (the 11-market estimate is unreliable and was
+          // verified wrong: display_limit=1 returned 121 rows in production).
+          units_actual: allRows.length * 10,
         },
       };
       enqueue(`data: ${JSON.stringify(doneEvt)}\n\n`);
@@ -2502,7 +2505,11 @@ function realW10Stream(
           rows_new: allRows.length,
           total_batches: batches.length,
           failed_batches: Object.keys(triggerErrors).length,
-          units_actual: competitorDomains.length * nonWeakCount * displayLimit * 80 * markets.length + 200,
+          // domain_domains: 80u/row (Semrush official). No overhead or base charge exists.
+          // Use actual staging row count for precision — the formula estimate assumes Semrush
+          // fills displayLimit rows per (competitor × gapType × market) combination,
+          // which is often false. The old +200 buffer was fabricated and has been removed.
+          units_actual: allRows.length * 80,
         },
       };
       enqueue(`data: ${JSON.stringify(doneEvt)}\n\n`);

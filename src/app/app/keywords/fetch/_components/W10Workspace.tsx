@@ -6,6 +6,7 @@ import { History, Loader2, X, Plus } from "lucide-react";
 import type { ProgressState, W10ResultRow } from "./SeoTaskCard";
 import { SerpFeatureChips } from "./SerpFeatureChips";
 import { HistoryView } from "./HistoryView";
+import { SortableTh, useTableSort, type Getter } from "./SortableTable";
 import {
   appendHistory,
   clearHistory,
@@ -811,16 +812,36 @@ const GAP_TYPE_LABELS: Record<string, string> = {
   weak:     "弱势词",
 };
 
+const W10_GETTERS: Record<string, Getter<W10ResultRow>> = {
+  gap_type: (r) => r.gap_type,
+  keyword: (r) => r.keyword,
+  our_position: (r) => r.our_position,
+  competitor_position: (r) => r.competitor_position,
+  competitor_domain: (r) => r.competitor_domain,
+  search_volume: (r) => r.search_volume,
+  keyword_difficulty: (r) => r.keyword_difficulty,
+  cpc: (r) => r.cpc,
+  keyword_serp_features_codes: (r) => r.keyword_serp_features_codes,
+  domain_serp_features_codes: (r) => r.domain_serp_features_codes,
+};
+
 function GapResultTable({ rows }: { rows: W10ResultRow[] }) {
-  // 排序：先 gap_type 字母升序，组内按 search_volume 降序
-  const sorted = [...rows].sort((a, b) => {
-    const ga = a.gap_type ?? "";
-    const gb = b.gap_type ?? "";
-    if (ga !== gb) return ga.localeCompare(gb);
-    const va = a.search_volume ?? 0;
-    const vb = b.search_volume ?? 0;
-    return vb - va;
-  });
+  // 默认：先 gap_type 字母升序，组内按 search_volume 降序
+  const { sortedRows, sortKey, sortDir, toggle } = useTableSort(
+    rows,
+    W10_GETTERS,
+    (rs) =>
+      [...rs].sort((a, b) => {
+        const ga = a.gap_type ?? "";
+        const gb = b.gap_type ?? "";
+        if (ga !== gb) return ga.localeCompare(gb);
+        const va = a.search_volume ?? 0;
+        const vb = b.search_volume ?? 0;
+        return vb - va;
+      }),
+  );
+  const sorted = sortedRows;
+  const thCls = "px-4 py-2";
 
   return (
     <div>
@@ -836,16 +857,16 @@ function GapResultTable({ rows }: { rows: W10ResultRow[] }) {
       <table className="w-full text-xs">
         <thead className="sticky top-0 bg-gray-50 text-gray-500">
           <tr className="border-b border-gray-200">
-            <th className="px-4 py-2 text-left font-medium">维度</th>
-            <th className="px-4 py-2 text-left font-medium">关键词</th>
-            <th className="px-4 py-2 text-right font-medium">你的排名</th>
-            <th className="px-4 py-2 text-right font-medium">竞品最优排名</th>
-            <th className="px-4 py-2 text-left font-medium">竞品域名</th>
-            <th className="px-4 py-2 text-right font-medium">月搜量</th>
-            <th className="px-4 py-2 text-right font-medium">KD</th>
-            <th className="px-4 py-2 text-right font-medium">CPC</th>
-            <th className="px-4 py-2 text-left font-medium">关键词 SERP 特征</th>
-            <th className="px-4 py-2 text-left font-medium">域名 SERP 特征</th>
+            <SortableTh active={sortKey === "gap_type"} dir={sortDir} onClick={() => toggle("gap_type")} className={thCls}>维度</SortableTh>
+            <SortableTh active={sortKey === "keyword"} dir={sortDir} onClick={() => toggle("keyword")} className={thCls}>关键词</SortableTh>
+            <SortableTh active={sortKey === "our_position"} dir={sortDir} align="right" onClick={() => toggle("our_position")} className={thCls}>你的排名</SortableTh>
+            <SortableTh active={sortKey === "competitor_position"} dir={sortDir} align="right" onClick={() => toggle("competitor_position")} className={thCls}>竞品最优排名</SortableTh>
+            <SortableTh active={sortKey === "competitor_domain"} dir={sortDir} onClick={() => toggle("competitor_domain")} className={thCls}>竞品域名</SortableTh>
+            <SortableTh active={sortKey === "search_volume"} dir={sortDir} align="right" onClick={() => toggle("search_volume")} className={thCls}>月搜量</SortableTh>
+            <SortableTh active={sortKey === "keyword_difficulty"} dir={sortDir} align="right" onClick={() => toggle("keyword_difficulty")} className={thCls}>关键词难度</SortableTh>
+            <SortableTh active={sortKey === "cpc"} dir={sortDir} align="right" onClick={() => toggle("cpc")} className={thCls}>CPC</SortableTh>
+            <SortableTh active={sortKey === "keyword_serp_features_codes"} dir={sortDir} onClick={() => toggle("keyword_serp_features_codes")} className={thCls}>关键词 SERP 特征</SortableTh>
+            <SortableTh active={sortKey === "domain_serp_features_codes"} dir={sortDir} onClick={() => toggle("domain_serp_features_codes")} className={thCls}>域名 SERP 特征</SortableTh>
           </tr>
         </thead>
         <tbody>

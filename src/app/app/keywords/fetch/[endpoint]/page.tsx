@@ -51,7 +51,7 @@ const SKILL_META: Record<string, SkillMeta> = {
   },
   w07: {
     title: "跨市场搜量",
-    description: "单词跨库一次拉所有 Semrush 数据库的月搜量、难度、CPC、Intent",
+    description: "一次获取 Semrush 数据库超 120 个国家的单个关键词的月搜量、难度、CPC、Intent 等",
     available: true,
   },
   w08: {
@@ -102,7 +102,7 @@ export default async function SkillDetailPage({ params }: PageProps) {
         <h1 className="mt-1 text-base font-semibold text-gray-900">
           {meta.title}
         </h1>
-        <p className="mt-0.5 max-w-prose text-xs text-gray-400">
+        <p className="mt-0.5 text-xs text-gray-400">
           {meta.description}
         </p>
       </div>

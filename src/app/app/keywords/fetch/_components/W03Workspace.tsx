@@ -6,6 +6,7 @@ import { History, Loader2, ExternalLink } from "lucide-react";
 import type { ProgressState, W03ResultRow } from "./SeoTaskCard";
 import { SerpFeatureChips } from "./SerpFeatureChips";
 import { HistoryView } from "./HistoryView";
+import { SortableTh, useTableSort, type Getter } from "./SortableTable";
 import {
   appendHistory,
   clearHistory,
@@ -579,12 +580,23 @@ export function W03Workspace() {
   );
 }
 
+const W03_GETTERS: Record<string, Getter<W03ResultRow>> = {
+  position: (r) => r.position,
+  position_type: (r) => r.position_type,
+  domain: (r) => r.domain,
+  url: (r) => r.url,
+  keyword_serp_features_codes: (r) => r.keyword_serp_features_codes,
+  domain_serp_features_codes: (r) => r.domain_serp_features_codes,
+};
+
 function SerpResultTable({ rows }: { rows: W03ResultRow[] }) {
-  const sorted = [...rows].sort((a, b) => {
-    const pa = a.position ?? Number.MAX_SAFE_INTEGER;
-    const pb = b.position ?? Number.MAX_SAFE_INTEGER;
-    return pa - pb;
-  });
+  const { sortedRows, sortKey, sortDir, toggle } = useTableSort(
+    rows,
+    W03_GETTERS,
+    { key: "position", dir: "asc" },
+  );
+  const sorted = sortedRows;
+  const thCls = "px-5 py-2";
   return (
     <div>
       <div className="px-5 py-2 flex items-center justify-between border-b border-gray-200">
@@ -599,12 +611,12 @@ function SerpResultTable({ rows }: { rows: W03ResultRow[] }) {
       <table className="w-full text-xs">
         <thead className="sticky top-0 bg-gray-50 text-gray-500">
           <tr className="border-b border-gray-200">
-            <th className="px-5 py-2 text-right font-medium">排名</th>
-            <th className="px-5 py-2 text-left font-medium">类型</th>
-            <th className="px-5 py-2 text-left font-medium">域名</th>
-            <th className="px-5 py-2 text-left font-medium">URL</th>
-            <th className="px-5 py-2 text-left font-medium">关键词 SERP 特征</th>
-            <th className="px-5 py-2 text-left font-medium">域名 SERP 特征</th>
+            <SortableTh active={sortKey === "position"} dir={sortDir} align="right" onClick={() => toggle("position")} className={thCls}>排名</SortableTh>
+            <SortableTh active={sortKey === "position_type"} dir={sortDir} onClick={() => toggle("position_type")} className={thCls}>类型</SortableTh>
+            <SortableTh active={sortKey === "domain"} dir={sortDir} onClick={() => toggle("domain")} className={thCls}>域名</SortableTh>
+            <SortableTh active={sortKey === "url"} dir={sortDir} onClick={() => toggle("url")} className={thCls}>URL</SortableTh>
+            <SortableTh active={sortKey === "keyword_serp_features_codes"} dir={sortDir} onClick={() => toggle("keyword_serp_features_codes")} className={thCls}>关键词 SERP 特征</SortableTh>
+            <SortableTh active={sortKey === "domain_serp_features_codes"} dir={sortDir} onClick={() => toggle("domain_serp_features_codes")} className={thCls}>域名 SERP 特征</SortableTh>
           </tr>
         </thead>
         <tbody>

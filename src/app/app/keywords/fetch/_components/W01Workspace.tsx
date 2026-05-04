@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { History, Loader2 } from "lucide-react";
 import type { ProgressState, W01ResultRow } from "./SeoTaskCard";
 import { HistoryView } from "./HistoryView";
+import { SortableTh, useTableSort, type Getter } from "./SortableTable";
 import {
   appendHistory,
   clearHistory,
@@ -561,13 +562,32 @@ export function W01Workspace() {
   );
 }
 
-// 结果表：N8N staging 表的真实数据，按 (market, keyword) 排序
+// 结果表：N8N staging 表的真实数据，默认按 (market, keyword) 排序
 // W02 与 W01 同表同列，复用此组件
+const W01_GETTERS: Record<string, Getter<W01ResultRow>> = {
+  market: (r) => r.market,
+  keyword: (r) => r.keyword,
+  search_volume: (r) => r.search_volume,
+  keyword_difficulty: (r) => r.keyword_difficulty,
+  cpc: (r) => r.cpc,
+  competition: (r) => r.competition,
+  number_of_results: (r) => r.number_of_results,
+  intent: (r) => r.intent,
+  trends: (r) => r.trends,
+};
+
 export function ResultTable({ rows }: { rows: W01ResultRow[] }) {
-  const sorted = [...rows].sort((a, b) => {
-    if (a.market !== b.market) return a.market.localeCompare(b.market);
-    return a.keyword.localeCompare(b.keyword);
-  });
+  const { sortedRows, sortKey, sortDir, toggle } = useTableSort(
+    rows,
+    W01_GETTERS,
+    (rs) =>
+      [...rs].sort((a, b) => {
+        if (a.market !== b.market) return a.market.localeCompare(b.market);
+        return a.keyword.localeCompare(b.keyword);
+      }),
+  );
+  const sorted = sortedRows;
+  const thCls = "px-5 py-2";
   return (
     <div>
       <div className="px-5 py-2 flex items-center justify-between border-b border-gray-200">
@@ -582,15 +602,15 @@ export function ResultTable({ rows }: { rows: W01ResultRow[] }) {
       <table className="w-full text-xs">
         <thead className="sticky top-0 bg-gray-50 text-gray-500">
           <tr className="border-b border-gray-200">
-            <th className="px-5 py-2 text-left font-medium">市场</th>
-            <th className="px-5 py-2 text-left font-medium">关键词</th>
-            <th className="px-5 py-2 text-right font-medium">月搜量</th>
-            <th className="px-5 py-2 text-right font-medium">KD</th>
-            <th className="px-5 py-2 text-right font-medium">CPC</th>
-            <th className="px-5 py-2 text-right font-medium">竞争度</th>
-            <th className="px-5 py-2 text-right font-medium">结果数</th>
-            <th className="px-5 py-2 text-left font-medium">Intent</th>
-            <th className="px-5 py-2 text-left font-medium">Trends</th>
+            <SortableTh active={sortKey === "market"} dir={sortDir} onClick={() => toggle("market")} className={thCls}>市场</SortableTh>
+            <SortableTh active={sortKey === "keyword"} dir={sortDir} onClick={() => toggle("keyword")} className={thCls}>关键词</SortableTh>
+            <SortableTh active={sortKey === "search_volume"} dir={sortDir} align="right" onClick={() => toggle("search_volume")} className={thCls}>月搜量</SortableTh>
+            <SortableTh active={sortKey === "keyword_difficulty"} dir={sortDir} align="right" onClick={() => toggle("keyword_difficulty")} className={thCls}>关键词难度</SortableTh>
+            <SortableTh active={sortKey === "cpc"} dir={sortDir} align="right" onClick={() => toggle("cpc")} className={thCls}>CPC</SortableTh>
+            <SortableTh active={sortKey === "competition"} dir={sortDir} align="right" onClick={() => toggle("competition")} className={thCls}>竞争度</SortableTh>
+            <SortableTh active={sortKey === "number_of_results"} dir={sortDir} align="right" onClick={() => toggle("number_of_results")} className={thCls}>结果数</SortableTh>
+            <SortableTh active={sortKey === "intent"} dir={sortDir} onClick={() => toggle("intent")} className={thCls}>Intent</SortableTh>
+            <SortableTh active={sortKey === "trends"} dir={sortDir} onClick={() => toggle("trends")} className={thCls}>Trends</SortableTh>
           </tr>
         </thead>
         <tbody>

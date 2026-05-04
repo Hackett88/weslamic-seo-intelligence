@@ -51,7 +51,7 @@ const SKILLS: Skill[] = [
   {
     endpoint: "W07",
     title: "跨市场搜量",
-    description: "单词跨库一次拉所有 Semrush 数据库（11+ 国）的月搜量、难度、CPC、Intent",
+    description: "一次获取 Semrush 数据库超 120 个国家的单个关键词的月搜量、难度、CPC、Intent 等",
     available: true,
     spanCls: "col-span-1 sm:col-span-1 md:col-span-3 lg:col-span-3",
     icon: Map,

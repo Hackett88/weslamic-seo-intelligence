@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { W01Workspace } from "../_components/W01Workspace";
+import { W03Workspace } from "../_components/W03Workspace";
 
 type SkillMeta = {
   title: string;
@@ -23,7 +24,7 @@ const SKILL_META: Record<string, SkillMeta> = {
   w03: {
     title: "单词 SERP 透视",
     description: "查看单词搜索结果页的竞争与意图分布",
-    available: false,
+    available: true,
   },
   w04: {
     title: "问句词挖掘",
@@ -101,6 +102,8 @@ export default async function SkillDetailPage({ params }: PageProps) {
       {/* 主体：available 走完整 workspace；未上线走占位 */}
       {meta.available && slug === "w01" ? (
         <W01Workspace />
+      ) : meta.available && slug === "w03" ? (
+        <W03Workspace />
       ) : (
         <div className="flex-1 flex items-center justify-center bg-gray-50">
           <div className="rounded-lg border border-dashed border-gray-300 bg-white px-6 py-16 text-center text-sm text-gray-500">

@@ -21,17 +21,18 @@ const EMPTY_FORM: SeedKeywordInput = {
   layer_main: "",
 };
 
+// 对齐《种子词库结构方案 v1》第 15 行 layer_main enum 9 类
 const LAYER_OPTIONS: ReadonlyArray<{ value: string; label: string }> = [
   { value: "", label: "（未分类）" },
   { value: "品牌词", label: "品牌词" },
   { value: "品类词", label: "品类词" },
-  { value: "产品词", label: "产品词" },
-  { value: "地域词", label: "地域词" },
-  { value: "意图词", label: "意图词" },
-  { value: "主题词", label: "主题词" },
-  { value: "工具词", label: "工具词" },
+  { value: "属性词", label: "属性词" },
   { value: "场景词", label: "场景词" },
+  { value: "受众词", label: "受众词" },
   { value: "知识词", label: "知识词" },
+  { value: "对比词", label: "对比词" },
+  { value: "竞品词", label: "竞品词" },
+  { value: "工具词", label: "工具词" },
 ];
 
 export function SeedKeywordEditDialog({

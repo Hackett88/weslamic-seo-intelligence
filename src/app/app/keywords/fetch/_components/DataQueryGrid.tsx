@@ -76,7 +76,7 @@ const SKILLS: Skill[] = [
     endpoint: "W03",
     title: "单词 SERP 透视",
     description: "查看单词搜索结果页的竞争与意图分布",
-    available: false,
+    available: true,
     spanCls: "col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-4",
     icon: Search,
   },

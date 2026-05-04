@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Loader2, ExternalLink } from "lucide-react";
-import type { ProgressState, W03ResultRow } from "./SeoTaskCard";
-import { SerpFeatureChips } from "./SerpFeatureChips";
+import { Loader2 } from "lucide-react";
+import type { ProgressState, W09ResultRow } from "./SeoTaskCard";
 
 type Market =
   | "sa"
@@ -28,26 +27,30 @@ const MARKETS: { value: Market; cn: string; code: string }[] = [
   { value: "us", cn: "美国", code: "US" },
 ];
 
-const UNITS_PER_ROW = 10;
+const UNITS_PER_ROW = 100;
 const MIN_LIMIT = 1;
-const MAX_LIMIT = 10;
-const DEFAULT_LIMIT = 3;
+const MAX_LIMIT = 12;
+const DEFAULT_LIMIT = 12;
 const UNITS_PASSWORD_THRESHOLD = 100;
 
-export function W03Workspace() {
-  const [keyword, setKeyword] = useState("");
+export function W09Workspace() {
+  const [advertiserDomain, setAdvertiserDomain] = useState("");
   const [market, setMarket] = useState<Market>("us");
   const [displayLimit, setDisplayLimit] = useState<number>(DEFAULT_LIMIT);
   const [progress, setProgress] = useState<ProgressState>({ status: "idle" });
-  const [rows, setRows] = useState<W03ResultRow[]>([]);
+  const [rows, setRows] = useState<W09ResultRow[]>([]);
   const [showAuth, setShowAuth] = useState(false);
   const [authPwd, setAuthPwd] = useState("");
   const [authError, setAuthError] = useState<string | null>(null);
   const [authSubmitting, setAuthSubmitting] = useState(false);
   const esRef = useRef<EventSource | null>(null);
 
-  const trimmedKeyword = keyword.trim();
-  const noKeyword = trimmedKeyword.length === 0;
+  const trimmedDomain = advertiserDomain.trim().toLowerCase();
+  const isDomainInvalid =
+    trimmedDomain.length === 0 ||
+    trimmedDomain.includes("/") ||
+    trimmedDomain.includes(" ") ||
+    !trimmedDomain.includes(".");
   const noMarket = !market;
   const limitInRange = displayLimit >= MIN_LIMIT && displayLimit <= MAX_LIMIT;
   const units = displayLimit * UNITS_PER_ROW;
@@ -61,12 +64,11 @@ export function W03Workspace() {
 
   function startStream() {
     const params = new URLSearchParams({
-      endpoint: "W03",
-      keyword: trimmedKeyword,
+      endpoint: "W09",
+      advertiser_domain: trimmedDomain,
       market,
       display_limit: String(displayLimit),
     });
-
     const url = `/api/keywords/fetch?${params.toString()}`;
     setProgress({ status: "submitting" });
     setRows([]);
@@ -85,7 +87,7 @@ export function W03Workspace() {
 
     es.addEventListener("rows", (ev) => {
       try {
-        const data = JSON.parse((ev as MessageEvent).data) as { rows: W03ResultRow[] };
+        const data = JSON.parse((ev as MessageEvent).data) as { rows: W09ResultRow[] };
         setRows(Array.isArray(data.rows) ? data.rows : []);
       } catch {
         /* ignore */
@@ -156,7 +158,7 @@ export function W03Workspace() {
   }
 
   async function handleSubmit() {
-    if (noKeyword || noMarket || !limitInRange) return;
+    if (isDomainInvalid || noMarket || !limitInRange) return;
     if (needsSecondaryAuth) {
       const checkRes = await fetch("/api/n8n/secondary-auth/check");
       if (!checkRes.ok) {
@@ -193,7 +195,7 @@ export function W03Workspace() {
   const status = progress.status;
   const isRunning = status === "running" || status === "submitting";
   const canSubmit =
-    !noKeyword &&
+    !isDomainInvalid &&
     !noMarket &&
     limitInRange &&
     (status === "idle" || status === "succeeded" || status === "failed");
@@ -221,16 +223,10 @@ export function W03Workspace() {
     statusTextCls = "text-emerald-700";
   } else if (status === "succeeded") {
     const parts = [`已完成 · 返回 ${rows.length} 行`];
-    if (progress.failedBatches != null && progress.failedBatches > 0) {
-      parts.push(`其中 ${progress.failedBatches} 个失败`);
-    }
     if (progress.unitsActual != null)
       parts.push(`实耗 ${progress.unitsActual}u`);
     statusText = parts.join(" · ");
-    statusTextCls =
-      progress.failedBatches && progress.failedBatches > 0
-        ? "text-amber-600"
-        : "text-emerald-700";
+    statusTextCls = "text-emerald-700";
   } else {
     statusText = `查询失败：${progress.errorMessage ?? "调用失败"}`;
     statusTextCls = "text-red-600";
@@ -241,24 +237,34 @@ export function W03Workspace() {
       {/* 顶部工具栏 */}
       <div className="px-5 py-3 border-b border-gray-200 bg-white shrink-0">
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-12">
-          {/* 关键词单行输入 */}
+          {/* 竞品域名主输入 */}
           <div className="lg:col-span-9">
             <label className="mb-1 block text-[11px] font-medium text-gray-500">
-              关键词（单词）
+              竞品域名（不带 https:// 或 path）
             </label>
             <input
               type="text"
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              className="w-full rounded border border-gray-300 px-2 py-1.5 text-xs outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
-              placeholder="zikr ring"
+              value={advertiserDomain}
+              onChange={(e) => setAdvertiserDomain(e.target.value)}
+              className={[
+                "w-full rounded border px-2 py-1.5 text-xs outline-none focus:ring-2",
+                isDomainInvalid && advertiserDomain.length > 0
+                  ? "border-red-300 focus:border-red-400 focus:ring-red-100"
+                  : "border-gray-300 focus:border-emerald-400 focus:ring-emerald-100",
+              ].join(" ")}
+              placeholder="amazon.com"
             />
+            {isDomainInvalid && advertiserDomain.length > 0 && (
+              <p className="mt-1 text-[11px] text-red-600">
+                请输入纯域名（如 amazon.com）
+              </p>
+            )}
           </div>
 
-          {/* display_limit 数字输入 */}
+          {/* display_limit */}
           <div className="lg:col-span-3">
             <label className="mb-1 block text-[11px] font-medium text-gray-500">
-              SERP 取前 N 名（{MIN_LIMIT}-{MAX_LIMIT}）
+              取月份快照数 N（{MIN_LIMIT}-{MAX_LIMIT}）
             </label>
             <input
               type="number"
@@ -275,7 +281,7 @@ export function W03Workspace() {
         </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-3">
-          {/* 市场单选（radio 风格 chips） */}
+          {/* 市场单选 */}
           <div className="flex flex-wrap items-center gap-1.5">
             {MARKETS.map((m) => {
               const checked = market === m.value;
@@ -291,7 +297,7 @@ export function W03Workspace() {
                 >
                   <input
                     type="radio"
-                    name="w03-market"
+                    name="w09-market"
                     checked={checked}
                     onChange={() => setMarket(m.value)}
                     className="h-3 w-3 accent-emerald-600"
@@ -304,9 +310,12 @@ export function W03Workspace() {
             })}
           </div>
 
-          {/* units 估算徽章 */}
+          {/* units 估算 + 单价提醒 */}
           <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-[11px] text-gray-500">
             {displayLimit} 行 × 1 市场 · 预估 {units}u
+          </span>
+          <span className="text-[11px] font-medium text-red-500">
+            单价 100u/行 · 单次最大 1200u
           </span>
           {needsSecondaryAuth && (
             <span className="text-[11px] text-amber-600">需密码门</span>
@@ -367,7 +376,7 @@ export function W03Workspace() {
       <div className="flex-1 overflow-auto bg-white">
         {status === "idle" && (
           <div className="flex h-full min-h-[280px] items-center justify-center px-6 py-12 text-sm text-gray-400">
-            提交后这里展示该词的 SERP 前 N 名结果
+            提交后这里展示该竞品历史每月投放过的广告词（每月 15 日快照）
           </div>
         )}
 
@@ -382,7 +391,7 @@ export function W03Workspace() {
 
         {status === "succeeded" && (
           rows.length > 0 ? (
-            <SerpResultTable rows={rows} />
+            <AdwordsHistoricalResultTable rows={rows} />
           ) : (
             <div className="flex h-full min-h-[280px] items-center justify-center px-6 py-12">
               <div className="rounded border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
@@ -457,70 +466,71 @@ export function W03Workspace() {
   );
 }
 
-function SerpResultTable({ rows }: { rows: W03ResultRow[] }) {
+function formatFetchDate(fetchDate: string | null): string {
+  if (!fetchDate) return "—";
+  if (fetchDate.length >= 6) {
+    return fetchDate.slice(0, 4) + "-" + fetchDate.slice(4, 6);
+  }
+  return fetchDate;
+}
+
+function AdwordsHistoricalResultTable({ rows }: { rows: W09ResultRow[] }) {
   const sorted = [...rows].sort((a, b) => {
-    const pa = a.position ?? Number.MAX_SAFE_INTEGER;
-    const pb = b.position ?? Number.MAX_SAFE_INTEGER;
+    // 按 fetch_date 降序（最新月在前），相同月份内按 position 升序
+    const da = a.fetch_date ?? "";
+    const db = b.fetch_date ?? "";
+    if (da !== db) return da > db ? -1 : 1;
+    const pa = a.position ?? Infinity;
+    const pb = b.position ?? Infinity;
     return pa - pb;
   });
+
   return (
     <div>
       <div className="px-5 py-2 flex items-center justify-between border-b border-gray-200">
         <span className="text-sm font-medium text-gray-700">
-          SERP 前 N 名 · 共 {rows.length} 行
+          竞品广告词历史 · 共 {rows.length} 行
         </span>
         <span className="text-[11px] text-gray-400">
-          数据源：semrush_serp_features_staging
+          数据源：semrush_sem_advertisers_staging（mode=&apos;historical&apos;）
         </span>
       </div>
 
       <table className="w-full text-xs">
         <thead className="sticky top-0 bg-gray-50 text-gray-500">
           <tr className="border-b border-gray-200">
+            <th className="px-5 py-2 text-left font-medium">快照月份</th>
             <th className="px-5 py-2 text-right font-medium">排名</th>
-            <th className="px-5 py-2 text-left font-medium">类型</th>
-            <th className="px-5 py-2 text-left font-medium">域名</th>
-            <th className="px-5 py-2 text-left font-medium">URL</th>
-            <th className="px-5 py-2 text-left font-medium">关键词 SERP 特征</th>
-            <th className="px-5 py-2 text-left font-medium">域名 SERP 特征</th>
+            <th className="px-5 py-2 text-left font-medium">广告词</th>
+            <th className="px-5 py-2 text-left font-medium">落地展示 URL</th>
+            <th className="px-5 py-2 text-left font-medium">广告标题</th>
+            <th className="px-5 py-2 text-left font-medium">广告描述</th>
+            <th className="px-5 py-2 text-left font-medium">市场</th>
           </tr>
         </thead>
         <tbody>
-          {sorted.map((r, i) => (
+          {sorted.map((r, idx) => (
             <tr
-              key={`${r.position ?? "x"}-${r.url ?? r.domain ?? i}`}
+              key={`${r.market}-${r.fetch_date}-${r.keyword}-${idx}`}
               className="border-b border-gray-100 hover:bg-emerald-50/30 transition-colors"
             >
+              <td className="px-5 py-2 text-gray-600 font-mono text-[11px]">
+                {formatFetchDate(r.fetch_date)}
+              </td>
               <td className="px-5 py-2 text-right text-gray-700">
-                {r.position ?? "—"}
+                {r.position != null ? r.position : "—"}
               </td>
-              <td className="px-5 py-2 text-gray-700">
-                {r.position_type ?? "—"}
+              <td className="px-5 py-2 text-gray-900">{r.keyword || "—"}</td>
+              <td className="px-5 py-2 text-gray-700 truncate max-w-[180px]">
+                {r.visible_url ?? "—"}
               </td>
-              <td className="px-5 py-2 text-gray-900 truncate max-w-[180px]">
-                {r.domain ?? "—"}
+              <td className="px-5 py-2 text-gray-700 truncate max-w-[240px]">
+                {r.ad_title ?? "—"}
               </td>
-              <td className="px-5 py-2 text-gray-600 truncate max-w-[260px]">
-                {r.url ? (
-                  <a
-                    href={r.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-emerald-700 hover:underline"
-                  >
-                    <span className="truncate">{r.url}</span>
-                    <ExternalLink size={11} className="shrink-0" />
-                  </a>
-                ) : (
-                  "—"
-                )}
+              <td className="px-5 py-2 text-gray-500 truncate max-w-[320px]">
+                {r.ad_description ?? "—"}
               </td>
-              <td className="px-5 py-2 align-top max-w-[260px]">
-                <SerpFeatureChips codes={r.keyword_serp_features_codes} />
-              </td>
-              <td className="px-5 py-2 align-top max-w-[260px]">
-                <SerpFeatureChips codes={r.domain_serp_features_codes} />
-              </td>
+              <td className="px-5 py-2 text-gray-700 uppercase">{r.market || "—"}</td>
             </tr>
           ))}
         </tbody>

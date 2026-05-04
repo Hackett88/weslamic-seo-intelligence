@@ -1,45 +1,21 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Loader2, ExternalLink } from "lucide-react";
-import type { ProgressState, W03ResultRow } from "./SeoTaskCard";
-import { SerpFeatureChips } from "./SerpFeatureChips";
-
-type Market =
-  | "sa"
-  | "id"
-  | "my"
-  | "ae"
-  | "uk"
-  | "fr"
-  | "de"
-  | "es"
-  | "us";
-
-const MARKETS: { value: Market; cn: string; code: string }[] = [
-  { value: "sa", cn: "沙特", code: "SA" },
-  { value: "id", cn: "印尼", code: "ID" },
-  { value: "my", cn: "马来西亚", code: "MY" },
-  { value: "ae", cn: "阿联酋", code: "AE" },
-  { value: "uk", cn: "英国", code: "UK" },
-  { value: "fr", cn: "法国", code: "FR" },
-  { value: "de", cn: "德国", code: "DE" },
-  { value: "es", cn: "西班牙", code: "ES" },
-  { value: "us", cn: "美国", code: "US" },
-];
+import { Loader2 } from "lucide-react";
+import type { ProgressState, W07ResultRow } from "./SeoTaskCard";
 
 const UNITS_PER_ROW = 10;
+const ROWS_PER_LIMIT = 11; // phrase_all 真采实测：display_limit=1 返回 11 个 database 行
 const MIN_LIMIT = 1;
-const MAX_LIMIT = 10;
-const DEFAULT_LIMIT = 3;
+const MAX_LIMIT = 50;
+const DEFAULT_LIMIT = 9;
 const UNITS_PASSWORD_THRESHOLD = 100;
 
-export function W03Workspace() {
+export function W07Workspace() {
   const [keyword, setKeyword] = useState("");
-  const [market, setMarket] = useState<Market>("us");
   const [displayLimit, setDisplayLimit] = useState<number>(DEFAULT_LIMIT);
   const [progress, setProgress] = useState<ProgressState>({ status: "idle" });
-  const [rows, setRows] = useState<W03ResultRow[]>([]);
+  const [rows, setRows] = useState<W07ResultRow[]>([]);
   const [showAuth, setShowAuth] = useState(false);
   const [authPwd, setAuthPwd] = useState("");
   const [authError, setAuthError] = useState<string | null>(null);
@@ -48,9 +24,9 @@ export function W03Workspace() {
 
   const trimmedKeyword = keyword.trim();
   const noKeyword = trimmedKeyword.length === 0;
-  const noMarket = !market;
   const limitInRange = displayLimit >= MIN_LIMIT && displayLimit <= MAX_LIMIT;
-  const units = displayLimit * UNITS_PER_ROW;
+  // phrase_all 跨库返回所有数据库该词搜量，预估 = display_limit × 11 行 × 10u/行
+  const units = displayLimit * UNITS_PER_ROW * ROWS_PER_LIMIT;
   const needsSecondaryAuth = units >= UNITS_PASSWORD_THRESHOLD;
 
   useEffect(() => {
@@ -61,12 +37,10 @@ export function W03Workspace() {
 
   function startStream() {
     const params = new URLSearchParams({
-      endpoint: "W03",
+      endpoint: "W07",
       keyword: trimmedKeyword,
-      market,
       display_limit: String(displayLimit),
     });
-
     const url = `/api/keywords/fetch?${params.toString()}`;
     setProgress({ status: "submitting" });
     setRows([]);
@@ -85,7 +59,7 @@ export function W03Workspace() {
 
     es.addEventListener("rows", (ev) => {
       try {
-        const data = JSON.parse((ev as MessageEvent).data) as { rows: W03ResultRow[] };
+        const data = JSON.parse((ev as MessageEvent).data) as { rows: W07ResultRow[] };
         setRows(Array.isArray(data.rows) ? data.rows : []);
       } catch {
         /* ignore */
@@ -156,7 +130,7 @@ export function W03Workspace() {
   }
 
   async function handleSubmit() {
-    if (noKeyword || noMarket || !limitInRange) return;
+    if (noKeyword || !limitInRange) return;
     if (needsSecondaryAuth) {
       const checkRes = await fetch("/api/n8n/secondary-auth/check");
       if (!checkRes.ok) {
@@ -194,7 +168,6 @@ export function W03Workspace() {
   const isRunning = status === "running" || status === "submitting";
   const canSubmit =
     !noKeyword &&
-    !noMarket &&
     limitInRange &&
     (status === "idle" || status === "succeeded" || status === "failed");
 
@@ -221,16 +194,10 @@ export function W03Workspace() {
     statusTextCls = "text-emerald-700";
   } else if (status === "succeeded") {
     const parts = [`已完成 · 返回 ${rows.length} 行`];
-    if (progress.failedBatches != null && progress.failedBatches > 0) {
-      parts.push(`其中 ${progress.failedBatches} 个失败`);
-    }
     if (progress.unitsActual != null)
       parts.push(`实耗 ${progress.unitsActual}u`);
     statusText = parts.join(" · ");
-    statusTextCls =
-      progress.failedBatches && progress.failedBatches > 0
-        ? "text-amber-600"
-        : "text-emerald-700";
+    statusTextCls = "text-emerald-700";
   } else {
     statusText = `查询失败：${progress.errorMessage ?? "调用失败"}`;
     statusTextCls = "text-red-600";
@@ -238,13 +205,12 @@ export function W03Workspace() {
 
   return (
     <div className="flex flex-1 min-h-0 flex-col">
-      {/* 顶部工具栏 */}
+      {/* 顶部工具栏：keyword + display_limit（W07 不接受 market 入参，跨库返回所有数据库该词搜量） */}
       <div className="px-5 py-3 border-b border-gray-200 bg-white shrink-0">
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-12">
-          {/* 关键词单行输入 */}
           <div className="lg:col-span-9">
             <label className="mb-1 block text-[11px] font-medium text-gray-500">
-              关键词（单词）
+              关键词（单词）· 跨库一次查所有市场
             </label>
             <input
               type="text"
@@ -255,10 +221,9 @@ export function W03Workspace() {
             />
           </div>
 
-          {/* display_limit 数字输入 */}
           <div className="lg:col-span-3">
             <label className="mb-1 block text-[11px] font-medium text-gray-500">
-              SERP 取前 N 名（{MIN_LIMIT}-{MAX_LIMIT}）
+              每库取前 N 名（{MIN_LIMIT}-{MAX_LIMIT}）
             </label>
             <input
               type="number"
@@ -275,38 +240,11 @@ export function W03Workspace() {
         </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-3">
-          {/* 市场单选（radio 风格 chips） */}
-          <div className="flex flex-wrap items-center gap-1.5">
-            {MARKETS.map((m) => {
-              const checked = market === m.value;
-              return (
-                <label
-                  key={m.value}
-                  className={[
-                    "inline-flex cursor-pointer items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] transition-colors select-none",
-                    checked
-                      ? "border-emerald-400 bg-emerald-50 text-emerald-700"
-                      : "border-gray-300 bg-white text-gray-700 hover:border-emerald-300",
-                  ].join(" ")}
-                >
-                  <input
-                    type="radio"
-                    name="w03-market"
-                    checked={checked}
-                    onChange={() => setMarket(m.value)}
-                    className="h-3 w-3 accent-emerald-600"
-                  />
-                  <span>
-                    {m.cn} {m.code}
-                  </span>
-                </label>
-              );
-            })}
-          </div>
-
-          {/* units 估算徽章 */}
           <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-[11px] text-gray-500">
-            {displayLimit} 行 × 1 市场 · 预估 {units}u
+            {displayLimit} × ~{ROWS_PER_LIMIT} 库 · 预估 {units}u
+          </span>
+          <span className="text-[11px] text-gray-400">
+            phrase_all 不接受 market 入参；返回市场列表由 Semrush 决定
           </span>
           {needsSecondaryAuth && (
             <span className="text-[11px] text-amber-600">需密码门</span>
@@ -317,7 +255,6 @@ export function W03Workspace() {
             </span>
           )}
 
-          {/* 启动按钮 */}
           <button
             type="button"
             onClick={handleSubmit}
@@ -367,7 +304,7 @@ export function W03Workspace() {
       <div className="flex-1 overflow-auto bg-white">
         {status === "idle" && (
           <div className="flex h-full min-h-[280px] items-center justify-center px-6 py-12 text-sm text-gray-400">
-            提交后这里展示该词的 SERP 前 N 名结果
+            提交后这里展示该词在所有 Semrush 数据库的搜量对比
           </div>
         )}
 
@@ -382,7 +319,7 @@ export function W03Workspace() {
 
         {status === "succeeded" && (
           rows.length > 0 ? (
-            <SerpResultTable rows={rows} />
+            <CrossMarketTable rows={rows} />
           ) : (
             <div className="flex h-full min-h-[280px] items-center justify-center px-6 py-12">
               <div className="rounded border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
@@ -457,70 +394,63 @@ export function W03Workspace() {
   );
 }
 
-function SerpResultTable({ rows }: { rows: W03ResultRow[] }) {
+function CrossMarketTable({ rows }: { rows: W07ResultRow[] }) {
+  // 默认按月搜量降序，让最大市场置顶
   const sorted = [...rows].sort((a, b) => {
-    const pa = a.position ?? Number.MAX_SAFE_INTEGER;
-    const pb = b.position ?? Number.MAX_SAFE_INTEGER;
-    return pa - pb;
+    const va = a.search_volume ?? -1;
+    const vb = b.search_volume ?? -1;
+    return vb - va;
   });
   return (
     <div>
       <div className="px-5 py-2 flex items-center justify-between border-b border-gray-200">
         <span className="text-sm font-medium text-gray-700">
-          SERP 前 N 名 · 共 {rows.length} 行
+          跨市场搜量 · 共 {rows.length} 行
         </span>
         <span className="text-[11px] text-gray-400">
-          数据源：semrush_serp_features_staging
+          数据源：semrush_kmt_staging（kmt_mode=&apos;all&apos;）
         </span>
       </div>
 
       <table className="w-full text-xs">
         <thead className="sticky top-0 bg-gray-50 text-gray-500">
           <tr className="border-b border-gray-200">
-            <th className="px-5 py-2 text-right font-medium">排名</th>
-            <th className="px-5 py-2 text-left font-medium">类型</th>
-            <th className="px-5 py-2 text-left font-medium">域名</th>
-            <th className="px-5 py-2 text-left font-medium">URL</th>
-            <th className="px-5 py-2 text-left font-medium">关键词 SERP 特征</th>
-            <th className="px-5 py-2 text-left font-medium">域名 SERP 特征</th>
+            <th className="px-5 py-2 text-left font-medium">市场</th>
+            <th className="px-5 py-2 text-left font-medium">关键词</th>
+            <th className="px-5 py-2 text-right font-medium">月搜量</th>
+            <th className="px-5 py-2 text-right font-medium">KD</th>
+            <th className="px-5 py-2 text-right font-medium">CPC</th>
+            <th className="px-5 py-2 text-right font-medium">竞争度</th>
+            <th className="px-5 py-2 text-right font-medium">结果数</th>
+            <th className="px-5 py-2 text-left font-medium">Intent</th>
           </tr>
         </thead>
         <tbody>
           {sorted.map((r, i) => (
             <tr
-              key={`${r.position ?? "x"}-${r.url ?? r.domain ?? i}`}
+              key={`${r.market}-${r.keyword}-${i}`}
               className="border-b border-gray-100 hover:bg-emerald-50/30 transition-colors"
             >
+              <td className="px-5 py-2 text-gray-700 uppercase">{r.market || "—"}</td>
+              <td className="px-5 py-2 text-gray-900">{r.keyword}</td>
               <td className="px-5 py-2 text-right text-gray-700">
-                {r.position ?? "—"}
+                {r.search_volume != null ? r.search_volume.toLocaleString() : "—"}
               </td>
-              <td className="px-5 py-2 text-gray-700">
-                {r.position_type ?? "—"}
+              <td className="px-5 py-2 text-right text-gray-700">
+                {r.keyword_difficulty != null ? r.keyword_difficulty : "—"}
               </td>
-              <td className="px-5 py-2 text-gray-900 truncate max-w-[180px]">
-                {r.domain ?? "—"}
+              <td className="px-5 py-2 text-right text-gray-700">
+                {r.cpc != null ? r.cpc.toFixed(2) : "—"}
               </td>
-              <td className="px-5 py-2 text-gray-600 truncate max-w-[260px]">
-                {r.url ? (
-                  <a
-                    href={r.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-emerald-700 hover:underline"
-                  >
-                    <span className="truncate">{r.url}</span>
-                    <ExternalLink size={11} className="shrink-0" />
-                  </a>
-                ) : (
-                  "—"
-                )}
+              <td className="px-5 py-2 text-right text-gray-700">
+                {r.competition != null ? r.competition.toFixed(2) : "—"}
               </td>
-              <td className="px-5 py-2 align-top max-w-[260px]">
-                <SerpFeatureChips codes={r.keyword_serp_features_codes} />
+              <td className="px-5 py-2 text-right text-gray-700">
+                {r.number_of_results != null
+                  ? r.number_of_results.toLocaleString()
+                  : "—"}
               </td>
-              <td className="px-5 py-2 align-top max-w-[260px]">
-                <SerpFeatureChips codes={r.domain_serp_features_codes} />
-              </td>
+              <td className="px-5 py-2 text-gray-700">{r.intent ?? "—"}</td>
             </tr>
           ))}
         </tbody>

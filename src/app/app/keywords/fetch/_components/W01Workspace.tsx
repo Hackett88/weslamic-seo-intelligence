@@ -455,7 +455,7 @@ export function ResultTable({ rows }: { rows: W01ResultRow[] }) {
           返回结果 · 共 {rows.length} 行
         </span>
         <span className="text-[11px] text-gray-400">
-          数据源：N8N DataTable · semrush_keywords_staging
+          数据源：semrush_keywords_staging
         </span>
       </div>
 

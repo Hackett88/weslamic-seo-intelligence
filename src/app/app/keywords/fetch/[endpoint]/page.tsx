@@ -4,6 +4,13 @@ import { auth } from "@/lib/auth";
 import { W01Workspace } from "../_components/W01Workspace";
 import { W02Workspace } from "../_components/W02Workspace";
 import { W03Workspace } from "../_components/W03Workspace";
+import { W04Workspace } from "../_components/W04Workspace";
+import { W05Workspace } from "../_components/W05Workspace";
+import { W06Workspace } from "../_components/W06Workspace";
+import { W07Workspace } from "../_components/W07Workspace";
+import { W08Workspace } from "../_components/W08Workspace";
+import { W09Workspace } from "../_components/W09Workspace";
+import { W10Workspace } from "../_components/W10Workspace";
 
 type SkillMeta = {
   title: string;
@@ -24,43 +31,43 @@ const SKILL_META: Record<string, SkillMeta> = {
   },
   w03: {
     title: "关键词排名对手",
-    description: "看 Google TOP100 里谁在排这个词，列出域名 / URL / 排位 / SERP 特性",
+    description: "看 Google SERP 前 N 名（1-10）谁在排这个词，列出域名 / URL / 排位 / SERP 特性（中文标注）",
     available: true,
   },
   w04: {
     title: "问句词挖掘",
-    description: "围绕主题挖掘 5W1H 长尾问句词",
-    available: false,
+    description: "围绕主题挖掘 5W1H 长尾问句词，附问句类型筛选",
+    available: true,
   },
   w05: {
     title: "主题相关词",
-    description: "围绕主题扩展语义相关的关键词集合",
-    available: false,
+    description: "围绕主题挖掘语义相关的关键词集合，含相关度排序",
+    available: true,
   },
   w06: {
     title: "全搜索拓词",
-    description: "基于种子词跨数据源批量拓展候选词",
-    available: false,
+    description: "基于种子词跨数据源批量拓展候选词，单价 20u/行（W05 一半），适合大量探词",
+    available: true,
   },
   w07: {
     title: "跨市场搜量",
-    description: "同一组词在多个国家市场的搜量对比",
-    available: false,
+    description: "单词跨库一次拉所有 Semrush 数据库的月搜量、难度、CPC、Intent",
+    available: true,
   },
   w08: {
     title: "竞品广告词",
-    description: "抓取竞品域名当前正在投放的广告词",
-    available: false,
+    description: "查竞品域名当前在 Google Ads 投放的广告词、排名、落地页与广告文案",
+    available: true,
   },
   w09: {
     title: "竞品广告词历史",
-    description: "回溯竞品域名历史投放过的广告词变化",
-    available: false,
+    description: "回溯竞品域名历史投放过的广告词变化，每月 15 日快照（单次 ≤ 12 月，单价 100u/行）",
+    available: true,
   },
   w10: {
     title: "域名差距分析",
-    description: "对比自身与竞品域名的关键词覆盖差距",
-    available: false,
+    description: "对比自身与竞品域名的关键词覆盖差距，4 种维度（缺口/共有/蓝海/弱势）多选",
+    available: true,
   },
 };
 
@@ -107,6 +114,20 @@ export default async function SkillDetailPage({ params }: PageProps) {
         <W02Workspace />
       ) : meta.available && slug === "w03" ? (
         <W03Workspace />
+      ) : meta.available && slug === "w04" ? (
+        <W04Workspace />
+      ) : meta.available && slug === "w05" ? (
+        <W05Workspace />
+      ) : meta.available && slug === "w06" ? (
+        <W06Workspace />
+      ) : meta.available && slug === "w07" ? (
+        <W07Workspace />
+      ) : meta.available && slug === "w08" ? (
+        <W08Workspace />
+      ) : meta.available && slug === "w09" ? (
+        <W09Workspace />
+      ) : meta.available && slug === "w10" ? (
+        <W10Workspace />
       ) : (
         <div className="flex-1 flex items-center justify-center bg-gray-50">
           <div className="rounded-lg border border-dashed border-gray-300 bg-white px-6 py-16 text-center text-sm text-gray-500">

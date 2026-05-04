@@ -9,14 +9,42 @@ import {
   triggerW01PhraseThese,
   triggerW02PhraseThis,
   triggerW03PhraseOrganic,
+  triggerW04PhraseQuestions,
+  triggerW05PhraseRelated,
+  triggerW06PhraseFullsearch,
+  triggerW07PhraseAll,
+  triggerW08DomainAdwords,
+  triggerW09DomainAdwordsHistorical,
+  triggerW10DomainDomains,
   buildBatchId,
   buildW02BatchId,
   buildW03BatchId,
+  buildW04BatchId,
+  buildW05BatchId,
+  buildW06BatchId,
+  buildW07BatchId,
+  buildW08BatchId,
+  buildW09BatchId,
+  buildW10BatchId,
   getStagingRowsByBatch,
   getW03StagingRowsByBatch,
+  getW04StagingRowsByBatch,
+  getW05StagingRowsByBatch,
+  getW06StagingRowsByBatch,
+  getW07StagingRowsByBatch,
+  getW08StagingRowsByBatch,
+  getW09StagingRowsByBatch,
+  getW10StagingRowsByBatch,
   type W01Market,
   type StagingRow,
   type W03StagingRow,
+  type W04StagingRow,
+  type W05StagingRow,
+  type W06StagingRow,
+  type W07StagingRow,
+  type W08StagingRow,
+  type W09StagingRow,
+  type W10StagingRow,
 } from "@/lib/n8n-trigger";
 
 export const runtime = "nodejs";
@@ -67,7 +95,10 @@ export async function GET(req: NextRequest) {
   }
 
   const ep = endpoint.toUpperCase();
-  if (ep !== "W01" && ep !== "W02" && ep !== "W03") {
+  if (
+    ep !== "W01" && ep !== "W02" && ep !== "W03" &&
+    ep !== "W04" && ep !== "W05" && ep !== "W06" && ep !== "W07" && ep !== "W08" && ep !== "W09" && ep !== "W10"
+  ) {
     return new Response(`endpoint ${endpoint} not implemented\n`, {
       status: 501,
       headers: { "Content-Type": "text/plain; charset=utf-8" },
@@ -96,6 +127,199 @@ export async function GET(req: NextRequest) {
     }
 
     return realW02Stream(req, keyword, markets);
+  }
+
+  if (ep === "W07") {
+    const keyword = (req.nextUrl.searchParams.get("keyword") ?? "")
+      .trim()
+      .toLowerCase();
+    const displayLimitRaw = req.nextUrl.searchParams.get("display_limit") ?? "9";
+    const displayLimit = Math.max(1, Math.min(50, Number(displayLimitRaw) || 9));
+
+    if (!keyword) {
+      return new Response("keyword required\n", { status: 400 });
+    }
+
+    if (isMockEnabled(req)) {
+      return mockEndpointStream(req, "W07");
+    }
+
+    return realW07Stream(req, keyword, displayLimit);
+  }
+
+  if (ep === "W04") {
+    const seedKeyword = (req.nextUrl.searchParams.get("seed_keyword") ?? "")
+      .trim()
+      .toLowerCase();
+    const marketRaw = (req.nextUrl.searchParams.get("market") ?? "")
+      .trim()
+      .toLowerCase() as W01Market;
+    const displayLimitRaw = req.nextUrl.searchParams.get("display_limit") ?? "25";
+    const displayLimit = Math.max(1, Math.min(100, Number(displayLimitRaw) || 25));
+
+    if (!seedKeyword) {
+      return new Response("seed_keyword required\n", { status: 400 });
+    }
+    if (!ALLOWED_MARKETS.includes(marketRaw)) {
+      return new Response("valid market required\n", { status: 400 });
+    }
+
+    if (isMockEnabled(req)) {
+      return mockEndpointStream(req, "W04");
+    }
+
+    return realW04Stream(req, seedKeyword, marketRaw, displayLimit);
+  }
+
+  if (ep === "W05") {
+    const seedKeyword = (req.nextUrl.searchParams.get("seed_keyword") ?? "")
+      .trim()
+      .toLowerCase();
+    const marketRaw = (req.nextUrl.searchParams.get("market") ?? "")
+      .trim()
+      .toLowerCase() as W01Market;
+    const displayLimitRaw = req.nextUrl.searchParams.get("display_limit") ?? "25";
+    const displayLimit = Math.max(1, Math.min(100, Number(displayLimitRaw) || 25));
+
+    if (!seedKeyword) {
+      return new Response("seed_keyword required\n", { status: 400 });
+    }
+    if (!ALLOWED_MARKETS.includes(marketRaw)) {
+      return new Response("valid market required\n", { status: 400 });
+    }
+
+    if (isMockEnabled(req)) {
+      return mockEndpointStream(req, "W05");
+    }
+
+    return realW05Stream(req, seedKeyword, marketRaw, displayLimit);
+  }
+
+  if (ep === "W06") {
+    const seedKeyword = (req.nextUrl.searchParams.get("seed_keyword") ?? "")
+      .trim()
+      .toLowerCase();
+    const marketRaw = (req.nextUrl.searchParams.get("market") ?? "")
+      .trim()
+      .toLowerCase() as W01Market;
+    const displayLimitRaw = req.nextUrl.searchParams.get("display_limit") ?? "25";
+    const displayLimit = Math.max(1, Math.min(100, Number(displayLimitRaw) || 25));
+
+    if (!seedKeyword) {
+      return new Response("seed_keyword required\n", { status: 400 });
+    }
+    if (!ALLOWED_MARKETS.includes(marketRaw)) {
+      return new Response("valid market required\n", { status: 400 });
+    }
+
+    if (isMockEnabled(req)) {
+      return mockEndpointStream(req, "W06");
+    }
+
+    return realW06Stream(req, seedKeyword, marketRaw, displayLimit);
+  }
+
+  if (ep === "W08") {
+    const advertiserDomain = (req.nextUrl.searchParams.get("advertiser_domain") ?? "")
+      .trim()
+      .toLowerCase();
+    const marketRaw = (req.nextUrl.searchParams.get("market") ?? "")
+      .trim()
+      .toLowerCase() as W01Market;
+    const displayLimitRaw = req.nextUrl.searchParams.get("display_limit") ?? "25";
+    const displayLimit = Math.max(1, Math.min(100, Number(displayLimitRaw) || 25));
+
+    if (!advertiserDomain) {
+      return new Response("advertiser_domain required\n", { status: 400 });
+    }
+    if (advertiserDomain.includes("/") || advertiserDomain.includes(" ") || !advertiserDomain.includes(".")) {
+      return new Response("advertiser_domain must be a bare domain (e.g. amazon.com)\n", { status: 400 });
+    }
+    if (!ALLOWED_MARKETS.includes(marketRaw)) {
+      return new Response("valid market required\n", { status: 400 });
+    }
+
+    if (isMockEnabled(req)) {
+      return mockEndpointStream(req, "W08");
+    }
+
+    return realW08Stream(req, advertiserDomain, marketRaw, displayLimit);
+  }
+
+  if (ep === "W09") {
+    const advertiserDomain = (req.nextUrl.searchParams.get("advertiser_domain") ?? "")
+      .trim()
+      .toLowerCase();
+    const marketRaw = (req.nextUrl.searchParams.get("market") ?? "")
+      .trim()
+      .toLowerCase() as W01Market;
+    const displayLimitRaw = req.nextUrl.searchParams.get("display_limit") ?? "12";
+    const displayLimit = Math.max(1, Math.min(12, Number(displayLimitRaw) || 12));
+
+    if (!advertiserDomain) {
+      return new Response("advertiser_domain required\n", { status: 400 });
+    }
+    if (advertiserDomain.includes("/") || advertiserDomain.includes(" ") || !advertiserDomain.includes(".")) {
+      return new Response("advertiser_domain must be a bare domain (e.g. amazon.com)\n", { status: 400 });
+    }
+    if (!ALLOWED_MARKETS.includes(marketRaw)) {
+      return new Response("valid market required\n", { status: 400 });
+    }
+
+    if (isMockEnabled(req)) {
+      return mockEndpointStream(req, "W09");
+    }
+
+    return realW09Stream(req, advertiserDomain, marketRaw, displayLimit);
+  }
+
+  if (ep === "W10") {
+    const ourDomain = (req.nextUrl.searchParams.get("our_domain") ?? "")
+      .trim()
+      .toLowerCase();
+    const competitorDomainsRaw = req.nextUrl.searchParams.get("competitor_domains") ?? "";
+    const competitorDomains = competitorDomainsRaw
+      .split(",")
+      .map((s) => s.trim().toLowerCase())
+      .filter(Boolean);
+    const gapTypesRaw = req.nextUrl.searchParams.get("gap_types") ?? "";
+    const gapTypes = gapTypesRaw
+      .split(",")
+      .map((s) => s.trim().toLowerCase())
+      .filter(Boolean);
+    const marketRaw = (req.nextUrl.searchParams.get("market") ?? "")
+      .trim()
+      .toLowerCase() as W01Market;
+    const displayLimitRaw = req.nextUrl.searchParams.get("display_limit") ?? "25";
+    const displayLimit = Math.max(1, Math.min(100, Number(displayLimitRaw) || 25));
+
+    if (!ourDomain) {
+      return new Response("our_domain required\n", { status: 400 });
+    }
+    if (ourDomain.includes("/") || ourDomain.includes(" ") || !ourDomain.includes(".")) {
+      return new Response("our_domain must be a bare domain (e.g. weslamic.com)\n", { status: 400 });
+    }
+    if (competitorDomains.length === 0) {
+      return new Response("at least one competitor_domain required\n", { status: 400 });
+    }
+    if (competitorDomains.length > 4) {
+      return new Response("competitor_domains max 4\n", { status: 400 });
+    }
+    if (gapTypes.length === 0) {
+      return new Response("at least one gap_type required\n", { status: 400 });
+    }
+    if (gapTypes.includes("untapped") && competitorDomains.length < 2) {
+      return new Response("gap_type 'untapped' requires at least 2 competitor_domains\n", { status: 400 });
+    }
+    if (!ALLOWED_MARKETS.includes(marketRaw)) {
+      return new Response("valid market required\n", { status: 400 });
+    }
+
+    if (isMockEnabled(req)) {
+      return mockEndpointStream(req, "W10");
+    }
+
+    return realW10Stream(req, ourDomain, competitorDomains, gapTypes, marketRaw, displayLimit);
   }
 
   if (ep === "W03") {
@@ -790,6 +1014,1465 @@ function realW03Stream(
   return new Response(stream, { headers: SSE_HEADERS });
 }
 
+function realW07Stream(
+  req: NextRequest,
+  keyword: string,
+  displayLimit: number
+): Response {
+  const encoder = new TextEncoder();
+  const batchId = buildW07BatchId();
+  const batches = [{ batchId }];
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      let cancelled = false;
+      const enqueue = (chunk: string) => {
+        if (cancelled) return;
+        try {
+          controller.enqueue(encoder.encode(chunk));
+        } catch {
+          /* closed */
+        }
+      };
+      const close = () => {
+        try {
+          controller.close();
+        } catch {
+          /* already closed */
+        }
+      };
+
+      const heartbeat = setInterval(() => {
+        if (cancelled) return;
+        enqueue(`: heartbeat\n\n`);
+      }, HEARTBEAT_MS);
+
+      req.signal.addEventListener("abort", () => {
+        cancelled = true;
+        clearInterval(heartbeat);
+        close();
+      });
+
+      enqueue(
+        `event: banner\ndata: ${JSON.stringify({
+          mock: false,
+          batches,
+          keyword,
+          display_limit: displayLimit,
+        })}\n\n`
+      );
+
+      const triggerErrors: Record<string, string> = {};
+      try {
+        const r = await triggerW07PhraseAll({
+          batchId,
+          keyword,
+          displayLimit,
+        });
+        if (!r.webhookOk) {
+          triggerErrors[batchId] = `webhook ${r.webhookStatus}`;
+        }
+      } catch (err) {
+        triggerErrors[batchId] =
+          err instanceof Error ? err.message : String(err);
+      }
+
+      const finishedBatches = new Set<string>();
+      if (triggerErrors[batchId]) {
+        finishedBatches.add(batchId);
+        const evt = {
+          version: "2025-01" as const,
+          event_id: `${batchId}-trigger-failed`,
+          seq: 0,
+          ts: new Date().toISOString(),
+          batch_id: batchId,
+          workflow_id: "W07",
+          execution_id: "trigger",
+          node_name: "Trigger Failed",
+          node_status: "failed" as const,
+          payload: {
+            error: {
+              code: "WEBHOOK_TRIGGER_FAILED",
+              message: triggerErrors[batchId],
+            },
+          },
+        };
+        enqueue(`id: ${evt.event_id}\ndata: ${JSON.stringify(evt)}\n\n`);
+      }
+
+      const lastSeqByBatch: Record<string, number> = { [batchId]: -1 };
+      const startedAt = Date.now();
+      while (!cancelled && finishedBatches.size < batches.length) {
+        if (Date.now() - startedAt > HARD_TIMEOUT_MS) {
+          for (const b of batches) {
+            if (finishedBatches.has(b.batchId)) continue;
+            finishedBatches.add(b.batchId);
+            const evt = {
+              version: "2025-01" as const,
+              event_id: `${b.batchId}-timeout`,
+              seq: 90,
+              ts: new Date().toISOString(),
+              batch_id: b.batchId,
+              workflow_id: "W07",
+              execution_id: "timeout",
+              node_name: "Stream Timeout",
+              node_status: "failed" as const,
+              payload: { error: { code: "STREAM_TIMEOUT", message: `> ${HARD_TIMEOUT_MS}ms` } },
+            };
+            enqueue(`id: ${evt.event_id}\ndata: ${JSON.stringify(evt)}\n\n`);
+          }
+          break;
+        }
+
+        for (const b of batches) {
+          if (finishedBatches.has(b.batchId)) continue;
+          let newEvents: typeof n8nCallbackEvents.$inferSelect[] = [];
+          try {
+            newEvents = await db
+              .select()
+              .from(n8nCallbackEvents)
+              .where(
+                and(
+                  eq(n8nCallbackEvents.batchId, b.batchId),
+                  gt(n8nCallbackEvents.seq, lastSeqByBatch[b.batchId])
+                )
+              )
+              .orderBy(asc(n8nCallbackEvents.seq));
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
+            enqueue(
+              `event: error\ndata: ${JSON.stringify({ error: `db poll failed: ${msg}` })}\n\n`
+            );
+            continue;
+          }
+          for (const ev of newEvents) {
+            const evt = {
+              version: "2025-01" as const,
+              event_id: ev.eventId,
+              seq: ev.seq,
+              ts: ev.ts.toISOString(),
+              batch_id: ev.batchId,
+              workflow_id: ev.workflowId,
+              execution_id: ev.executionId,
+              node_name: ev.nodeName,
+              node_status: ev.nodeStatus as
+                | "started" | "running" | "progress" | "succeeded" | "failed" | "warning",
+              payload: ev.payload as Record<string, unknown> | null | undefined,
+            };
+            const parsed = N8nCallbackEventSchema.safeParse(evt);
+            const data = parsed.success ? parsed.data : evt;
+            enqueue(`id: ${ev.eventId}\ndata: ${JSON.stringify(data)}\n\n`);
+            lastSeqByBatch[b.batchId] = ev.seq;
+            if (TERMINAL_NODES.has(ev.nodeName)) {
+              finishedBatches.add(b.batchId);
+              break;
+            }
+          }
+        }
+        if (finishedBatches.size >= batches.length) break;
+        await sleep(POLL_INTERVAL_MS);
+      }
+
+      const allRows: W07StagingRow[] = [];
+      if (!triggerErrors[batchId]) {
+        try {
+          const rows = await getW07StagingRowsByBatch(batchId);
+          allRows.push(...rows);
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          enqueue(
+            `event: error\ndata: ${JSON.stringify({
+              error: `staging fetch failed for ${batchId}: ${msg}`,
+            })}\n\n`
+          );
+        }
+      }
+
+      enqueue(`event: rows\ndata: ${JSON.stringify({ rows: allRows })}\n\n`);
+
+      const failed = Object.keys(triggerErrors).length > 0;
+      const doneEvt = {
+        version: "2025-01" as const,
+        event_id: `_done-${randomUUID().slice(0, 8)}`,
+        seq: 99,
+        ts: new Date().toISOString(),
+        batch_id: batchId,
+        workflow_id: "W07",
+        execution_id: "_done",
+        node_name: "_done",
+        node_status: failed && allRows.length === 0 ? "failed" as const : "succeeded" as const,
+        payload: {
+          rows_new: allRows.length,
+          total_batches: batches.length,
+          failed_batches: Object.keys(triggerErrors).length,
+          units_actual: displayLimit * 10 * 11,
+        },
+      };
+      enqueue(`data: ${JSON.stringify(doneEvt)}\n\n`);
+
+      clearInterval(heartbeat);
+      close();
+    },
+  });
+
+  return new Response(stream, { headers: SSE_HEADERS });
+}
+
+function realW04Stream(
+  req: NextRequest,
+  seedKeyword: string,
+  market: W01Market,
+  displayLimit: number
+): Response {
+  const encoder = new TextEncoder();
+  const batchId = buildW04BatchId(market);
+  const batches = [{ batchId, market }];
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      let cancelled = false;
+      const enqueue = (chunk: string) => {
+        if (cancelled) return;
+        try {
+          controller.enqueue(encoder.encode(chunk));
+        } catch {
+          /* closed */
+        }
+      };
+      const close = () => {
+        try {
+          controller.close();
+        } catch {
+          /* already closed */
+        }
+      };
+
+      const heartbeat = setInterval(() => {
+        if (cancelled) return;
+        enqueue(`: heartbeat\n\n`);
+      }, HEARTBEAT_MS);
+
+      req.signal.addEventListener("abort", () => {
+        cancelled = true;
+        clearInterval(heartbeat);
+        close();
+      });
+
+      enqueue(
+        `event: banner\ndata: ${JSON.stringify({
+          mock: false,
+          batches,
+          seed_keyword: seedKeyword,
+          market,
+          display_limit: displayLimit,
+        })}\n\n`
+      );
+
+      const triggerErrors: Record<string, string> = {};
+      try {
+        const r = await triggerW04PhraseQuestions({
+          batchId,
+          seedKeyword,
+          market,
+          displayLimit,
+        });
+        if (!r.webhookOk) {
+          triggerErrors[batchId] = `webhook ${r.webhookStatus}`;
+        }
+      } catch (err) {
+        triggerErrors[batchId] =
+          err instanceof Error ? err.message : String(err);
+      }
+
+      const finishedBatches = new Set<string>();
+      if (triggerErrors[batchId]) {
+        finishedBatches.add(batchId);
+        const evt = {
+          version: "2025-01" as const,
+          event_id: `${batchId}-trigger-failed`,
+          seq: 0,
+          ts: new Date().toISOString(),
+          batch_id: batchId,
+          workflow_id: "W04",
+          execution_id: "trigger",
+          node_name: "Trigger Failed",
+          node_status: "failed" as const,
+          payload: {
+            error: {
+              code: "WEBHOOK_TRIGGER_FAILED",
+              message: triggerErrors[batchId],
+              market,
+            },
+          },
+        };
+        enqueue(`id: ${evt.event_id}\ndata: ${JSON.stringify(evt)}\n\n`);
+      }
+
+      const lastSeqByBatch: Record<string, number> = { [batchId]: -1 };
+      const startedAt = Date.now();
+      while (!cancelled && finishedBatches.size < batches.length) {
+        if (Date.now() - startedAt > HARD_TIMEOUT_MS) {
+          for (const b of batches) {
+            if (finishedBatches.has(b.batchId)) continue;
+            finishedBatches.add(b.batchId);
+            const evt = {
+              version: "2025-01" as const,
+              event_id: `${b.batchId}-timeout`,
+              seq: 90,
+              ts: new Date().toISOString(),
+              batch_id: b.batchId,
+              workflow_id: "W04",
+              execution_id: "timeout",
+              node_name: "Stream Timeout",
+              node_status: "failed" as const,
+              payload: { error: { code: "STREAM_TIMEOUT", message: `> ${HARD_TIMEOUT_MS}ms` } },
+            };
+            enqueue(`id: ${evt.event_id}\ndata: ${JSON.stringify(evt)}\n\n`);
+          }
+          break;
+        }
+
+        for (const b of batches) {
+          if (finishedBatches.has(b.batchId)) continue;
+          let newEvents: typeof n8nCallbackEvents.$inferSelect[] = [];
+          try {
+            newEvents = await db
+              .select()
+              .from(n8nCallbackEvents)
+              .where(
+                and(
+                  eq(n8nCallbackEvents.batchId, b.batchId),
+                  gt(n8nCallbackEvents.seq, lastSeqByBatch[b.batchId])
+                )
+              )
+              .orderBy(asc(n8nCallbackEvents.seq));
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
+            enqueue(
+              `event: error\ndata: ${JSON.stringify({ error: `db poll failed: ${msg}` })}\n\n`
+            );
+            continue;
+          }
+          for (const ev of newEvents) {
+            const evt = {
+              version: "2025-01" as const,
+              event_id: ev.eventId,
+              seq: ev.seq,
+              ts: ev.ts.toISOString(),
+              batch_id: ev.batchId,
+              workflow_id: ev.workflowId,
+              execution_id: ev.executionId,
+              node_name: ev.nodeName,
+              node_status: ev.nodeStatus as
+                | "started" | "running" | "progress" | "succeeded" | "failed" | "warning",
+              payload: ev.payload as Record<string, unknown> | null | undefined,
+            };
+            const parsed = N8nCallbackEventSchema.safeParse(evt);
+            const data = parsed.success ? parsed.data : evt;
+            enqueue(`id: ${ev.eventId}\ndata: ${JSON.stringify(data)}\n\n`);
+            lastSeqByBatch[b.batchId] = ev.seq;
+            if (TERMINAL_NODES.has(ev.nodeName)) {
+              finishedBatches.add(b.batchId);
+              break;
+            }
+          }
+        }
+        if (finishedBatches.size >= batches.length) break;
+        await sleep(POLL_INTERVAL_MS);
+      }
+
+      const allRows: W04StagingRow[] = [];
+      if (!triggerErrors[batchId]) {
+        try {
+          const rows = await getW04StagingRowsByBatch(batchId);
+          allRows.push(...rows);
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          enqueue(
+            `event: error\ndata: ${JSON.stringify({
+              error: `staging fetch failed for ${batchId}: ${msg}`,
+            })}\n\n`
+          );
+        }
+      }
+
+      enqueue(`event: rows\ndata: ${JSON.stringify({ rows: allRows })}\n\n`);
+
+      const failed = Object.keys(triggerErrors).length > 0;
+      const doneEvt = {
+        version: "2025-01" as const,
+        event_id: `_done-${randomUUID().slice(0, 8)}`,
+        seq: 99,
+        ts: new Date().toISOString(),
+        batch_id: batchId,
+        workflow_id: "W04",
+        execution_id: "_done",
+        node_name: "_done",
+        node_status: failed && allRows.length === 0 ? "failed" as const : "succeeded" as const,
+        payload: {
+          rows_new: allRows.length,
+          total_batches: batches.length,
+          failed_batches: Object.keys(triggerErrors).length,
+          units_actual: displayLimit * 40,
+        },
+      };
+      enqueue(`data: ${JSON.stringify(doneEvt)}\n\n`);
+
+      clearInterval(heartbeat);
+      close();
+    },
+  });
+
+  return new Response(stream, { headers: SSE_HEADERS });
+}
+
+function realW05Stream(
+  req: NextRequest,
+  seedKeyword: string,
+  market: W01Market,
+  displayLimit: number
+): Response {
+  const encoder = new TextEncoder();
+  const batchId = buildW05BatchId(market);
+  const batches = [{ batchId, market }];
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      let cancelled = false;
+      const enqueue = (chunk: string) => {
+        if (cancelled) return;
+        try {
+          controller.enqueue(encoder.encode(chunk));
+        } catch {
+          /* closed */
+        }
+      };
+      const close = () => {
+        try {
+          controller.close();
+        } catch {
+          /* already closed */
+        }
+      };
+
+      const heartbeat = setInterval(() => {
+        if (cancelled) return;
+        enqueue(`: heartbeat\n\n`);
+      }, HEARTBEAT_MS);
+
+      req.signal.addEventListener("abort", () => {
+        cancelled = true;
+        clearInterval(heartbeat);
+        close();
+      });
+
+      enqueue(
+        `event: banner\ndata: ${JSON.stringify({
+          mock: false,
+          batches,
+          seed_keyword: seedKeyword,
+          market,
+          display_limit: displayLimit,
+        })}\n\n`
+      );
+
+      const triggerErrors: Record<string, string> = {};
+      try {
+        const r = await triggerW05PhraseRelated({
+          batchId,
+          seedKeyword,
+          market,
+          displayLimit,
+        });
+        if (!r.webhookOk) {
+          triggerErrors[batchId] = `webhook ${r.webhookStatus}`;
+        }
+      } catch (err) {
+        triggerErrors[batchId] =
+          err instanceof Error ? err.message : String(err);
+      }
+
+      const finishedBatches = new Set<string>();
+      if (triggerErrors[batchId]) {
+        finishedBatches.add(batchId);
+        const evt = {
+          version: "2025-01" as const,
+          event_id: `${batchId}-trigger-failed`,
+          seq: 0,
+          ts: new Date().toISOString(),
+          batch_id: batchId,
+          workflow_id: "W05",
+          execution_id: "trigger",
+          node_name: "Trigger Failed",
+          node_status: "failed" as const,
+          payload: {
+            error: {
+              code: "WEBHOOK_TRIGGER_FAILED",
+              message: triggerErrors[batchId],
+              market,
+            },
+          },
+        };
+        enqueue(`id: ${evt.event_id}\ndata: ${JSON.stringify(evt)}\n\n`);
+      }
+
+      const lastSeqByBatch: Record<string, number> = { [batchId]: -1 };
+      const startedAt = Date.now();
+      while (!cancelled && finishedBatches.size < batches.length) {
+        if (Date.now() - startedAt > HARD_TIMEOUT_MS) {
+          for (const b of batches) {
+            if (finishedBatches.has(b.batchId)) continue;
+            finishedBatches.add(b.batchId);
+            const evt = {
+              version: "2025-01" as const,
+              event_id: `${b.batchId}-timeout`,
+              seq: 90,
+              ts: new Date().toISOString(),
+              batch_id: b.batchId,
+              workflow_id: "W05",
+              execution_id: "timeout",
+              node_name: "Stream Timeout",
+              node_status: "failed" as const,
+              payload: { error: { code: "STREAM_TIMEOUT", message: `> ${HARD_TIMEOUT_MS}ms` } },
+            };
+            enqueue(`id: ${evt.event_id}\ndata: ${JSON.stringify(evt)}\n\n`);
+          }
+          break;
+        }
+
+        for (const b of batches) {
+          if (finishedBatches.has(b.batchId)) continue;
+          let newEvents: typeof n8nCallbackEvents.$inferSelect[] = [];
+          try {
+            newEvents = await db
+              .select()
+              .from(n8nCallbackEvents)
+              .where(
+                and(
+                  eq(n8nCallbackEvents.batchId, b.batchId),
+                  gt(n8nCallbackEvents.seq, lastSeqByBatch[b.batchId])
+                )
+              )
+              .orderBy(asc(n8nCallbackEvents.seq));
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
+            enqueue(
+              `event: error\ndata: ${JSON.stringify({ error: `db poll failed: ${msg}` })}\n\n`
+            );
+            continue;
+          }
+          for (const ev of newEvents) {
+            const evt = {
+              version: "2025-01" as const,
+              event_id: ev.eventId,
+              seq: ev.seq,
+              ts: ev.ts.toISOString(),
+              batch_id: ev.batchId,
+              workflow_id: ev.workflowId,
+              execution_id: ev.executionId,
+              node_name: ev.nodeName,
+              node_status: ev.nodeStatus as
+                | "started" | "running" | "progress" | "succeeded" | "failed" | "warning",
+              payload: ev.payload as Record<string, unknown> | null | undefined,
+            };
+            const parsed = N8nCallbackEventSchema.safeParse(evt);
+            const data = parsed.success ? parsed.data : evt;
+            enqueue(`id: ${ev.eventId}\ndata: ${JSON.stringify(data)}\n\n`);
+            lastSeqByBatch[b.batchId] = ev.seq;
+            if (TERMINAL_NODES.has(ev.nodeName)) {
+              finishedBatches.add(b.batchId);
+              break;
+            }
+          }
+        }
+        if (finishedBatches.size >= batches.length) break;
+        await sleep(POLL_INTERVAL_MS);
+      }
+
+      const allRows: W05StagingRow[] = [];
+      if (!triggerErrors[batchId]) {
+        try {
+          const rows = await getW05StagingRowsByBatch(batchId);
+          allRows.push(...rows);
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          enqueue(
+            `event: error\ndata: ${JSON.stringify({
+              error: `staging fetch failed for ${batchId}: ${msg}`,
+            })}\n\n`
+          );
+        }
+      }
+
+      enqueue(`event: rows\ndata: ${JSON.stringify({ rows: allRows })}\n\n`);
+
+      const failed = Object.keys(triggerErrors).length > 0;
+      const doneEvt = {
+        version: "2025-01" as const,
+        event_id: `_done-${randomUUID().slice(0, 8)}`,
+        seq: 99,
+        ts: new Date().toISOString(),
+        batch_id: batchId,
+        workflow_id: "W05",
+        execution_id: "_done",
+        node_name: "_done",
+        node_status: failed && allRows.length === 0 ? "failed" as const : "succeeded" as const,
+        payload: {
+          rows_new: allRows.length,
+          total_batches: batches.length,
+          failed_batches: Object.keys(triggerErrors).length,
+          units_actual: displayLimit * 40,
+        },
+      };
+      enqueue(`data: ${JSON.stringify(doneEvt)}\n\n`);
+
+      clearInterval(heartbeat);
+      close();
+    },
+  });
+
+  return new Response(stream, { headers: SSE_HEADERS });
+}
+
+function realW06Stream(
+  req: NextRequest,
+  seedKeyword: string,
+  market: W01Market,
+  displayLimit: number
+): Response {
+  const encoder = new TextEncoder();
+  const batchId = buildW06BatchId(market);
+  const batches = [{ batchId, market }];
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      let cancelled = false;
+      const enqueue = (chunk: string) => {
+        if (cancelled) return;
+        try {
+          controller.enqueue(encoder.encode(chunk));
+        } catch {
+          /* closed */
+        }
+      };
+      const close = () => {
+        try {
+          controller.close();
+        } catch {
+          /* already closed */
+        }
+      };
+
+      const heartbeat = setInterval(() => {
+        if (cancelled) return;
+        enqueue(`: heartbeat\n\n`);
+      }, HEARTBEAT_MS);
+
+      req.signal.addEventListener("abort", () => {
+        cancelled = true;
+        clearInterval(heartbeat);
+        close();
+      });
+
+      enqueue(
+        `event: banner\ndata: ${JSON.stringify({
+          mock: false,
+          batches,
+          seed_keyword: seedKeyword,
+          market,
+          display_limit: displayLimit,
+        })}\n\n`
+      );
+
+      const triggerErrors: Record<string, string> = {};
+      try {
+        const r = await triggerW06PhraseFullsearch({
+          batchId,
+          seedKeyword,
+          market,
+          displayLimit,
+        });
+        if (!r.webhookOk) {
+          triggerErrors[batchId] = `webhook ${r.webhookStatus}`;
+        }
+      } catch (err) {
+        triggerErrors[batchId] =
+          err instanceof Error ? err.message : String(err);
+      }
+
+      const finishedBatches = new Set<string>();
+      if (triggerErrors[batchId]) {
+        finishedBatches.add(batchId);
+        const evt = {
+          version: "2025-01" as const,
+          event_id: `${batchId}-trigger-failed`,
+          seq: 0,
+          ts: new Date().toISOString(),
+          batch_id: batchId,
+          workflow_id: "W06",
+          execution_id: "trigger",
+          node_name: "Trigger Failed",
+          node_status: "failed" as const,
+          payload: {
+            error: {
+              code: "WEBHOOK_TRIGGER_FAILED",
+              message: triggerErrors[batchId],
+              market,
+            },
+          },
+        };
+        enqueue(`id: ${evt.event_id}\ndata: ${JSON.stringify(evt)}\n\n`);
+      }
+
+      const lastSeqByBatch: Record<string, number> = { [batchId]: -1 };
+      const startedAt = Date.now();
+      while (!cancelled && finishedBatches.size < batches.length) {
+        if (Date.now() - startedAt > HARD_TIMEOUT_MS) {
+          for (const b of batches) {
+            if (finishedBatches.has(b.batchId)) continue;
+            finishedBatches.add(b.batchId);
+            const evt = {
+              version: "2025-01" as const,
+              event_id: `${b.batchId}-timeout`,
+              seq: 90,
+              ts: new Date().toISOString(),
+              batch_id: b.batchId,
+              workflow_id: "W06",
+              execution_id: "timeout",
+              node_name: "Stream Timeout",
+              node_status: "failed" as const,
+              payload: { error: { code: "STREAM_TIMEOUT", message: `> ${HARD_TIMEOUT_MS}ms` } },
+            };
+            enqueue(`id: ${evt.event_id}\ndata: ${JSON.stringify(evt)}\n\n`);
+          }
+          break;
+        }
+
+        for (const b of batches) {
+          if (finishedBatches.has(b.batchId)) continue;
+          let newEvents: typeof n8nCallbackEvents.$inferSelect[] = [];
+          try {
+            newEvents = await db
+              .select()
+              .from(n8nCallbackEvents)
+              .where(
+                and(
+                  eq(n8nCallbackEvents.batchId, b.batchId),
+                  gt(n8nCallbackEvents.seq, lastSeqByBatch[b.batchId])
+                )
+              )
+              .orderBy(asc(n8nCallbackEvents.seq));
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
+            enqueue(
+              `event: error\ndata: ${JSON.stringify({ error: `db poll failed: ${msg}` })}\n\n`
+            );
+            continue;
+          }
+          for (const ev of newEvents) {
+            const evt = {
+              version: "2025-01" as const,
+              event_id: ev.eventId,
+              seq: ev.seq,
+              ts: ev.ts.toISOString(),
+              batch_id: ev.batchId,
+              workflow_id: ev.workflowId,
+              execution_id: ev.executionId,
+              node_name: ev.nodeName,
+              node_status: ev.nodeStatus as
+                | "started" | "running" | "progress" | "succeeded" | "failed" | "warning",
+              payload: ev.payload as Record<string, unknown> | null | undefined,
+            };
+            const parsed = N8nCallbackEventSchema.safeParse(evt);
+            const data = parsed.success ? parsed.data : evt;
+            enqueue(`id: ${ev.eventId}\ndata: ${JSON.stringify(data)}\n\n`);
+            lastSeqByBatch[b.batchId] = ev.seq;
+            if (TERMINAL_NODES.has(ev.nodeName)) {
+              finishedBatches.add(b.batchId);
+              break;
+            }
+          }
+        }
+        if (finishedBatches.size >= batches.length) break;
+        await sleep(POLL_INTERVAL_MS);
+      }
+
+      const allRows: W06StagingRow[] = [];
+      if (!triggerErrors[batchId]) {
+        try {
+          const rows = await getW06StagingRowsByBatch(batchId);
+          allRows.push(...rows);
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          enqueue(
+            `event: error\ndata: ${JSON.stringify({
+              error: `staging fetch failed for ${batchId}: ${msg}`,
+            })}\n\n`
+          );
+        }
+      }
+
+      enqueue(`event: rows\ndata: ${JSON.stringify({ rows: allRows })}\n\n`);
+
+      const failed = Object.keys(triggerErrors).length > 0;
+      const doneEvt = {
+        version: "2025-01" as const,
+        event_id: `_done-${randomUUID().slice(0, 8)}`,
+        seq: 99,
+        ts: new Date().toISOString(),
+        batch_id: batchId,
+        workflow_id: "W06",
+        execution_id: "_done",
+        node_name: "_done",
+        node_status: failed && allRows.length === 0 ? "failed" as const : "succeeded" as const,
+        payload: {
+          rows_new: allRows.length,
+          total_batches: batches.length,
+          failed_batches: Object.keys(triggerErrors).length,
+          units_actual: displayLimit * 20,
+        },
+      };
+      enqueue(`data: ${JSON.stringify(doneEvt)}\n\n`);
+
+      clearInterval(heartbeat);
+      close();
+    },
+  });
+
+  return new Response(stream, { headers: SSE_HEADERS });
+}
+
+function realW08Stream(
+  req: NextRequest,
+  advertiserDomain: string,
+  market: W01Market,
+  displayLimit: number
+): Response {
+  const encoder = new TextEncoder();
+  const batchId = buildW08BatchId(market);
+  const batches = [{ batchId, market }];
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      let cancelled = false;
+      const enqueue = (chunk: string) => {
+        if (cancelled) return;
+        try {
+          controller.enqueue(encoder.encode(chunk));
+        } catch {
+          /* closed */
+        }
+      };
+      const close = () => {
+        try {
+          controller.close();
+        } catch {
+          /* already closed */
+        }
+      };
+
+      const heartbeat = setInterval(() => {
+        if (cancelled) return;
+        enqueue(`: heartbeat\n\n`);
+      }, HEARTBEAT_MS);
+
+      req.signal.addEventListener("abort", () => {
+        cancelled = true;
+        clearInterval(heartbeat);
+        close();
+      });
+
+      enqueue(
+        `event: banner\ndata: ${JSON.stringify({
+          mock: false,
+          batches,
+          advertiser_domain: advertiserDomain,
+          market,
+          display_limit: displayLimit,
+        })}\n\n`
+      );
+
+      const triggerErrors: Record<string, string> = {};
+      try {
+        const r = await triggerW08DomainAdwords({
+          batchId,
+          advertiserDomain,
+          market,
+          displayLimit,
+        });
+        if (!r.webhookOk) {
+          triggerErrors[batchId] = `webhook ${r.webhookStatus}`;
+        }
+      } catch (err) {
+        triggerErrors[batchId] =
+          err instanceof Error ? err.message : String(err);
+      }
+
+      const finishedBatches = new Set<string>();
+      if (triggerErrors[batchId]) {
+        finishedBatches.add(batchId);
+        const evt = {
+          version: "2025-01" as const,
+          event_id: `${batchId}-trigger-failed`,
+          seq: 0,
+          ts: new Date().toISOString(),
+          batch_id: batchId,
+          workflow_id: "W08",
+          execution_id: "trigger",
+          node_name: "Trigger Failed",
+          node_status: "failed" as const,
+          payload: {
+            error: {
+              code: "WEBHOOK_TRIGGER_FAILED",
+              message: triggerErrors[batchId],
+              market,
+            },
+          },
+        };
+        enqueue(`id: ${evt.event_id}\ndata: ${JSON.stringify(evt)}\n\n`);
+      }
+
+      const lastSeqByBatch: Record<string, number> = { [batchId]: -1 };
+      const startedAt = Date.now();
+      while (!cancelled && finishedBatches.size < batches.length) {
+        if (Date.now() - startedAt > HARD_TIMEOUT_MS) {
+          for (const b of batches) {
+            if (finishedBatches.has(b.batchId)) continue;
+            finishedBatches.add(b.batchId);
+            const evt = {
+              version: "2025-01" as const,
+              event_id: `${b.batchId}-timeout`,
+              seq: 90,
+              ts: new Date().toISOString(),
+              batch_id: b.batchId,
+              workflow_id: "W08",
+              execution_id: "timeout",
+              node_name: "Stream Timeout",
+              node_status: "failed" as const,
+              payload: { error: { code: "STREAM_TIMEOUT", message: `> ${HARD_TIMEOUT_MS}ms` } },
+            };
+            enqueue(`id: ${evt.event_id}\ndata: ${JSON.stringify(evt)}\n\n`);
+          }
+          break;
+        }
+
+        for (const b of batches) {
+          if (finishedBatches.has(b.batchId)) continue;
+          let newEvents: typeof n8nCallbackEvents.$inferSelect[] = [];
+          try {
+            newEvents = await db
+              .select()
+              .from(n8nCallbackEvents)
+              .where(
+                and(
+                  eq(n8nCallbackEvents.batchId, b.batchId),
+                  gt(n8nCallbackEvents.seq, lastSeqByBatch[b.batchId])
+                )
+              )
+              .orderBy(asc(n8nCallbackEvents.seq));
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
+            enqueue(
+              `event: error\ndata: ${JSON.stringify({ error: `db poll failed: ${msg}` })}\n\n`
+            );
+            continue;
+          }
+          for (const ev of newEvents) {
+            const evt = {
+              version: "2025-01" as const,
+              event_id: ev.eventId,
+              seq: ev.seq,
+              ts: ev.ts.toISOString(),
+              batch_id: ev.batchId,
+              workflow_id: ev.workflowId,
+              execution_id: ev.executionId,
+              node_name: ev.nodeName,
+              node_status: ev.nodeStatus as
+                | "started" | "running" | "progress" | "succeeded" | "failed" | "warning",
+              payload: ev.payload as Record<string, unknown> | null | undefined,
+            };
+            const parsed = N8nCallbackEventSchema.safeParse(evt);
+            const data = parsed.success ? parsed.data : evt;
+            enqueue(`id: ${ev.eventId}\ndata: ${JSON.stringify(data)}\n\n`);
+            lastSeqByBatch[b.batchId] = ev.seq;
+            if (TERMINAL_NODES.has(ev.nodeName)) {
+              finishedBatches.add(b.batchId);
+              break;
+            }
+          }
+        }
+        if (finishedBatches.size >= batches.length) break;
+        await sleep(POLL_INTERVAL_MS);
+      }
+
+      const allRows: W08StagingRow[] = [];
+      if (!triggerErrors[batchId]) {
+        try {
+          const rows = await getW08StagingRowsByBatch(batchId);
+          allRows.push(...rows);
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          enqueue(
+            `event: error\ndata: ${JSON.stringify({
+              error: `staging fetch failed for ${batchId}: ${msg}`,
+            })}\n\n`
+          );
+        }
+      }
+
+      enqueue(`event: rows\ndata: ${JSON.stringify({ rows: allRows })}\n\n`);
+
+      const failed = Object.keys(triggerErrors).length > 0;
+      const doneEvt = {
+        version: "2025-01" as const,
+        event_id: `_done-${randomUUID().slice(0, 8)}`,
+        seq: 99,
+        ts: new Date().toISOString(),
+        batch_id: batchId,
+        workflow_id: "W08",
+        execution_id: "_done",
+        node_name: "_done",
+        node_status: failed && allRows.length === 0 ? "failed" as const : "succeeded" as const,
+        payload: {
+          rows_new: allRows.length,
+          total_batches: batches.length,
+          failed_batches: Object.keys(triggerErrors).length,
+          units_actual: displayLimit * 20,
+        },
+      };
+      enqueue(`data: ${JSON.stringify(doneEvt)}\n\n`);
+
+      clearInterval(heartbeat);
+      close();
+    },
+  });
+
+  return new Response(stream, { headers: SSE_HEADERS });
+}
+
+function realW09Stream(
+  req: NextRequest,
+  advertiserDomain: string,
+  market: W01Market,
+  displayLimit: number
+): Response {
+  const encoder = new TextEncoder();
+  const batchId = buildW09BatchId(market);
+  const batches = [{ batchId, market }];
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      let cancelled = false;
+      const enqueue = (chunk: string) => {
+        if (cancelled) return;
+        try {
+          controller.enqueue(encoder.encode(chunk));
+        } catch {
+          /* closed */
+        }
+      };
+      const close = () => {
+        try {
+          controller.close();
+        } catch {
+          /* already closed */
+        }
+      };
+
+      const heartbeat = setInterval(() => {
+        if (cancelled) return;
+        enqueue(`: heartbeat\n\n`);
+      }, HEARTBEAT_MS);
+
+      req.signal.addEventListener("abort", () => {
+        cancelled = true;
+        clearInterval(heartbeat);
+        close();
+      });
+
+      enqueue(
+        `event: banner\ndata: ${JSON.stringify({
+          mock: false,
+          batches,
+          advertiser_domain: advertiserDomain,
+          market,
+          display_limit: displayLimit,
+        })}\n\n`
+      );
+
+      const triggerErrors: Record<string, string> = {};
+      try {
+        const r = await triggerW09DomainAdwordsHistorical({
+          batchId,
+          advertiserDomain,
+          market,
+          displayLimit,
+        });
+        if (!r.webhookOk) {
+          triggerErrors[batchId] = `webhook ${r.webhookStatus}`;
+        }
+      } catch (err) {
+        triggerErrors[batchId] =
+          err instanceof Error ? err.message : String(err);
+      }
+
+      const finishedBatches = new Set<string>();
+      if (triggerErrors[batchId]) {
+        finishedBatches.add(batchId);
+        const evt = {
+          version: "2025-01" as const,
+          event_id: `${batchId}-trigger-failed`,
+          seq: 0,
+          ts: new Date().toISOString(),
+          batch_id: batchId,
+          workflow_id: "W09",
+          execution_id: "trigger",
+          node_name: "Trigger Failed",
+          node_status: "failed" as const,
+          payload: {
+            error: {
+              code: "WEBHOOK_TRIGGER_FAILED",
+              message: triggerErrors[batchId],
+              market,
+            },
+          },
+        };
+        enqueue(`id: ${evt.event_id}\ndata: ${JSON.stringify(evt)}\n\n`);
+      }
+
+      const lastSeqByBatch: Record<string, number> = { [batchId]: -1 };
+      const startedAt = Date.now();
+      while (!cancelled && finishedBatches.size < batches.length) {
+        if (Date.now() - startedAt > HARD_TIMEOUT_MS) {
+          for (const b of batches) {
+            if (finishedBatches.has(b.batchId)) continue;
+            finishedBatches.add(b.batchId);
+            const evt = {
+              version: "2025-01" as const,
+              event_id: `${b.batchId}-timeout`,
+              seq: 90,
+              ts: new Date().toISOString(),
+              batch_id: b.batchId,
+              workflow_id: "W09",
+              execution_id: "timeout",
+              node_name: "Stream Timeout",
+              node_status: "failed" as const,
+              payload: { error: { code: "STREAM_TIMEOUT", message: `> ${HARD_TIMEOUT_MS}ms` } },
+            };
+            enqueue(`id: ${evt.event_id}\ndata: ${JSON.stringify(evt)}\n\n`);
+          }
+          break;
+        }
+
+        for (const b of batches) {
+          if (finishedBatches.has(b.batchId)) continue;
+          let newEvents: typeof n8nCallbackEvents.$inferSelect[] = [];
+          try {
+            newEvents = await db
+              .select()
+              .from(n8nCallbackEvents)
+              .where(
+                and(
+                  eq(n8nCallbackEvents.batchId, b.batchId),
+                  gt(n8nCallbackEvents.seq, lastSeqByBatch[b.batchId])
+                )
+              )
+              .orderBy(asc(n8nCallbackEvents.seq));
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
+            enqueue(
+              `event: error\ndata: ${JSON.stringify({ error: `db poll failed: ${msg}` })}\n\n`
+            );
+            continue;
+          }
+          for (const ev of newEvents) {
+            const evt = {
+              version: "2025-01" as const,
+              event_id: ev.eventId,
+              seq: ev.seq,
+              ts: ev.ts.toISOString(),
+              batch_id: ev.batchId,
+              workflow_id: ev.workflowId,
+              execution_id: ev.executionId,
+              node_name: ev.nodeName,
+              node_status: ev.nodeStatus as
+                | "started" | "running" | "progress" | "succeeded" | "failed" | "warning",
+              payload: ev.payload as Record<string, unknown> | null | undefined,
+            };
+            const parsed = N8nCallbackEventSchema.safeParse(evt);
+            const data = parsed.success ? parsed.data : evt;
+            enqueue(`id: ${ev.eventId}\ndata: ${JSON.stringify(data)}\n\n`);
+            lastSeqByBatch[b.batchId] = ev.seq;
+            if (TERMINAL_NODES.has(ev.nodeName)) {
+              finishedBatches.add(b.batchId);
+              break;
+            }
+          }
+        }
+        if (finishedBatches.size >= batches.length) break;
+        await sleep(POLL_INTERVAL_MS);
+      }
+
+      const allRows: W09StagingRow[] = [];
+      if (!triggerErrors[batchId]) {
+        try {
+          const rows = await getW09StagingRowsByBatch(batchId);
+          allRows.push(...rows);
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          enqueue(
+            `event: error\ndata: ${JSON.stringify({
+              error: `staging fetch failed for ${batchId}: ${msg}`,
+            })}\n\n`
+          );
+        }
+      }
+
+      enqueue(`event: rows\ndata: ${JSON.stringify({ rows: allRows })}\n\n`);
+
+      const failed = Object.keys(triggerErrors).length > 0;
+      const doneEvt = {
+        version: "2025-01" as const,
+        event_id: `_done-${randomUUID().slice(0, 8)}`,
+        seq: 99,
+        ts: new Date().toISOString(),
+        batch_id: batchId,
+        workflow_id: "W09",
+        execution_id: "_done",
+        node_name: "_done",
+        node_status: failed && allRows.length === 0 ? "failed" as const : "succeeded" as const,
+        payload: {
+          rows_new: allRows.length,
+          total_batches: batches.length,
+          failed_batches: Object.keys(triggerErrors).length,
+          units_actual: displayLimit * 100,
+        },
+      };
+      enqueue(`data: ${JSON.stringify(doneEvt)}\n\n`);
+
+      clearInterval(heartbeat);
+      close();
+    },
+  });
+
+  return new Response(stream, { headers: SSE_HEADERS });
+}
+
+function realW10Stream(
+  req: NextRequest,
+  ourDomain: string,
+  competitorDomains: string[],
+  gapTypes: string[],
+  market: W01Market,
+  displayLimit: number
+): Response {
+  const encoder = new TextEncoder();
+  const batchId = buildW10BatchId(market);
+  const batches = [{ batchId, market }];
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      let cancelled = false;
+      const enqueue = (chunk: string) => {
+        if (cancelled) return;
+        try {
+          controller.enqueue(encoder.encode(chunk));
+        } catch {
+          /* closed */
+        }
+      };
+      const close = () => {
+        try {
+          controller.close();
+        } catch {
+          /* already closed */
+        }
+      };
+
+      const heartbeat = setInterval(() => {
+        if (cancelled) return;
+        enqueue(`: heartbeat\n\n`);
+      }, HEARTBEAT_MS);
+
+      req.signal.addEventListener("abort", () => {
+        cancelled = true;
+        clearInterval(heartbeat);
+        close();
+      });
+
+      enqueue(
+        `event: banner\ndata: ${JSON.stringify({
+          mock: false,
+          batches,
+          our_domain: ourDomain,
+          competitor_domains: competitorDomains,
+          gap_types: gapTypes,
+          market,
+          display_limit: displayLimit,
+        })}\n\n`
+      );
+
+      const triggerErrors: Record<string, string> = {};
+      try {
+        const r = await triggerW10DomainDomains({
+          batchId,
+          ourDomain,
+          competitorDomains,
+          gapTypes,
+          market,
+          displayLimit,
+        });
+        if (!r.webhookOk) {
+          triggerErrors[batchId] = `webhook ${r.webhookStatus}`;
+        }
+      } catch (err) {
+        triggerErrors[batchId] =
+          err instanceof Error ? err.message : String(err);
+      }
+
+      const finishedBatches = new Set<string>();
+      if (triggerErrors[batchId]) {
+        finishedBatches.add(batchId);
+        const evt = {
+          version: "2025-01" as const,
+          event_id: `${batchId}-trigger-failed`,
+          seq: 0,
+          ts: new Date().toISOString(),
+          batch_id: batchId,
+          workflow_id: "W10",
+          execution_id: "trigger",
+          node_name: "Trigger Failed",
+          node_status: "failed" as const,
+          payload: {
+            error: {
+              code: "WEBHOOK_TRIGGER_FAILED",
+              message: triggerErrors[batchId],
+              market,
+            },
+          },
+        };
+        enqueue(`id: ${evt.event_id}\ndata: ${JSON.stringify(evt)}\n\n`);
+      }
+
+      const lastSeqByBatch: Record<string, number> = { [batchId]: -1 };
+      const startedAt = Date.now();
+      while (!cancelled && finishedBatches.size < batches.length) {
+        if (Date.now() - startedAt > HARD_TIMEOUT_MS) {
+          for (const b of batches) {
+            if (finishedBatches.has(b.batchId)) continue;
+            finishedBatches.add(b.batchId);
+            const evt = {
+              version: "2025-01" as const,
+              event_id: `${b.batchId}-timeout`,
+              seq: 90,
+              ts: new Date().toISOString(),
+              batch_id: b.batchId,
+              workflow_id: "W10",
+              execution_id: "timeout",
+              node_name: "Stream Timeout",
+              node_status: "failed" as const,
+              payload: { error: { code: "STREAM_TIMEOUT", message: `> ${HARD_TIMEOUT_MS}ms` } },
+            };
+            enqueue(`id: ${evt.event_id}\ndata: ${JSON.stringify(evt)}\n\n`);
+          }
+          break;
+        }
+
+        for (const b of batches) {
+          if (finishedBatches.has(b.batchId)) continue;
+          let newEvents: typeof n8nCallbackEvents.$inferSelect[] = [];
+          try {
+            newEvents = await db
+              .select()
+              .from(n8nCallbackEvents)
+              .where(
+                and(
+                  eq(n8nCallbackEvents.batchId, b.batchId),
+                  gt(n8nCallbackEvents.seq, lastSeqByBatch[b.batchId])
+                )
+              )
+              .orderBy(asc(n8nCallbackEvents.seq));
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
+            enqueue(
+              `event: error\ndata: ${JSON.stringify({ error: `db poll failed: ${msg}` })}\n\n`
+            );
+            continue;
+          }
+          for (const ev of newEvents) {
+            const evt = {
+              version: "2025-01" as const,
+              event_id: ev.eventId,
+              seq: ev.seq,
+              ts: ev.ts.toISOString(),
+              batch_id: ev.batchId,
+              workflow_id: ev.workflowId,
+              execution_id: ev.executionId,
+              node_name: ev.nodeName,
+              node_status: ev.nodeStatus as
+                | "started" | "running" | "progress" | "succeeded" | "failed" | "warning",
+              payload: ev.payload as Record<string, unknown> | null | undefined,
+            };
+            const parsed = N8nCallbackEventSchema.safeParse(evt);
+            const data = parsed.success ? parsed.data : evt;
+            enqueue(`id: ${ev.eventId}\ndata: ${JSON.stringify(data)}\n\n`);
+            lastSeqByBatch[b.batchId] = ev.seq;
+            if (TERMINAL_NODES.has(ev.nodeName)) {
+              finishedBatches.add(b.batchId);
+              break;
+            }
+          }
+        }
+        if (finishedBatches.size >= batches.length) break;
+        await sleep(POLL_INTERVAL_MS);
+      }
+
+      const allRows: W10StagingRow[] = [];
+      if (!triggerErrors[batchId]) {
+        try {
+          const rows = await getW10StagingRowsByBatch(batchId);
+          allRows.push(...rows);
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          enqueue(
+            `event: error\ndata: ${JSON.stringify({
+              error: `staging fetch failed for ${batchId}: ${msg}`,
+            })}\n\n`
+          );
+        }
+      }
+
+      enqueue(`event: rows\ndata: ${JSON.stringify({ rows: allRows })}\n\n`);
+
+      const failed = Object.keys(triggerErrors).length > 0;
+      const nonWeakCount = gapTypes.filter((t) => t !== "weak").length;
+      const doneEvt = {
+        version: "2025-01" as const,
+        event_id: `_done-${randomUUID().slice(0, 8)}`,
+        seq: 99,
+        ts: new Date().toISOString(),
+        batch_id: batchId,
+        workflow_id: "W10",
+        execution_id: "_done",
+        node_name: "_done",
+        node_status: failed && allRows.length === 0 ? "failed" as const : "succeeded" as const,
+        payload: {
+          rows_new: allRows.length,
+          total_batches: batches.length,
+          failed_batches: Object.keys(triggerErrors).length,
+          units_actual: competitorDomains.length * nonWeakCount * displayLimit * 80 + 200,
+        },
+      };
+      enqueue(`data: ${JSON.stringify(doneEvt)}\n\n`);
+
+      clearInterval(heartbeat);
+      close();
+    },
+  });
+
+  return new Response(stream, { headers: SSE_HEADERS });
+}
+
 function sleep(ms: number) {
   return new Promise<void>((resolve) => setTimeout(resolve, ms));
 }
@@ -907,12 +2590,105 @@ function mockEndpointStream(req: NextRequest, endpoint: string) {
           const validated = N8nCallbackEventSchema.parse(raw);
           // _done 之前先推一个 mock rows，让前端表格有内容
           if (validated.node_name === "_done") {
+            const ep = endpoint.toUpperCase();
             const mockRows =
-              endpoint.toUpperCase() === "W03"
+              ep === "W03"
                 ? [
                     { keyword: "zikr ring", market: "us", position: 1, position_type: "Organic", domain: "weslamic.com",          url: "https://weslamic.com/products/zikr-ring",                  keyword_serp_features_codes: "1,2,14",  domain_serp_features_codes: "1,14"  },
                     { keyword: "zikr ring", market: "us", position: 2, position_type: "Organic", domain: "amazon.com",            url: "https://www.amazon.com/zikr-ring",                         keyword_serp_features_codes: "1,2,14",  domain_serp_features_codes: "1,2"   },
                     { keyword: "zikr ring", market: "us", position: 3, position_type: "Organic", domain: "muslimfootprints.com",  url: "https://muslimfootprints.com/blog/best-zikr-ring",         keyword_serp_features_codes: "1,2,14",  domain_serp_features_codes: ""      },
+                  ]
+              : ep === "W07"
+                ? [
+                    { keyword: "zikr ring", market: "us", search_volume: 4400,  keyword_difficulty: 28, cpc: 0.92, competition: 0.51, number_of_results: 412000, trends: null, intent: "Commercial" },
+                    { keyword: "zikr ring", market: "uk", search_volume: 1900,  keyword_difficulty: 24, cpc: 0.71, competition: 0.42, number_of_results: 188000, trends: null, intent: "Commercial" },
+                    { keyword: "zikr ring", market: "ca", search_volume: 880,   keyword_difficulty: 19, cpc: 0.55, competition: 0.31, number_of_results: 92000,  trends: null, intent: "Commercial" },
+                    { keyword: "zikr ring", market: "au", search_volume: 720,   keyword_difficulty: 21, cpc: 0.61, competition: 0.34, number_of_results: 81000,  trends: null, intent: "Commercial" },
+                    { keyword: "zikr ring", market: "de", search_volume: 590,   keyword_difficulty: 18, cpc: 0.47, competition: 0.28, number_of_results: 67000,  trends: null, intent: "Commercial" },
+                    { keyword: "zikr ring", market: "fr", search_volume: 480,   keyword_difficulty: 16, cpc: 0.42, competition: 0.25, number_of_results: 54000,  trends: null, intent: "Commercial" },
+                    { keyword: "zikr ring", market: "it", search_volume: 320,   keyword_difficulty: 14, cpc: 0.38, competition: 0.21, number_of_results: 42000,  trends: null, intent: "Commercial" },
+                    { keyword: "zikr ring", market: "nl", search_volume: 260,   keyword_difficulty: 13, cpc: 0.34, competition: 0.18, number_of_results: 31000,  trends: null, intent: "Commercial" },
+                    { keyword: "zikr ring", market: "be", search_volume: 170,   keyword_difficulty: 11, cpc: 0.28, competition: 0.15, number_of_results: 22000,  trends: null, intent: "Commercial" },
+                    { keyword: "zikr ring", market: "br", search_volume: 390,   keyword_difficulty: 17, cpc: 0.31, competition: 0.22, number_of_results: 47000,  trends: null, intent: "Commercial" },
+                    { keyword: "zikr ring", market: "tr", search_volume: 210,   keyword_difficulty: 12, cpc: 0.24, competition: 0.16, number_of_results: 28000,  trends: null, intent: "Commercial" },
+                  ]
+              : ep === "W04"
+                ? [
+                    { keyword: "what is a zikr ring",            market: "us", search_volume: 2400,  keyword_difficulty: 18, cpc: 0.42, competition: 0.21, number_of_results: 134000,  trends: "0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.0,1.0,0.9,0.9,1.0", intent: "Informational", question_type: "what" },
+                    { keyword: "how to use zikr ring",           market: "us", search_volume: 1900,  keyword_difficulty: 22, cpc: 0.55, competition: 0.34, number_of_results: 98000,   trends: "0.5,0.6,0.6,0.7,0.8,0.9,0.9,1.0,1.0,1.0,1.0,1.0", intent: "Informational", question_type: "how" },
+                    { keyword: "why muslims wear zikr ring",     market: "us", search_volume: 880,   keyword_difficulty: 14, cpc: 0.28, competition: 0.15, number_of_results: 56000,   trends: "0.6,0.6,0.7,0.7,0.8,0.9,0.9,0.9,1.0,1.0,1.0,1.0", intent: "Informational", question_type: "why" },
+                    { keyword: "where to buy zikr ring",         market: "us", search_volume: 1600,  keyword_difficulty: 31, cpc: 0.94, competition: 0.62, number_of_results: 211000,  trends: "0.4,0.5,0.5,0.6,0.7,0.8,0.9,1.0,1.0,1.0,1.0,1.0", intent: "Commercial",    question_type: "where" },
+                    { keyword: "when to use zikr ring",          market: "us", search_volume: 320,   keyword_difficulty: 12, cpc: 0.21, competition: 0.10, number_of_results: 24000,   trends: "0.5,0.6,0.6,0.7,0.7,0.8,0.9,0.9,1.0,1.0,1.0,1.0", intent: "Informational", question_type: "when" },
+                    { keyword: "who invented zikr ring",         market: "us", search_volume: 210,   keyword_difficulty: 9,  cpc: 0.15, competition: 0.08, number_of_results: 12000,   trends: "0.6,0.6,0.7,0.7,0.8,0.8,0.9,0.9,1.0,1.0,1.0,1.0", intent: "Informational", question_type: "who" },
+                    { keyword: "which zikr ring is best",        market: "us", search_volume: 590,   keyword_difficulty: 28, cpc: 0.78, competition: 0.51, number_of_results: 87000,   trends: "0.5,0.6,0.7,0.7,0.8,0.9,0.9,1.0,1.0,1.0,1.0,1.0", intent: "Commercial",    question_type: "which" },
+                    { keyword: "can zikr ring be wet",           market: "us", search_volume: 480,   keyword_difficulty: 11, cpc: 0.18, competition: 0.09, number_of_results: 31000,   trends: "0.6,0.7,0.7,0.8,0.8,0.9,0.9,1.0,1.0,1.0,1.0,1.0", intent: "Informational", question_type: "can" },
+                    { keyword: "is zikr ring waterproof",        market: "us", search_volume: 720,   keyword_difficulty: 19, cpc: 0.31, competition: 0.18, number_of_results: 47000,   trends: "0.5,0.6,0.7,0.8,0.8,0.9,0.9,1.0,1.0,1.0,1.0,1.0", intent: "Informational", question_type: "is" },
+                    { keyword: "are zikr rings halal",           market: "us", search_volume: 390,   keyword_difficulty: 7,  cpc: 0.12, competition: 0.05, number_of_results: 19000,   trends: "0.7,0.7,0.8,0.8,0.9,0.9,1.0,1.0,1.0,1.0,1.0,1.0", intent: "Informational", question_type: "are" },
+                    { keyword: "do zikr rings need charging",    market: "us", search_volume: 260,   keyword_difficulty: 16, cpc: 0.27, competition: 0.14, number_of_results: 22000,   trends: "0.5,0.6,0.6,0.7,0.7,0.8,0.9,0.9,1.0,1.0,1.0,1.0", intent: "Informational", question_type: "do" },
+                    { keyword: "does zikr ring vibrate",         market: "us", search_volume: 170,   keyword_difficulty: 10, cpc: 0.19, competition: 0.07, number_of_results: 15000,   trends: "0.6,0.6,0.7,0.7,0.8,0.8,0.9,0.9,1.0,1.0,1.0,1.0", intent: "Informational", question_type: "does" },
+                  ]
+              : ep === "W05"
+                ? [
+                    { keyword: "muslim digital tasbih",      market: "us", search_volume: 8100,  keyword_difficulty: 22, cpc: 0.88, competition: 0.45, number_of_results: 312000,  trends: "0.5,0.6,0.7,0.8,0.9,1.0,1.0,1.0,1.0,1.0,1.0,1.0", intent: "Commercial",    relevance_rate: 0.95 },
+                    { keyword: "smart prayer counter",       market: "us", search_volume: 6600,  keyword_difficulty: 19, cpc: 0.72, competition: 0.38, number_of_results: 241000,  trends: "0.4,0.5,0.6,0.7,0.8,0.9,0.9,1.0,1.0,1.0,1.0,1.0", intent: "Commercial",    relevance_rate: 0.88 },
+                    { keyword: "electronic dhikr device",   market: "us", search_volume: 4400,  keyword_difficulty: 17, cpc: 0.61, competition: 0.31, number_of_results: 178000,  trends: "0.5,0.5,0.6,0.7,0.8,0.9,0.9,0.9,1.0,1.0,1.0,1.0", intent: "Commercial",    relevance_rate: 0.79 },
+                    { keyword: "wireless tasbih ring",       market: "us", search_volume: 2900,  keyword_difficulty: 14, cpc: 0.54, competition: 0.27, number_of_results: 132000,  trends: "0.4,0.5,0.6,0.6,0.7,0.8,0.9,1.0,1.0,1.0,1.0,1.0", intent: "Commercial",    relevance_rate: 0.71 },
+                    { keyword: "smart islamic ring",         market: "us", search_volume: 1900,  keyword_difficulty: 12, cpc: 0.47, competition: 0.22, number_of_results: 97000,   trends: "0.5,0.6,0.6,0.7,0.8,0.9,0.9,1.0,1.0,1.0,1.0,1.0", intent: "Commercial",    relevance_rate: 0.62 },
+                    { keyword: "muslim wearable",            market: "us", search_volume: 1300,  keyword_difficulty: 28, cpc: 0.83, competition: 0.51, number_of_results: 214000,  trends: "0.6,0.7,0.7,0.8,0.9,1.0,1.0,1.0,1.0,1.0,1.0,1.0", intent: "Informational", relevance_rate: 0.55 },
+                    { keyword: "digital prayer beads",       market: "us", search_volume: 880,   keyword_difficulty: 9,  cpc: 0.31, competition: 0.16, number_of_results: 58000,   trends: "0.4,0.5,0.5,0.6,0.7,0.8,0.8,0.9,1.0,1.0,1.0,1.0", intent: "Commercial",    relevance_rate: 0.48 },
+                    { keyword: "islamic smart jewelry",      market: "us", search_volume: 480,   keyword_difficulty: 6,  cpc: 0.24, competition: 0.11, number_of_results: 34000,   trends: "0.5,0.5,0.6,0.6,0.7,0.8,0.8,0.9,0.9,1.0,1.0,1.0", intent: "Commercial",    relevance_rate: 0.40 },
+                  ]
+              : ep === "W06"
+                ? [
+                    { keyword: "best zikr ring 2026",       market: "us", search_volume: 4400, keyword_difficulty: 24, cpc: 0.95, competition: 0.52, number_of_results: 312000, trends: "0.6,0.7,0.8,0.8,0.9,1.0,1.0,1.0,1.0,1.0,1.0,1.0", intent: "Commercial",    relevance_rate: 0.95 },
+                    { keyword: "zikr ring review",          market: "us", search_volume: 2900, keyword_difficulty: 19, cpc: 0.71, competition: 0.41, number_of_results: 188000, trends: "0.5,0.6,0.7,0.8,0.9,0.9,1.0,1.0,1.0,1.0,1.0,1.0", intent: "Informational", relevance_rate: 0.88 },
+                    { keyword: "zikr ring vs tasbih app",   market: "us", search_volume: 1900, keyword_difficulty: 17, cpc: 0.55, competition: 0.31, number_of_results: 92000,  trends: "0.4,0.5,0.6,0.7,0.8,0.8,0.9,1.0,1.0,1.0,1.0,1.0", intent: "Informational", relevance_rate: 0.79 },
+                    { keyword: "where to buy zikr ring",    market: "us", search_volume: 1300, keyword_difficulty: 28, cpc: 0.88, competition: 0.55, number_of_results: 168000, trends: "0.5,0.6,0.7,0.7,0.8,0.9,1.0,1.0,1.0,1.0,1.0,1.0", intent: "Commercial",    relevance_rate: 0.71 },
+                    { keyword: "zikr ring price india",     market: "us", search_volume: 880,  keyword_difficulty: 12, cpc: 0.42, competition: 0.20, number_of_results: 58000,  trends: "0.4,0.5,0.5,0.6,0.7,0.8,0.9,1.0,1.0,1.0,1.0,1.0", intent: "Commercial",    relevance_rate: 0.62 },
+                    { keyword: "buy zikr ring online",      market: "us", search_volume: 720,  keyword_difficulty: 26, cpc: 1.04, competition: 0.61, number_of_results: 145000, trends: "0.5,0.6,0.7,0.8,0.9,1.0,1.0,1.0,1.0,1.0,1.0,1.0", intent: "Transactional", relevance_rate: 0.55 },
+                    { keyword: "zikr ring battery life",    market: "us", search_volume: 480,  keyword_difficulty: 8,  cpc: 0.27, competition: 0.14, number_of_results: 32000,  trends: "0.5,0.5,0.6,0.7,0.7,0.8,0.9,0.9,1.0,1.0,1.0,1.0", intent: "Informational", relevance_rate: 0.48 },
+                    { keyword: "zikr ring discount code",   market: "us", search_volume: 320,  keyword_difficulty: 11, cpc: 0.65, competition: 0.39, number_of_results: 47000,  trends: "0.4,0.5,0.6,0.6,0.7,0.8,0.8,0.9,1.0,1.0,1.0,1.0", intent: "Transactional", relevance_rate: 0.40 },
+                  ]
+              : ep === "W08"
+                ? [
+                    { keyword: "wireless headphones",     market: "us", advertiser_domain: "amazon.com", position: 1, visible_url: "amazon.com/electronics",    ad_title: "Wireless Headphones – Free Shipping",        ad_description: "Shop top-rated wireless headphones with Prime free 1-day delivery. Read reviews. Today's deals." },
+                    { keyword: "running shoes",           market: "us", advertiser_domain: "amazon.com", position: 2, visible_url: "amazon.com/shoes",           ad_title: "Running Shoes for Men & Women",              ad_description: "Huge selection of running shoes from top brands. Fast & free shipping with Prime." },
+                    { keyword: "laptop deals",            market: "us", advertiser_domain: "amazon.com", position: 3, visible_url: "amazon.com/computers",       ad_title: "Laptop Deals – Shop Now & Save",            ad_description: "Find the best laptop deals. Compare top brands. Free returns. Shop now at Amazon." },
+                    { keyword: "kitchen appliances",      market: "us", advertiser_domain: "amazon.com", position: 4, visible_url: "amazon.com/kitchen",         ad_title: "Kitchen Appliances – Today Only",           ad_description: "Upgrade your kitchen with our best-selling appliances. Free shipping over $25. Limited time offer." },
+                    { keyword: "fitness tracker",         market: "us", advertiser_domain: "amazon.com", position: 5, visible_url: "amazon.com/fitness",         ad_title: "Fitness Trackers – Best Sellers",           ad_description: "Track your health goals with top-rated fitness bands. Prime members get exclusive deals." },
+                    { keyword: "tablet under 200",        market: "us", advertiser_domain: "amazon.com", position: 6, visible_url: "amazon.com/tablets",         ad_title: "Tablets Under $200 – Shop Today",           ad_description: "Browse affordable tablets from top brands. Free same-day delivery for Prime members." },
+                    { keyword: "books best sellers",      market: "us", advertiser_domain: "amazon.com", position: 7, visible_url: "amazon.com/books",           ad_title: "Best-Selling Books – New Arrivals",         ad_description: "Discover this week's best sellers. Huge selection of fiction, non-fiction & more. Free delivery." },
+                    { keyword: "clothing sale",           market: "us", advertiser_domain: "amazon.com", position: 8, visible_url: "amazon.com/fashion",         ad_title: "Clothing Sale – Up to 50% Off",             ad_description: "Shop men's & women's fashion at unbeatable prices. Free returns. Shop the sale now at Amazon." },
+                  ]
+              : ep === "W09"
+                ? [
+                    { keyword: "wireless headphones",  market: "us", advertiser_domain: "amazon.com", fetch_date: "20260415", position: 1, visible_url: "amazon.com/electronics", ad_title: "Wireless Headphones – Free Shipping",     ad_description: "Shop top-rated wireless headphones with Prime free 1-day delivery. Today's deals." },
+                    { keyword: "spring fashion sale",  market: "us", advertiser_domain: "amazon.com", fetch_date: "20260415", position: 2, visible_url: "amazon.com/fashion",     ad_title: "Spring Sale – Up to 60% Off",             ad_description: "Refresh your wardrobe with the latest spring trends. Free returns. Shop now." },
+                    { keyword: "outdoor furniture",    market: "us", advertiser_domain: "amazon.com", fetch_date: "20260415", position: 3, visible_url: "amazon.com/garden",      ad_title: "Outdoor Furniture – New Arrivals",         ad_description: "Patio sets, BBQs, and more. Free shipping on orders over $35." },
+                    { keyword: "wireless headphones",  market: "us", advertiser_domain: "amazon.com", fetch_date: "20260315", position: 1, visible_url: "amazon.com/electronics", ad_title: "Wireless Headphones – Best Deals",         ad_description: "Top-rated wireless audio with active noise cancelling. Prime 2-day delivery." },
+                    { keyword: "running shoes",        market: "us", advertiser_domain: "amazon.com", fetch_date: "20260315", position: 2, visible_url: "amazon.com/shoes",       ad_title: "Running Shoes for Men & Women",            ad_description: "Wide selection from top brands. Free returns within 30 days." },
+                    { keyword: "smart watch",          market: "us", advertiser_domain: "amazon.com", fetch_date: "20260315", position: 4, visible_url: "amazon.com/wearable",    ad_title: "Smart Watches – Today's Deals",            ad_description: "Track fitness, get notifications. Latest models from leading brands." },
+                    { keyword: "valentine's day gift", market: "us", advertiser_domain: "amazon.com", fetch_date: "20260215", position: 1, visible_url: "amazon.com/gifts",       ad_title: "Valentine's Day Gifts – Last Chance",      ad_description: "Heartfelt gifts for your loved one. Free 2-day Prime delivery available." },
+                    { keyword: "winter coats",         market: "us", advertiser_domain: "amazon.com", fetch_date: "20260215", position: 3, visible_url: "amazon.com/outerwear",   ad_title: "Winter Coats – Up to 50% Off",             ad_description: "Stay warm with our top-rated outerwear. Easy returns. Shop now." },
+                    { keyword: "wireless headphones",  market: "us", advertiser_domain: "amazon.com", fetch_date: "20260215", position: 5, visible_url: "amazon.com/audio",       ad_title: "Wireless Audio – New Releases",            ad_description: "Latest wireless headphones with industry-leading noise cancellation." },
+                    { keyword: "new year fitness",     market: "us", advertiser_domain: "amazon.com", fetch_date: "20260115", position: 1, visible_url: "amazon.com/fitness",     ad_title: "New Year, New You – Fitness Gear",         ad_description: "Stick to your resolutions with our fitness equipment. Free shipping over $25." },
+                    { keyword: "kitchen appliances",   market: "us", advertiser_domain: "amazon.com", fetch_date: "20260115", position: 2, visible_url: "amazon.com/kitchen",     ad_title: "Kitchen Appliances – Year-End Sale",       ad_description: "Upgrade your kitchen with top brands. Free returns. Today only." },
+                    { keyword: "books best sellers",   market: "us", advertiser_domain: "amazon.com", fetch_date: "20260115", position: 6, visible_url: "amazon.com/books",       ad_title: "Best-Selling Books – Discover Now",        ad_description: "This week's top reads across all genres. Free Kindle app available." },
+                  ]
+              : ep === "W10"
+                ? [
+                    { keyword: "smart islamic device",      market: "us", gap_type: "missing",  our_domain: "weslamic.com", competitor_domain: "amazon.com", our_position: 0,  competitor_position: 3,  search_volume: 4400, keyword_difficulty: 28, cpc: 0.92, competition: 0.51, number_of_results: 412000, trends: null },
+                    { keyword: "muslim wearable tech",      market: "us", gap_type: "missing",  our_domain: "weslamic.com", competitor_domain: "ebay.com",   our_position: 0,  competitor_position: 7,  search_volume: 2900, keyword_difficulty: 24, cpc: 0.71, competition: 0.42, number_of_results: 188000, trends: null },
+                    { keyword: "digital tasbih bluetooth",  market: "us", gap_type: "missing",  our_domain: "weslamic.com", competitor_domain: "amazon.com", our_position: 0,  competitor_position: 12, search_volume: 1800, keyword_difficulty: 19, cpc: 0.55, competition: 0.31, number_of_results: 92000,  trends: null },
+                    { keyword: "zikr ring",                 market: "us", gap_type: "common",   our_domain: "weslamic.com", competitor_domain: "amazon.com", our_position: 5,  competitor_position: 2,  search_volume: 8800, keyword_difficulty: 32, cpc: 1.12, competition: 0.62, number_of_results: 524000, trends: null },
+                    { keyword: "muslim ring",               market: "us", gap_type: "common",   our_domain: "weslamic.com", competitor_domain: "ebay.com",   our_position: 8,  competitor_position: 4,  search_volume: 6600, keyword_difficulty: 28, cpc: 0.88, competition: 0.51, number_of_results: 312000, trends: null },
+                    { keyword: "smart prayer counter",      market: "us", gap_type: "untapped", our_domain: "weslamic.com", competitor_domain: "amazon.com", our_position: 0,  competitor_position: 6,  search_volume: 4400, keyword_difficulty: 21, cpc: 0.78, competition: 0.41, number_of_results: 240000, trends: null },
+                    { keyword: "wireless dhikr device",     market: "us", gap_type: "untapped", our_domain: "weslamic.com", competitor_domain: "ebay.com",   our_position: 0,  competitor_position: 14, search_volume: 880,  keyword_difficulty: 12, cpc: 0.43, competition: 0.22, number_of_results: 58000,  trends: null },
+                    { keyword: "halal smart jewelry",       market: "us", gap_type: "weak",     our_domain: "weslamic.com", competitor_domain: "amazon.com", our_position: 28, competitor_position: 8,  search_volume: 1300, keyword_difficulty: 17, cpc: 0.52, competition: 0.30, number_of_results: 124000, trends: null },
+                    { keyword: "muslim digital gift",       market: "us", gap_type: "weak",     our_domain: "weslamic.com", competitor_domain: "ebay.com",   our_position: 35, competitor_position: 11, search_volume: 590,  keyword_difficulty: 9,  cpc: 0.31, competition: 0.18, number_of_results: 45000,  trends: null },
+                    { keyword: "ramadan tech gift",         market: "us", gap_type: "weak",     our_domain: "weslamic.com", competitor_domain: "amazon.com", our_position: 41, competitor_position: 6,  search_volume: 720,  keyword_difficulty: 14, cpc: 0.41, competition: 0.25, number_of_results: 87000,  trends: null },
+                    { keyword: "eid wearable gift",         market: "us", gap_type: "weak",     our_domain: "weslamic.com", competitor_domain: "ebay.com",   our_position: 52, competitor_position: 3,  search_volume: 480,  keyword_difficulty: 8,  cpc: 0.27, competition: 0.14, number_of_results: 32000,  trends: null },
+                    { keyword: "halal smart bracelet",      market: "us", gap_type: "weak",     our_domain: "weslamic.com", competitor_domain: "amazon.com", our_position: 67, competitor_position: 19, search_volume: 320,  keyword_difficulty: 6,  cpc: 0.21, competition: 0.10, number_of_results: 24000,  trends: null },
                   ]
                 : [
                     { keyword: "hijab",          market: "sa", search_volume: 110000, keyword_difficulty: 42, cpc: 0.85, competition: 0.62, number_of_results: 12300000, trends: "0.6,0.7,0.8,0.9,1.0,1.0,1.0,0.9,0.9,1.0,1.0,1.0", intent: "Commercial" },

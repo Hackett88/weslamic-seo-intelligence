@@ -31,7 +31,7 @@ const MARKETS: { value: Market; cn: string; code: string }[] = [
 const UNITS_PER_ROW = 40;
 const MIN_LIMIT = 1;
 const MAX_LIMIT = 100;
-const DEFAULT_LIMIT = 25;
+const DEFAULT_LIMIT = 10;
 const UNITS_PASSWORD_THRESHOLD = 100;
 
 export function W05Workspace() {

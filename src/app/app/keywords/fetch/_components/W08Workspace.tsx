@@ -1,8 +1,20 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { History, Loader2 } from "lucide-react";
 import type { ProgressState, W08ResultRow } from "./SeoTaskCard";
+import { HistoryView } from "./HistoryView";
+import {
+  appendHistory,
+  clearHistory,
+  loadHistory,
+  removeHistoryEntry,
+  type HistoryEntry,
+} from "@/lib/query-history";
+
+const ENDPOINT_KEY = "W08";
+const DATA_SOURCE = "semrush_sem_advertisers_staging（mode='adwords'）";
 
 type Market =
   | "sa"
@@ -30,10 +42,13 @@ const MARKETS: { value: Market; cn: string; code: string }[] = [
 const UNITS_PER_ROW = 20;
 const MIN_LIMIT = 1;
 const MAX_LIMIT = 100;
-const DEFAULT_LIMIT = 25;
+const DEFAULT_LIMIT = 10;
 const UNITS_PASSWORD_THRESHOLD = 100;
 
 export function W08Workspace() {
+  const searchParams = useSearchParams();
+  const isMockUrl = searchParams.get("mock") === "1";
+
   const [advertiserDomain, setAdvertiserDomain] = useState("");
   const [market, setMarket] = useState<Market>("us");
   const [displayLimit, setDisplayLimit] = useState<number>(DEFAULT_LIMIT);
@@ -44,6 +59,17 @@ export function W08Workspace() {
   const [authError, setAuthError] = useState<string | null>(null);
   const [authSubmitting, setAuthSubmitting] = useState(false);
   const esRef = useRef<EventSource | null>(null);
+
+  const [history, setHistory] = useState<HistoryEntry<W08ResultRow>[]>([]);
+  const [historyMode, setHistoryMode] = useState(false);
+  const recordedRef = useRef(false);
+  const submittedDomainRef = useRef("");
+  const submittedMarketRef = useRef<Market>("us");
+  const submittedDisplayLimitRef = useRef<number>(DEFAULT_LIMIT);
+
+  useEffect(() => {
+    setHistory(loadHistory<W08ResultRow>(ENDPOINT_KEY));
+  }, []);
 
   const trimmedDomain = advertiserDomain.trim().toLowerCase();
   const isDomainInvalid =
@@ -62,6 +88,44 @@ export function W08Workspace() {
     };
   }, []);
 
+  useEffect(() => {
+    if (
+      progress.status === "succeeded" &&
+      !progress.mock &&
+      !recordedRef.current
+    ) {
+      recordedRef.current = true;
+      const next = appendHistory<W08ResultRow>(ENDPOINT_KEY, {
+        label: submittedDomainRef.current || "(空域名)",
+        rows,
+        summary: {
+          rowsTotal: rows.length,
+          rowsNew: progress.rowsNew,
+          rowsCached: progress.rowsCached,
+          unitsActual: progress.unitsActual,
+          totalBatches: progress.totalBatches,
+          failedBatches: progress.failedBatches,
+        },
+        dataSource: DATA_SOURCE,
+        params: {
+          advertiserDomain: submittedDomainRef.current,
+          market: submittedMarketRef.current,
+          displayLimit: submittedDisplayLimitRef.current,
+        },
+      });
+      setHistory(next);
+    }
+  }, [
+    progress.status,
+    progress.mock,
+    progress.rowsNew,
+    progress.rowsCached,
+    progress.unitsActual,
+    progress.totalBatches,
+    progress.failedBatches,
+    rows,
+  ]);
+
   function startStream() {
     const params = new URLSearchParams({
       endpoint: "W08",
@@ -69,9 +133,15 @@ export function W08Workspace() {
       market,
       display_limit: String(displayLimit),
     });
+    if (isMockUrl) params.set("mock", "1");
     const url = `/api/keywords/fetch?${params.toString()}`;
     setProgress({ status: "submitting" });
     setRows([]);
+    setHistoryMode(false);
+    recordedRef.current = false;
+    submittedDomainRef.current = trimmedDomain;
+    submittedMarketRef.current = market;
+    submittedDisplayLimitRef.current = displayLimit;
     esRef.current?.close();
     const es = new EventSource(url);
     esRef.current = es;
@@ -323,22 +393,46 @@ export function W08Workspace() {
             </span>
           )}
 
-          {/* 启动按钮 */}
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={!canSubmit}
-            className={[
-              "ml-auto inline-flex items-center justify-center gap-1.5 rounded px-4 py-1.5 text-xs font-medium transition-colors",
-              btnExtraCls,
-              !canSubmit && status !== "running" && status !== "submitting"
-                ? "disabled:opacity-50 disabled:cursor-not-allowed"
-                : "",
-            ].join(" ")}
-          >
-            {isRunning && <Loader2 size={13} className="animate-spin" />}
-            {btnLabel}
-          </button>
+          {/* 启动 + 历史按钮 */}
+          <div className="ml-auto flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={!canSubmit}
+              className={[
+                "inline-flex items-center justify-center gap-1.5 rounded px-4 py-1.5 text-xs font-medium transition-colors",
+                btnExtraCls,
+                !canSubmit && status !== "running" && status !== "submitting"
+                  ? "disabled:opacity-50 disabled:cursor-not-allowed"
+                  : "",
+              ].join(" ")}
+            >
+              {isRunning && <Loader2 size={13} className="animate-spin" />}
+              {btnLabel}
+            </button>
+            <button
+              type="button"
+              onClick={() => setHistoryMode((v) => !v)}
+              disabled={history.length === 0}
+              title={
+                history.length === 0
+                  ? "暂无历史记录"
+                  : `查看最近 ${history.length} 次查询`
+              }
+              className={[
+                "inline-flex items-center justify-center gap-1.5 rounded border px-3 py-1.5 text-xs font-medium transition-colors",
+                historyMode
+                  ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                  : "border-gray-300 bg-white text-gray-700 hover:border-emerald-400 hover:text-emerald-700",
+                history.length === 0
+                  ? "disabled:opacity-50 disabled:cursor-not-allowed"
+                  : "",
+              ].join(" ")}
+            >
+              <History size={13} />
+              历史 {history.length > 0 && `(${history.length})`}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -371,6 +465,22 @@ export function W08Workspace() {
 
       {/* 主体结果区 */}
       <div className="flex-1 overflow-auto bg-white">
+        {historyMode ? (
+          <HistoryView<W08ResultRow>
+            entries={history}
+            renderTable={(rs) => <AdwordsResultTable rows={rs} />}
+            onClose={() => setHistoryMode(false)}
+            onRemove={(id) =>
+              setHistory(removeHistoryEntry<W08ResultRow>(ENDPOINT_KEY, id))
+            }
+            onClear={() => {
+              clearHistory(ENDPOINT_KEY);
+              setHistory([]);
+              setHistoryMode(false);
+            }}
+          />
+        ) : (
+          <>
         {status === "idle" && (
           <div className="flex h-full min-h-[280px] items-center justify-center px-6 py-12 text-sm text-gray-400">
             提交后这里展示该竞品当前在投的广告词
@@ -407,6 +517,8 @@ export function W08Workspace() {
               </p>
             </div>
           </div>
+        )}
+          </>
         )}
       </div>
 

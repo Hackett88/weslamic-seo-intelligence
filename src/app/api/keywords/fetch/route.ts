@@ -2086,7 +2086,9 @@ function realW08Stream(
           rows_new: allRows.length,
           total_batches: batches.length,
           failed_batches: Object.keys(triggerErrors).length,
-          units_actual: displayLimit * 20 * markets.length,
+          // domain_adwords: 20u/row. Use actual staging row count,
+          // not displayLimit × markets estimate (over-counts on NOTHING_FOUND).
+          units_actual: allRows.length * 20,
         },
       };
       enqueue(`data: ${JSON.stringify(doneEvt)}\n\n`);

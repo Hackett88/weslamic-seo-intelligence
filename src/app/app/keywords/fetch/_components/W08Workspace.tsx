@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { History, Loader2 } from "lucide-react";
 import type { ProgressState, W08ResultRow } from "./SeoTaskCard";
 import { HistoryView } from "./HistoryView";
+import { SortableTh, useTableSort, type Getter } from "./SortableTable";
 import {
   appendHistory,
   clearHistory,
@@ -585,13 +586,23 @@ export function W08Workspace() {
   );
 }
 
+const W08_GETTERS: Record<string, Getter<W08ResultRow>> = {
+  position: (r) => r.position,
+  keyword: (r) => r.keyword,
+  visible_url: (r) => r.visible_url,
+  ad_title: (r) => r.ad_title,
+  ad_description: (r) => r.ad_description,
+  market: (r) => r.market,
+};
+
 function AdwordsResultTable({ rows }: { rows: W08ResultRow[] }) {
-  const sorted = [...rows].sort((a, b) => {
-    // 按 position 升序，null 排末尾
-    const pa = a.position ?? Infinity;
-    const pb = b.position ?? Infinity;
-    return pa - pb;
-  });
+  const { sortedRows, sortKey, sortDir, toggle } = useTableSort(
+    rows,
+    W08_GETTERS,
+    { key: "position", dir: "asc" },
+  );
+  const sorted = sortedRows;
+  const thCls = "px-5 py-2";
 
   return (
     <div>
@@ -607,12 +618,12 @@ function AdwordsResultTable({ rows }: { rows: W08ResultRow[] }) {
       <table className="w-full text-xs">
         <thead className="sticky top-0 bg-gray-50 text-gray-500">
           <tr className="border-b border-gray-200">
-            <th className="px-5 py-2 text-right font-medium">排名</th>
-            <th className="px-5 py-2 text-left font-medium">广告词</th>
-            <th className="px-5 py-2 text-left font-medium">落地展示 URL</th>
-            <th className="px-5 py-2 text-left font-medium">广告标题</th>
-            <th className="px-5 py-2 text-left font-medium">广告描述</th>
-            <th className="px-5 py-2 text-left font-medium">市场</th>
+            <SortableTh active={sortKey === "position"} dir={sortDir} align="right" onClick={() => toggle("position")} className={thCls}>排名</SortableTh>
+            <SortableTh active={sortKey === "keyword"} dir={sortDir} onClick={() => toggle("keyword")} className={thCls}>广告词</SortableTh>
+            <SortableTh active={sortKey === "visible_url"} dir={sortDir} onClick={() => toggle("visible_url")} className={thCls}>落地展示 URL</SortableTh>
+            <SortableTh active={sortKey === "ad_title"} dir={sortDir} onClick={() => toggle("ad_title")} className={thCls}>广告标题</SortableTh>
+            <SortableTh active={sortKey === "ad_description"} dir={sortDir} onClick={() => toggle("ad_description")} className={thCls}>广告描述</SortableTh>
+            <SortableTh active={sortKey === "market"} dir={sortDir} onClick={() => toggle("market")} className={thCls}>市场</SortableTh>
           </tr>
         </thead>
         <tbody>

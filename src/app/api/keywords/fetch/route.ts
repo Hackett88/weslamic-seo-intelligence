@@ -7,8 +7,10 @@ import { n8nCallbackEvents } from "@/db/schema";
 import { N8nCallbackEventSchema } from "@/contracts/n8n-callback";
 import {
   triggerW01PhraseThese,
+  triggerW02PhraseThis,
   triggerW03PhraseOrganic,
   buildBatchId,
+  buildW02BatchId,
   buildW03BatchId,
   getStagingRowsByBatch,
   getW03StagingRowsByBatch,
@@ -65,11 +67,35 @@ export async function GET(req: NextRequest) {
   }
 
   const ep = endpoint.toUpperCase();
-  if (ep !== "W01" && ep !== "W03") {
+  if (ep !== "W01" && ep !== "W02" && ep !== "W03") {
     return new Response(`endpoint ${endpoint} not implemented\n`, {
       status: 501,
       headers: { "Content-Type": "text/plain; charset=utf-8" },
     });
+  }
+
+  if (ep === "W02") {
+    const keyword = (req.nextUrl.searchParams.get("keyword") ?? "")
+      .trim()
+      .toLowerCase();
+    const marketsRaw = req.nextUrl.searchParams.get("markets") ?? "";
+    const markets = marketsRaw
+      .split(",")
+      .map((s) => s.trim().toLowerCase() as W01Market)
+      .filter((m) => ALLOWED_MARKETS.includes(m));
+
+    if (!keyword) {
+      return new Response("keyword required\n", { status: 400 });
+    }
+    if (markets.length === 0) {
+      return new Response("at least one market required\n", { status: 400 });
+    }
+
+    if (isMockEnabled(req)) {
+      return mockEndpointStream(req, "W02");
+    }
+
+    return realW02Stream(req, keyword, markets);
   }
 
   if (ep === "W03") {
@@ -333,6 +359,215 @@ function realW01Stream(
           total_batches: batches.length,
           failed_batches: Object.keys(triggerErrors).length,
           units_actual: keywords.length * markets.length * 10,
+        },
+      };
+      enqueue(`data: ${JSON.stringify(doneEvt)}\n\n`);
+
+      clearInterval(heartbeat);
+      close();
+    },
+  });
+
+  return new Response(stream, { headers: SSE_HEADERS });
+}
+
+function realW02Stream(
+  req: NextRequest,
+  keyword: string,
+  markets: W01Market[]
+): Response {
+  const encoder = new TextEncoder();
+  const batches = markets.map((m) => ({ batchId: buildW02BatchId(m), market: m }));
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      let cancelled = false;
+      const enqueue = (chunk: string) => {
+        if (cancelled) return;
+        try {
+          controller.enqueue(encoder.encode(chunk));
+        } catch {
+          /* closed */
+        }
+      };
+      const close = () => {
+        try {
+          controller.close();
+        } catch {
+          /* already closed */
+        }
+      };
+
+      const heartbeat = setInterval(() => {
+        if (cancelled) return;
+        enqueue(`: heartbeat\n\n`);
+      }, HEARTBEAT_MS);
+
+      req.signal.addEventListener("abort", () => {
+        cancelled = true;
+        clearInterval(heartbeat);
+        close();
+      });
+
+      enqueue(
+        `event: banner\ndata: ${JSON.stringify({
+          mock: false,
+          batches,
+          keyword,
+          markets_count: markets.length,
+        })}\n\n`
+      );
+
+      const triggerResults = await Promise.allSettled(
+        batches.map((b) =>
+          triggerW02PhraseThis({
+            batchId: b.batchId,
+            keyword,
+            market: b.market,
+          })
+        )
+      );
+
+      const finishedBatches = new Set<string>();
+      const triggerErrors: Record<string, string> = {};
+      triggerResults.forEach((r, i) => {
+        const batchId = batches[i].batchId;
+        if (r.status === "rejected") {
+          finishedBatches.add(batchId);
+          triggerErrors[batchId] =
+            r.reason instanceof Error ? r.reason.message : String(r.reason);
+        } else if (!r.value.webhookOk) {
+          finishedBatches.add(batchId);
+          triggerErrors[batchId] = `webhook ${r.value.webhookStatus}`;
+        }
+      });
+
+      for (const [batchId, errMsg] of Object.entries(triggerErrors)) {
+        const market = batches.find((b) => b.batchId === batchId)?.market ?? "";
+        const evt = {
+          version: "2025-01" as const,
+          event_id: `${batchId}-trigger-failed`,
+          seq: 0,
+          ts: new Date().toISOString(),
+          batch_id: batchId,
+          workflow_id: "W02",
+          execution_id: "trigger",
+          node_name: "Trigger Failed",
+          node_status: "failed" as const,
+          payload: { error: { code: "WEBHOOK_TRIGGER_FAILED", message: errMsg, market } },
+        };
+        enqueue(`id: ${evt.event_id}\ndata: ${JSON.stringify(evt)}\n\n`);
+      }
+
+      const lastSeqByBatch: Record<string, number> = {};
+      for (const b of batches) lastSeqByBatch[b.batchId] = -1;
+
+      const startedAt = Date.now();
+      while (!cancelled && finishedBatches.size < batches.length) {
+        if (Date.now() - startedAt > HARD_TIMEOUT_MS) {
+          for (const b of batches) {
+            if (finishedBatches.has(b.batchId)) continue;
+            finishedBatches.add(b.batchId);
+            const evt = {
+              version: "2025-01" as const,
+              event_id: `${b.batchId}-timeout`,
+              seq: 90,
+              ts: new Date().toISOString(),
+              batch_id: b.batchId,
+              workflow_id: "W02",
+              execution_id: "timeout",
+              node_name: "Stream Timeout",
+              node_status: "failed" as const,
+              payload: { error: { code: "STREAM_TIMEOUT", message: `> ${HARD_TIMEOUT_MS}ms` } },
+            };
+            enqueue(`id: ${evt.event_id}\ndata: ${JSON.stringify(evt)}\n\n`);
+          }
+          break;
+        }
+
+        for (const b of batches) {
+          if (finishedBatches.has(b.batchId)) continue;
+          let newEvents: typeof n8nCallbackEvents.$inferSelect[] = [];
+          try {
+            newEvents = await db
+              .select()
+              .from(n8nCallbackEvents)
+              .where(
+                and(
+                  eq(n8nCallbackEvents.batchId, b.batchId),
+                  gt(n8nCallbackEvents.seq, lastSeqByBatch[b.batchId])
+                )
+              )
+              .orderBy(asc(n8nCallbackEvents.seq));
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
+            enqueue(
+              `event: error\ndata: ${JSON.stringify({ error: `db poll failed: ${msg}` })}\n\n`
+            );
+            continue;
+          }
+          for (const ev of newEvents) {
+            const evt = {
+              version: "2025-01" as const,
+              event_id: ev.eventId,
+              seq: ev.seq,
+              ts: ev.ts.toISOString(),
+              batch_id: ev.batchId,
+              workflow_id: ev.workflowId,
+              execution_id: ev.executionId,
+              node_name: ev.nodeName,
+              node_status: ev.nodeStatus as
+                | "started" | "running" | "progress" | "succeeded" | "failed" | "warning",
+              payload: ev.payload as Record<string, unknown> | null | undefined,
+            };
+            const parsed = N8nCallbackEventSchema.safeParse(evt);
+            const data = parsed.success ? parsed.data : evt;
+            enqueue(`id: ${ev.eventId}\ndata: ${JSON.stringify(data)}\n\n`);
+            lastSeqByBatch[b.batchId] = ev.seq;
+            if (TERMINAL_NODES.has(ev.nodeName)) {
+              finishedBatches.add(b.batchId);
+              break;
+            }
+          }
+        }
+        if (finishedBatches.size >= batches.length) break;
+        await sleep(POLL_INTERVAL_MS);
+      }
+
+      const allRows: StagingRow[] = [];
+      for (const b of batches) {
+        if (triggerErrors[b.batchId]) continue;
+        try {
+          const rows = await getStagingRowsByBatch(b.batchId);
+          allRows.push(...rows);
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          enqueue(
+            `event: error\ndata: ${JSON.stringify({
+              error: `staging fetch failed for ${b.batchId}: ${msg}`,
+            })}\n\n`
+          );
+        }
+      }
+
+      enqueue(`event: rows\ndata: ${JSON.stringify({ rows: allRows })}\n\n`);
+
+      const failed = Object.keys(triggerErrors).length > 0;
+      const doneEvt = {
+        version: "2025-01" as const,
+        event_id: `_done-${randomUUID().slice(0, 8)}`,
+        seq: 99,
+        ts: new Date().toISOString(),
+        batch_id: batches[0]?.batchId ?? "unknown",
+        workflow_id: "W02",
+        execution_id: "_done",
+        node_name: "_done",
+        node_status: failed && allRows.length === 0 ? "failed" as const : "succeeded" as const,
+        payload: {
+          rows_new: allRows.length,
+          total_batches: batches.length,
+          failed_batches: Object.keys(triggerErrors).length,
+          units_actual: markets.length * 10,
         },
       };
       enqueue(`data: ${JSON.stringify(doneEvt)}\n\n`);

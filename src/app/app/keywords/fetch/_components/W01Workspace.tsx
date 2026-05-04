@@ -442,7 +442,8 @@ export function W01Workspace() {
 }
 
 // 结果表：N8N staging 表的真实数据，按 (market, keyword) 排序
-function ResultTable({ rows }: { rows: W01ResultRow[] }) {
+// W02 与 W01 同表同列，复用此组件
+export function ResultTable({ rows }: { rows: W01ResultRow[] }) {
   const sorted = [...rows].sort((a, b) => {
     if (a.market !== b.market) return a.market.localeCompare(b.market);
     return a.keyword.localeCompare(b.keyword);

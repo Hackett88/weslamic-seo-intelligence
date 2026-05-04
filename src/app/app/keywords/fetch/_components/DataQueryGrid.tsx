@@ -34,8 +34,8 @@ type Skill = {
 const SKILLS: Skill[] = [
   {
     endpoint: "W01",
-    title: "关键词指标查询",
-    description: "输入一批词，秒看搜量、难度、CPC。批量诊断词的商业价值与竞争度，一眼看出哪些词值得投入。",
+    title: "批量关键词指标查询",
+    description: "一次投一批词 × 多市场，秒看搜量、难度、CPC、意图、趋势。批量诊断商业价值与竞争度。",
     available: true,
     spanCls: "col-span-1 sm:col-span-2 md:col-span-6 lg:col-span-6 lg:row-span-2",
     icon: BarChart3,
@@ -58,9 +58,9 @@ const SKILLS: Skill[] = [
   },
   {
     endpoint: "W02",
-    title: "单词深度查询",
-    description: "针对单个核心词拉取完整指标与变体",
-    available: false,
+    title: "关键词指标查询",
+    description: "单个核心词 × 多市场，秒查该词在每个市场的搜量、难度、CPC、意图、趋势",
+    available: true,
     spanCls: "col-span-1 sm:col-span-1 md:col-span-3 lg:col-span-3",
     icon: ZoomIn,
   },
@@ -74,8 +74,8 @@ const SKILLS: Skill[] = [
   },
   {
     endpoint: "W03",
-    title: "单词 SERP 透视",
-    description: "查看单词搜索结果页的竞争与意图分布",
+    title: "关键词排名对手",
+    description: "看 Google TOP100 里谁在排这个词，列出域名 / URL / 排位 / SERP 特性",
     available: true,
     spanCls: "col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-4",
     icon: Search,

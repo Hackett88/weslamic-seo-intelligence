@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { W01Workspace } from "../_components/W01Workspace";
+import { W02Workspace } from "../_components/W02Workspace";
 import { W03Workspace } from "../_components/W03Workspace";
 
 type SkillMeta = {
@@ -12,18 +13,18 @@ type SkillMeta = {
 
 const SKILL_META: Record<string, SkillMeta> = {
   w01: {
-    title: "关键词指标查询",
-    description: "输入一批词，秒看搜量、难度、CPC",
+    title: "批量关键词指标查询",
+    description: "一次投一批词 × 多市场，秒看搜量、难度、CPC、意图、趋势",
     available: true,
   },
   w02: {
-    title: "单词深度查询",
-    description: "针对单个核心词拉取完整指标与变体",
-    available: false,
+    title: "关键词指标查询",
+    description: "单个核心词 × 多市场，秒查该词在每个市场的搜量、难度、CPC、意图、趋势",
+    available: true,
   },
   w03: {
-    title: "单词 SERP 透视",
-    description: "查看单词搜索结果页的竞争与意图分布",
+    title: "关键词排名对手",
+    description: "看 Google TOP100 里谁在排这个词，列出域名 / URL / 排位 / SERP 特性",
     available: true,
   },
   w04: {
@@ -102,6 +103,8 @@ export default async function SkillDetailPage({ params }: PageProps) {
       {/* 主体：available 走完整 workspace；未上线走占位 */}
       {meta.available && slug === "w01" ? (
         <W01Workspace />
+      ) : meta.available && slug === "w02" ? (
+        <W02Workspace />
       ) : meta.available && slug === "w03" ? (
         <W03Workspace />
       ) : (

@@ -2300,7 +2300,9 @@ function realW09Stream(
           rows_new: allRows.length,
           total_batches: batches.length,
           failed_batches: Object.keys(triggerErrors).length,
-          units_actual: displayLimit * 100 * markets.length,
+          // domain_adwords_historical: 100u/row (Semrush official). Use actual staging row count,
+          // not displayLimit × markets estimate (over-counts on NOTHING_FOUND).
+          units_actual: allRows.length * 100,
         },
       };
       enqueue(`data: ${JSON.stringify(doneEvt)}\n\n`);

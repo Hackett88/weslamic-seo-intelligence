@@ -596,7 +596,9 @@ function realW01Stream(
           rows_new: allRows.length,
           total_batches: batches.length,
           failed_batches: Object.keys(triggerErrors).length,
-          units_actual: keywords.length * markets.length * 10,
+          // phrase_these: 10u/row (Semrush official). Use actual row count from staging,
+          // not keywords × markets estimate (upper-bound before submit).
+          units_actual: allRows.length * 10,
         },
       };
       enqueue(`data: ${JSON.stringify(doneEvt)}\n\n`);
@@ -805,7 +807,9 @@ function realW02Stream(
           rows_new: allRows.length,
           total_batches: batches.length,
           failed_batches: Object.keys(triggerErrors).length,
-          units_actual: markets.length * 10,
+          // phrase_this: 10u/row (Semrush official). Use actual row count from staging,
+          // not markets count estimate (upper-bound before submit).
+          units_actual: allRows.length * 10,
         },
       };
       enqueue(`data: ${JSON.stringify(doneEvt)}\n\n`);
@@ -1019,7 +1023,9 @@ function realW03Stream(
           rows_new: allRows.length,
           total_batches: batches.length,
           failed_batches: Object.keys(triggerErrors).length,
-          units_actual: displayLimit * 10 * markets.length,
+          // phrase_organic: 10u/row (Semrush official). Use actual row count from staging,
+          // not displayLimit × markets estimate (upper-bound before submit).
+          units_actual: allRows.length * 10,
         },
       };
       enqueue(`data: ${JSON.stringify(doneEvt)}\n\n`);
@@ -1438,7 +1444,9 @@ function realW04Stream(
           rows_new: allRows.length,
           total_batches: batches.length,
           failed_batches: Object.keys(triggerErrors).length,
-          units_actual: displayLimit * 40 * markets.length,
+          // phrase_questions: 40u/row (Semrush official). Use actual row count from staging,
+          // not displayLimit × markets estimate (upper-bound before submit).
+          units_actual: allRows.length * 40,
         },
       };
       enqueue(`data: ${JSON.stringify(doneEvt)}\n\n`);
@@ -1650,7 +1658,9 @@ function realW05Stream(
           rows_new: allRows.length,
           total_batches: batches.length,
           failed_batches: Object.keys(triggerErrors).length,
-          units_actual: displayLimit * 40 * markets.length,
+          // phrase_related: 40u/row (Semrush official). Use actual row count from staging,
+          // not displayLimit × markets estimate (upper-bound before submit).
+          units_actual: allRows.length * 40,
         },
       };
       enqueue(`data: ${JSON.stringify(doneEvt)}\n\n`);
@@ -1862,7 +1872,9 @@ function realW06Stream(
           rows_new: allRows.length,
           total_batches: batches.length,
           failed_batches: Object.keys(triggerErrors).length,
-          units_actual: displayLimit * 20 * markets.length,
+          // phrase_fullsearch: 20u/row (Semrush official). Use actual row count from staging,
+          // not displayLimit × markets estimate (upper-bound before submit).
+          units_actual: allRows.length * 20,
         },
       };
       enqueue(`data: ${JSON.stringify(doneEvt)}\n\n`);

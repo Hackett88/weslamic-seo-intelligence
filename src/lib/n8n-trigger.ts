@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 const W01_WEBHOOK_PATH = "/webhook/w01-phrase-these";
+const W02_WEBHOOK_PATH = "/webhook/w02-phrase-this";
 const W03_WEBHOOK_PATH = "/webhook/w03-phrase-organic";
 const STAGING_TABLE_ID = "4tzNtqRC3683ZoBy";
 const W03_STAGING_TABLE_ID = "0gqbKO9OzoSJBjZV";
@@ -44,6 +45,10 @@ export function buildBatchId(market: W01Market): string {
   return `W01-${market}-${randomUUID().slice(0, 8)}`;
 }
 
+export function buildW02BatchId(market: W01Market): string {
+  return `W02-${market}-${randomUUID().slice(0, 8)}`;
+}
+
 export function buildW03BatchId(market: W01Market): string {
   return `W03-${market}-${randomUUID().slice(0, 8)}`;
 }
@@ -62,6 +67,54 @@ export async function triggerW01PhraseThese(
     database: input.market,
     display_limit: input.displayLimit ?? 100,
     display_offset: 0,
+  };
+
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    throw Object.assign(new Error(`N8N webhook network error: ${msg}`), { status: 503 });
+  }
+
+  return {
+    batchId: input.batchId,
+    market: input.market,
+    webhookStatus: res.status,
+    webhookOk: res.status >= 200 && res.status < 300,
+  };
+}
+
+export interface W02TriggerInput {
+  batchId: string;
+  keyword: string;
+  market: W01Market;
+}
+
+export interface W02TriggerResult {
+  batchId: string;
+  market: W01Market;
+  webhookStatus: number;
+  webhookOk: boolean;
+}
+
+export async function triggerW02PhraseThis(
+  input: W02TriggerInput
+): Promise<W02TriggerResult> {
+  const url = `${n8nBase()}${W02_WEBHOOK_PATH}`;
+  const callbackUrl = `${appPublicUrl()}/api/n8n/callback`;
+  const body = {
+    batch_id: input.batchId,
+    workflow_id: "W02",
+    callback_url: callbackUrl,
+    keyword: input.keyword,
+    market: input.market,
+    database: input.market,
+    display_limit: 1,
   };
 
   let res: Response;
@@ -180,7 +233,7 @@ export async function getStagingRowsByBatch(
   batchId: string
 ): Promise<StagingRow[]> {
   const url = new URL(`${n8nBase()}/api/v1/data-tables/${STAGING_TABLE_ID}/rows`);
-  url.searchParams.set("limit", "1000");
+  url.searchParams.set("limit", "250");
   url.searchParams.set(
     "filter",
     JSON.stringify({
@@ -248,7 +301,7 @@ export async function getW03StagingRowsByBatch(
   batchId: string
 ): Promise<W03StagingRow[]> {
   const url = new URL(`${n8nBase()}/api/v1/data-tables/${W03_STAGING_TABLE_ID}/rows`);
-  url.searchParams.set("limit", "1000");
+  url.searchParams.set("limit", "250");
   url.searchParams.set(
     "filter",
     JSON.stringify({

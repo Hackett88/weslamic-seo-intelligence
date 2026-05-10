@@ -90,7 +90,7 @@ function getMockMap(): Map<string, SeedKeyword> {
   return globalForMock.__seedKeywordsMap;
 }
 
-function isMockMode(): boolean {
+export function isMockMode(): boolean {
   return (
     process.env.USE_MOCK === "1" ||
     !process.env.N8N_API_KEY ||

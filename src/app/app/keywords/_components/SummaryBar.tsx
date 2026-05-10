@@ -2,23 +2,21 @@
 
 type Stats = {
   total: number;
-  l1: number;
-  l2: number;
-  l3: number;
-  l4: number;
-  pending: number;
-  excluded: number;
+  scored: number;
+  unscored: number;
+  protected: number;
+  avgSv: number;
+  avgCpc: number;
   lastSync: Date | null;
 };
 
 const cards = [
-  { label: "总词数", key: "total" as const, color: "text-gray-900" },
-  { label: "L1 骨架", key: "l1" as const, color: "text-amber-600" },
-  { label: "L2 候选", key: "l2" as const, color: "text-blue-600" },
-  { label: "L3 附属", key: "l3" as const, color: "text-purple-600" },
-  { label: "L4 暂缓", key: "l4" as const, color: "text-gray-500" },
-  { label: "待评估", key: "pending" as const, color: "text-yellow-600" },
-  { label: "已排除", key: "excluded" as const, color: "text-red-600" },
+  { label: "总词数",   key: "total" as const,     color: "text-gray-900",     fmt: (v: number) => v.toLocaleString() },
+  { label: "已打分",   key: "scored" as const,    color: "text-emerald-600",  fmt: (v: number) => v.toLocaleString() },
+  { label: "未打分",   key: "unscored" as const,  color: "text-amber-600",    fmt: (v: number) => v.toLocaleString() },
+  { label: "受保护",   key: "protected" as const, color: "text-blue-600",     fmt: (v: number) => v.toLocaleString() },
+  { label: "平均搜索量", key: "avgSv" as const,   color: "text-purple-600",   fmt: (v: number) => v.toLocaleString() },
+  { label: "平均 CPC",  key: "avgCpc" as const,   color: "text-teal-600",     fmt: (v: number) => `$${v.toFixed(2)}` },
 ];
 
 interface SummaryBarProps {
@@ -44,7 +42,7 @@ export function SummaryBar({ stats, onCardClick }: SummaryBarProps) {
         >
           <p className="text-gray-400 text-xs mb-1">{card.label}</p>
           <p className={`text-lg font-semibold ${card.color}`}>
-            {stats[card.key]}
+            {card.fmt(stats[card.key])}
           </p>
         </div>
       ))}

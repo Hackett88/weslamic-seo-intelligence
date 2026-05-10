@@ -9,100 +9,13 @@ import {
   type SortingState,
 } from "@tanstack/react-table";
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
 import type { Keyword } from "@/db/schema";
+import { formatBP, formatCS, formatIntent, parseTrends, Sparkline } from "./_utils";
 
-const LAYER_ORDER: Record<string, number> = {
-  L1: 1,
-  L2: 2,
-  L3: 3,
-  L4: 4,
-  pending: 5,
-};
-
-function layerBadge(layer: string | null) {
-  if (!layer) return <span className="text-gray-300">—</span>;
-  const colorMap: Record<string, string> = {
-    L1: "bg-amber-50 text-amber-700 border-amber-200",
-    L2: "bg-blue-50 text-blue-700 border-blue-200",
-    L3: "bg-purple-50 text-purple-700 border-purple-200",
-    L4: "bg-gray-100 text-gray-500 border-gray-200",
-    pending: "bg-yellow-50 text-yellow-700 border-yellow-200",
-  };
-  return (
-    <span
-      className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs border ${colorMap[layer] ?? "bg-zinc-800 text-zinc-400 border-zinc-700"}`}
-    >
-      {layer}
-    </span>
-  );
-}
-
-function handlingBadge(handling: string | null) {
-  if (!handling) return <span className="text-gray-300">—</span>;
-  const colorMap: Record<string, string> = {
-    independent: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    merge: "bg-blue-50 text-blue-700 border-blue-200",
-    defer: "bg-gray-100 text-gray-500 border-gray-200",
-    exclude: "bg-red-50 text-red-700 border-red-200",
-  };
-  const labelMap: Record<string, string> = {
-    independent: "独立",
-    merge: "合并",
-    defer: "暂缓",
-    exclude: "排除",
-  };
-  return (
-    <span
-      className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs border ${colorMap[handling] ?? "bg-zinc-800 text-zinc-400 border-zinc-700"}`}
-    >
-      {labelMap[handling] ?? handling}
-    </span>
-  );
-}
-
-function cannibalizationBadge(risk: string | null) {
-  if (!risk) return <span className="text-gray-300">—</span>;
-  const colorMap: Record<string, string> = {
-    low: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    medium: "bg-yellow-50 text-yellow-700 border-yellow-200",
-    high: "bg-red-50 text-red-700 border-red-200",
-  };
-  const labelMap: Record<string, string> = {
-    low: "低",
-    medium: "中",
-    high: "高",
-  };
-  return (
-    <span
-      className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs border ${colorMap[risk] ?? "bg-zinc-800 text-zinc-400 border-zinc-700"}`}
-    >
-      {labelMap[risk] ?? risk}
-    </span>
-  );
-}
-
-function statusBadge(status: string | null) {
-  if (!status) return <span className="text-gray-300">—</span>;
-  const colorMap: Record<string, string> = {
-    pending: "bg-yellow-50 text-yellow-700 border-yellow-200",
-    evaluated: "bg-blue-50 text-blue-700 border-blue-200",
-    clustered: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    excluded: "bg-red-50 text-red-700 border-red-200",
-  };
-  const labelMap: Record<string, string> = {
-    pending: "待评估",
-    evaluated: "已评估",
-    clustered: "已聚类",
-    excluded: "已排除",
-  };
-  return (
-    <span
-      className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs border ${colorMap[status] ?? "bg-zinc-800 text-zinc-400 border-zinc-700"}`}
-    >
-      {labelMap[status] ?? status}
-    </span>
-  );
+function kdCell(kd: number | null) {
+  if (kd === null || kd === undefined) return <span className="text-gray-300">—</span>;
+  const cls = kd >= 70 ? "text-red-600" : kd >= 40 ? "text-amber-600" : "text-emerald-600";
+  return <span className={`text-xs font-medium ${cls}`}>{kd}</span>;
 }
 
 function formatDate(date: Date | null) {
@@ -121,24 +34,14 @@ interface KeywordTableProps {
 
 export function KeywordTable({ data, onRowClick }: KeywordTableProps) {
   const [sorting, setSorting] = useState<SortingState>([
-    { id: "layer", desc: false },
+    { id: "searchVolume", desc: true },
   ]);
 
   const columns: ColumnDef<Keyword>[] = [
     {
-      accessorKey: "kwId",
-      header: "词条 ID",
-      size: 128,
-      cell: ({ getValue }) => (
-        <span className="font-mono text-emerald-700 text-xs">
-          {getValue() as string}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "rawKeyword",
-      header: "关键词原文",
-      size: 192,
+      accessorKey: "keyword",
+      header: "关键词",
+      size: 240,
       cell: ({ getValue }) => (
         <span className="font-medium text-gray-900 text-xs">
           {getValue() as string}
@@ -146,74 +49,96 @@ export function KeywordTable({ data, onRowClick }: KeywordTableProps) {
       ),
     },
     {
-      accessorKey: "normalizedKeyword",
-      header: "标准化",
-      size: 192,
-      cell: ({ getValue }) => (
-        <span className="text-gray-500 text-xs">{getValue() as string}</span>
-      ),
-    },
-    {
-      accessorKey: "language",
-      header: "语言",
+      accessorKey: "market",
+      header: "市场",
       size: 64,
       cell: ({ getValue }) => (
-        <span className="text-center block text-xs text-gray-600">
+        <span className="text-xs text-gray-600 uppercase">
           {(getValue() as string) ?? "—"}
         </span>
       ),
     },
     {
-      accessorKey: "layer",
-      header: "分层",
-      size: 80,
-      sortingFn: (rowA, rowB) => {
-        const a = LAYER_ORDER[rowA.original.layer ?? ""] ?? 99;
-        const b = LAYER_ORDER[rowB.original.layer ?? ""] ?? 99;
-        return a - b;
-      },
-      cell: ({ getValue }) => layerBadge(getValue() as string | null),
-    },
-    {
-      accessorKey: "clusterCode",
-      header: "词群编号",
-      size: 112,
-      cell: ({ getValue }) => (
-        <span className="text-gray-500 text-xs font-mono">
-          {(getValue() as string) ?? "—"}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "headKeyword",
-      header: "主词",
-      size: 160,
-      cell: ({ getValue }) => (
-        <span className="text-xs text-gray-700">{(getValue() as string) ?? "—"}</span>
-      ),
-    },
-    {
-      accessorKey: "handling",
-      header: "承接状态",
+      accessorKey: "searchVolume",
+      header: "搜索量",
       size: 96,
-      cell: ({ getValue }) => handlingBadge(getValue() as string | null),
+      cell: ({ getValue }) => {
+        const v = getValue() as number | null;
+        return (
+          <span className="text-xs text-gray-700 tabular-nums">
+            {v != null ? v.toLocaleString() : "—"}
+          </span>
+        );
+      },
     },
     {
-      accessorKey: "cannibalization",
-      header: "蚕食风险",
-      size: 80,
-      cell: ({ getValue }) => cannibalizationBadge(getValue() as string | null),
+      accessorKey: "keywordDifficulty",
+      header: "KD",
+      size: 64,
+      cell: ({ getValue }) => kdCell(getValue() as number | null),
     },
     {
-      accessorKey: "status",
-      header: "流程状态",
+      accessorKey: "cpc",
+      header: "CPC",
       size: 80,
-      cell: ({ getValue }) => statusBadge(getValue() as string | null),
+      cell: ({ getValue }) => {
+        const v = getValue() as number | null;
+        return (
+          <span className="text-xs text-gray-700 tabular-nums">
+            {v != null ? `$${v.toFixed(2)}` : "—"}
+          </span>
+        );
+      },
+    },
+    {
+      accessorKey: "bp",
+      header: "BP 业务价值",
+      size: 144,
+      cell: ({ getValue }) => formatBP(getValue() as number | null),
+    },
+    {
+      accessorKey: "cs",
+      header: "CS 商业信号",
+      size: 144,
+      cell: ({ getValue }) => formatCS(getValue() as number | null),
+    },
+    {
+      accessorKey: "intent",
+      header: "意图",
+      size: 96,
+      cell: ({ getValue }) => formatIntent(getValue() as string | null),
+    },
+    {
+      accessorKey: "trends",
+      header: "12 月趋势",
+      size: 132,
+      enableSorting: false,
+      cell: ({ getValue }) => {
+        const data = parseTrends(getValue() as string | null);
+        if (!data) return <span className="text-gray-300 text-xs">—</span>;
+        return <Sparkline data={data} width={100} height={24} variant="bar" />;
+      },
+    },
+    {
+      accessorKey: "protected",
+      header: "保护",
+      size: 56,
+      cell: ({ getValue }) => {
+        const v = getValue() as boolean | null;
+        if (v === true) {
+          return (
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs border bg-blue-50 text-blue-700 border-blue-200">
+              是
+            </span>
+          );
+        }
+        return <span className="text-gray-300 text-xs">—</span>;
+      },
     },
     {
       accessorKey: "updatedAt",
       header: "更新时间",
-      size: 128,
+      size: 96,
       cell: ({ getValue }) => (
         <span className="text-gray-400 text-xs">
           {formatDate(getValue() as Date | null)}

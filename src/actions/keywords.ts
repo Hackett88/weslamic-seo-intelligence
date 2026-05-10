@@ -38,16 +38,26 @@ export async function deleteKeyword(id: number) {
 export async function getKeywordStats() {
   const rows = await db.select().from(keywords);
   const total = rows.length;
-  const l1 = rows.filter(r => r.layer === "L1").length;
-  const l2 = rows.filter(r => r.layer === "L2").length;
-  const l3 = rows.filter(r => r.layer === "L3").length;
-  const l4 = rows.filter(r => r.layer === "L4").length;
-  const pending = rows.filter(r => r.layer === "pending").length;
-  const excluded = rows.filter(r => r.status === "excluded").length;
-  const lastSync = rows.reduce((a, b) => {
-    const aTime = a?.updatedAt?.getTime() ?? 0;
-    const bTime = b?.updatedAt?.getTime() ?? 0;
-    return aTime > bTime ? a : b;
-  }, rows[0])?.updatedAt ?? null;
-  return { total, l1, l2, l3, l4, pending, excluded, lastSync };
+
+  const scored = rows.filter((r) => r.bp != null && r.cs != null).length;
+  const unscored = total - scored;
+  const protectedCount = rows.filter((r) => r.protected === true).length;
+
+  const svValues = rows.map((r) => r.searchVolume).filter((v): v is number => v != null);
+  const avgSv = svValues.length > 0
+    ? Math.round(svValues.reduce((a, b) => a + b, 0) / svValues.length)
+    : 0;
+
+  const cpcValues = rows.map((r) => r.cpc).filter((v): v is number => v != null);
+  const avgCpc = cpcValues.length > 0
+    ? cpcValues.reduce((a, b) => a + b, 0) / cpcValues.length
+    : 0;
+
+  const lastSync = rows.reduce<Date | null>((acc, r) => {
+    const t = r.updatedAt ? new Date(r.updatedAt).getTime() : 0;
+    if (!acc) return r.updatedAt ?? null;
+    return t > acc.getTime() ? new Date(r.updatedAt!) : acc;
+  }, null);
+
+  return { total, scored, unscored, protected: protectedCount, avgSv, avgCpc, lastSync };
 }

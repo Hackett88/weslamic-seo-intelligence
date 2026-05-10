@@ -7,15 +7,15 @@ import { FilterBar, type FilterState } from "./FilterBar";
 import { KeywordTable } from "./KeywordTable";
 import { DetailDrawer } from "./DetailDrawer";
 import { SummaryBar } from "./SummaryBar";
+import { intentLabel } from "./_utils";
 
 type Stats = {
   total: number;
-  l1: number;
-  l2: number;
-  l3: number;
-  l4: number;
-  pending: number;
-  excluded: number;
+  scored: number;
+  unscored: number;
+  protected: number;
+  avgSv: number;
+  avgCpc: number;
   lastSync: Date | null;
 };
 
@@ -26,15 +26,37 @@ interface KeywordsClientProps {
 
 const DEFAULT_FILTERS: FilterState = {
   search: "",
-  layer: "all",
-  status: "all",
-  sourceNum: "all",
-  language: "all",
-  region: "all",
-  handling: "all",
+  market: [],
+  intent: [],
+  questionType: [],
+  protectedOnly: false,
 };
 
 const PAGE_SIZE_OPTIONS = [20, 50, 100];
+
+const MARKET_FLAGS: Record<string, string> = {
+  uk: "🇬🇧", gb: "🇬🇧", us: "🇺🇸", sa: "🇸🇦", ae: "🇦🇪", my: "🇲🇾", id: "🇮🇩",
+  fr: "🇫🇷", de: "🇩🇪", es: "🇪🇸", au: "🇦🇺", tr: "🇹🇷",
+  eg: "🇪🇬", pk: "🇵🇰", bd: "🇧🇩", ng: "🇳🇬", ma: "🇲🇦",
+  dz: "🇩🇿", iq: "🇮🇶", jo: "🇯🇴", kw: "🇰🇼", qa: "🇶🇦", om: "🇴🇲",
+  bh: "🇧🇭", lb: "🇱🇧", sy: "🇸🇾", ye: "🇾🇪", tn: "🇹🇳", ly: "🇱🇾",
+  sd: "🇸🇩", ca: "🇨🇦", in: "🇮🇳", ph: "🇵🇭", sg: "🇸🇬", th: "🇹🇭",
+  vn: "🇻🇳", jp: "🇯🇵", kr: "🇰🇷", cn: "🇨🇳", tw: "🇹🇼", it: "🇮🇹",
+  nl: "🇳🇱", pl: "🇵🇱", ru: "🇷🇺", br: "🇧🇷", mx: "🇲🇽", za: "🇿🇦",
+};
+
+const MARKET_LABELS: Record<string, string> = {
+  uk: "英国", gb: "英国", us: "美国", sa: "沙特", ae: "阿联酋",
+  my: "马来西亚", id: "印尼", fr: "法国", de: "德国", es: "西班牙",
+  au: "澳大利亚", tr: "土耳其", eg: "埃及", pk: "巴基斯坦", bd: "孟加拉",
+  ng: "尼日利亚", ma: "摩洛哥", dz: "阿尔及利亚", iq: "伊拉克", jo: "约旦",
+  kw: "科威特", qa: "卡塔尔", om: "阿曼", bh: "巴林", lb: "黎巴嫩",
+  sy: "叙利亚", ye: "也门", tn: "突尼斯", ly: "利比亚", sd: "苏丹",
+  ca: "加拿大", in: "印度", ph: "菲律宾", sg: "新加坡", th: "泰国",
+  vn: "越南", jp: "日本", kr: "韩国", cn: "中国", tw: "台湾",
+  it: "意大利", nl: "荷兰", pl: "波兰", ru: "俄罗斯", br: "巴西",
+  mx: "墨西哥", za: "南非",
+};
 
 export function KeywordsClient({ initialData, stats }: KeywordsClientProps) {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
@@ -43,22 +65,37 @@ export function KeywordsClient({ initialData, stats }: KeywordsClientProps) {
   const [pageSize, setPageSize] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Derive filter options dynamically from data
+  const { marketOptions, intentOptions, questionTypeOptions } = useMemo(() => {
+    const markets = new Set<string>();
+    const intents = new Set<string>();
+    const qTypes = new Set<string>();
+    initialData.forEach((kw) => {
+      if (kw.market) markets.add(kw.market);
+      if (kw.intent) intents.add(kw.intent);
+      if (kw.questionType) qTypes.add(kw.questionType);
+    });
+    return {
+      marketOptions: [...markets].sort().map((m) => ({
+        value: m,
+        label: MARKET_LABELS[m.toLowerCase()] ?? m.toUpperCase(),
+        flag: MARKET_FLAGS[m.toLowerCase()],
+      })),
+      intentOptions: [...intents].sort().map((i) => ({ value: i, label: intentLabel(i) ?? i })),
+      questionTypeOptions: [...qTypes].sort().map((q) => ({ value: q, label: q })),
+    };
+  }, [initialData]);
+
   const filteredData = useMemo(() => {
     return initialData.filter((kw) => {
-      if (
-        filters.search &&
-        !kw.rawKeyword.toLowerCase().includes(filters.search.toLowerCase()) &&
-        !kw.normalizedKeyword.toLowerCase().includes(filters.search.toLowerCase()) &&
-        !(kw.kwId ?? "").toLowerCase().includes(filters.search.toLowerCase())
-      ) {
-        return false;
+      if (filters.search) {
+        const q = filters.search.toLowerCase();
+        if (!kw.keyword.toLowerCase().includes(q)) return false;
       }
-      if (filters.layer !== "all" && kw.layer !== filters.layer) return false;
-      if (filters.status !== "all" && kw.status !== filters.status) return false;
-      if (filters.sourceNum !== "all" && kw.sourceNum !== filters.sourceNum) return false;
-      if (filters.language !== "all" && kw.language !== filters.language) return false;
-      if (filters.region !== "all" && kw.region !== filters.region) return false;
-      if (filters.handling !== "all" && kw.handling !== filters.handling) return false;
+      if (filters.market.length > 0 && !filters.market.includes(kw.market ?? "")) return false;
+      if (filters.intent.length > 0 && !filters.intent.includes(kw.intent ?? "")) return false;
+      if (filters.questionType.length > 0 && !filters.questionType.includes(kw.questionType ?? "")) return false;
+      if (filters.protectedOnly && kw.protected !== true) return false;
       return true;
     });
   }, [initialData, filters]);
@@ -104,7 +141,7 @@ export function KeywordsClient({ initialData, stats }: KeywordsClientProps) {
         <div className="px-5 py-4 border-b border-gray-200 bg-white flex items-center justify-between shrink-0">
           <div>
             <h1 className="text-base font-semibold text-gray-900">关键词库</h1>
-            <p className="text-xs text-gray-400 mt-0.5">统一管理 SEO 关键词分层、聚类、承接与来源追踪</p>
+            <p className="text-xs text-gray-400 mt-0.5">候选词池 · 来源 N8N keywords_pool · 含搜索量 / KD / CPC / 意图 / SERP 特征</p>
           </div>
           <Input
             className="w-52 h-7 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 text-xs focus-visible:ring-emerald-500 focus-visible:border-emerald-500"
@@ -119,40 +156,40 @@ export function KeywordsClient({ initialData, stats }: KeywordsClientProps) {
           <SummaryBar
             stats={stats}
             onCardClick={(key) => {
-              const map: Record<string, Partial<FilterState>> = {
-                total: DEFAULT_FILTERS,
-                l1: { ...DEFAULT_FILTERS, layer: "L1" },
-                l2: { ...DEFAULT_FILTERS, layer: "L2" },
-                l3: { ...DEFAULT_FILTERS, layer: "L3" },
-                l4: { ...DEFAULT_FILTERS, layer: "L4" },
-                pending: { ...DEFAULT_FILTERS, layer: "pending" },
-                excluded: { ...DEFAULT_FILTERS, status: "excluded" },
-              };
-              setFilters(map[key] as FilterState ?? DEFAULT_FILTERS);
+              if (key === "total") {
+                setFilters(DEFAULT_FILTERS);
+              } else if (key === "protected") {
+                setFilters({ ...DEFAULT_FILTERS, protectedOnly: true });
+              }
+              // 其他卡片当前不做联动筛选（统计纯展示）
             }}
           />
         </div>
 
         {/* 筛选条件栏 */}
         <div className="px-4 py-2 border-b border-gray-200 bg-white shrink-0">
-          <FilterBar filters={filters} onFilterChange={setFilters} />
+          <FilterBar
+            filters={filters}
+            onFilterChange={setFilters}
+            marketOptions={marketOptions}
+            intentOptions={intentOptions}
+            questionTypeOptions={questionTypeOptions}
+          />
         </div>
 
-        {/* 表格（懒加载：仅渲染当前页行） */}
+        {/* 表格 */}
         <div className="flex-1 overflow-auto bg-white">
           <KeywordTable data={paginatedData} onRowClick={handleRowClick} />
         </div>
 
         {/* 底部分页栏 */}
         <div className="px-4 py-2 border-t border-gray-200 bg-white shrink-0 flex items-center gap-3 text-xs">
-          {/* 左侧：筛选提示 */}
           <span className="text-gray-400 mr-auto">
             {totalCount !== initialData.length
               ? `已筛选 ${totalCount} / ${initialData.length} 条`
               : `共 ${totalCount} 条`}
           </span>
 
-          {/* 每页条数选择 */}
           <div className="flex items-center gap-1.5 text-gray-400">
             <span>每页</span>
             <select
@@ -167,12 +204,10 @@ export function KeywordsClient({ initialData, stats }: KeywordsClientProps) {
             <span>条</span>
           </div>
 
-          {/* 当前范围 */}
           <span className="text-gray-400">
             {rangeStart}–{rangeEnd} / {totalCount}
           </span>
 
-          {/* 翻页按钮 */}
           <div className="flex items-center gap-1">
             <button
               onClick={() => setCurrentPage(1)}
@@ -205,7 +240,7 @@ export function KeywordsClient({ initialData, stats }: KeywordsClientProps) {
         </div>
       </div>
 
-      {/* 右侧：内联详情面板（全高推挤，无覆盖层） */}
+      {/* 右侧：内联详情面板 */}
       <div
         style={{ scrollbarGutter: "stable" }}
         className={[

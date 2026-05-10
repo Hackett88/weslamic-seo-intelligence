@@ -1,201 +1,192 @@
 "use client";
 
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { X } from "lucide-react";
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+} from "@/components/ui/dropdown-menu";
+import { Menu as MenuPrimitive } from "@base-ui/react/menu";
+import { Check, ChevronDown, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export interface FilterState {
   search: string;
-  layer: string;
-  status: string;
-  sourceNum: string;
-  language: string;
-  region: string;
-  handling: string;
+  market: string[];
+  intent: string[];
+  questionType: string[];
+  protectedOnly: boolean;
 }
 
 interface FilterBarProps {
   filters: FilterState;
   onFilterChange: (filters: FilterState) => void;
+  marketOptions: Option[];
+  intentOptions: Option[];
+  questionTypeOptions: Option[];
 }
 
-const LANGUAGES = [
-  { value: "EN", flag: "🇬🇧", label: "英文" },
-  { value: "AR", flag: "🇸🇦", label: "阿拉伯文" },
-  { value: "ID", flag: "🇮🇩", label: "印尼文" },
-  { value: "MS", flag: "🇲🇾", label: "马来文" },
-  { value: "FR", flag: "🇫🇷", label: "法文" },
-  { value: "DE", flag: "🇩🇪", label: "德文" },
-  { value: "ES", flag: "🇪🇸", label: "西班牙文" },
-];
+type Option = { value: string; label: string; flag?: string };
 
-const REGIONS = [
-  { value: "SA", flag: "🇸🇦", label: "沙特阿拉伯" },
-  { value: "ID", flag: "🇮🇩", label: "印度尼西亚" },
-  { value: "AE", flag: "🇦🇪", label: "阿联酋" },
-  { value: "MY", flag: "🇲🇾", label: "马来西亚" },
-  { value: "GB", flag: "🇬🇧", label: "英国" },
-  { value: "FR", flag: "🇫🇷", label: "法国" },
-  { value: "DE", flag: "🇩🇪", label: "德国" },
-  { value: "ES", flag: "🇪🇸", label: "西班牙" },
-];
+interface MultiSelectProps {
+  placeholder: string;
+  values: string[];
+  options: Option[];
+  onChange: (values: string[]) => void;
+  width?: string;
+  showFlagOnTrigger?: boolean;
+  showFlagInItem?: boolean;
+}
 
-export function FilterBar({ filters, onFilterChange }: FilterBarProps) {
-  const update = (key: keyof FilterState, value: string | null) => {
-    onFilterChange({ ...filters, [key]: value ?? filters[key] });
+function MultiSelect({
+  placeholder,
+  values,
+  options,
+  onChange,
+  width = "w-32",
+  showFlagOnTrigger = false,
+  showFlagInItem = false,
+}: MultiSelectProps) {
+  const toggle = (v: string) => {
+    onChange(values.includes(v) ? values.filter((x) => x !== v) : [...values, v]);
+  };
+
+  const selected = options.filter((o) => values.includes(o.value));
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        className={[
+          width,
+          "h-7 shrink-0 bg-white border border-gray-300 rounded-md px-2.5",
+          "flex items-center justify-between gap-1 text-xs text-left",
+          "hover:border-gray-400",
+          "focus:outline-none",
+          "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-emerald-500 focus-visible:border-emerald-500",
+          "data-[popup-open]:ring-1 data-[popup-open]:ring-inset data-[popup-open]:ring-emerald-500 data-[popup-open]:border-emerald-500",
+        ].join(" ")}
+      >
+        <span className="truncate flex items-center gap-1.5 min-w-0">
+          {selected.length === 0 ? (
+            <span className="text-gray-500">{placeholder}</span>
+          ) : selected.length === 1 ? (
+            showFlagOnTrigger && selected[0].flag ? (
+              <>
+                <span>{selected[0].flag}</span>
+                <span className="text-gray-900 truncate">{selected[0].label}</span>
+              </>
+            ) : (
+              <span className="text-gray-900 truncate">{selected[0].label}</span>
+            )
+          ) : (
+            <span className="text-gray-900">
+              {placeholder} · {selected.length}
+            </span>
+          )}
+        </span>
+        <ChevronDown size={12} className="text-gray-400 shrink-0" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="start"
+        sideOffset={4}
+        className="bg-white border-gray-200 text-gray-900 w-auto! min-w-(--anchor-width) py-1"
+      >
+        {options.map((opt) => {
+          const checked = values.includes(opt.value);
+          return (
+            <MenuPrimitive.CheckboxItem
+              key={opt.value}
+              checked={checked}
+              onCheckedChange={() => toggle(opt.value)}
+              className={[
+                "group relative flex cursor-default items-center gap-2",
+                "rounded-md py-1 pl-2 pr-8 text-xs outline-hidden select-none whitespace-nowrap",
+                "data-[highlighted]:bg-emerald-50 data-[highlighted]:text-gray-900",
+                "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+              ].join(" ")}
+            >
+              <span className="flex-1">
+                {showFlagInItem && opt.flag ? (
+                  <span className="flex items-center gap-2">
+                    <span>{opt.flag}</span>
+                    <span>{opt.label}</span>
+                  </span>
+                ) : (
+                  opt.label
+                )}
+              </span>
+              <Check
+                size={14}
+                strokeWidth={2.5}
+                className="absolute right-2 text-gray-300 opacity-0 group-data-[highlighted]:opacity-100 group-data-[checked]:opacity-0"
+              />
+              <MenuPrimitive.CheckboxItemIndicator className="absolute right-2 flex items-center justify-center">
+                <Check size={14} strokeWidth={2.5} className="text-emerald-600" />
+              </MenuPrimitive.CheckboxItemIndicator>
+            </MenuPrimitive.CheckboxItem>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+export function FilterBar({ filters, onFilterChange, marketOptions, intentOptions, questionTypeOptions }: FilterBarProps) {
+  const update = (key: keyof FilterState, value: string[] | boolean) => {
+    onFilterChange({ ...filters, [key]: value } as FilterState);
   };
 
   const reset = () => {
     onFilterChange({
       search: "",
-      layer: "all",
-      status: "all",
-      sourceNum: "all",
-      language: "all",
-      region: "all",
-      handling: "all",
+      market: [],
+      intent: [],
+      questionType: [],
+      protectedOnly: false,
     });
   };
 
   const hasFilters =
     filters.search !== "" ||
-    filters.layer !== "all" ||
-    filters.status !== "all" ||
-    filters.sourceNum !== "all" ||
-    filters.language !== "all" ||
-    filters.region !== "all" ||
-    filters.handling !== "all";
-
-  const selectedLang = LANGUAGES.find((l) => l.value === filters.language);
-  const selectedRegion = REGIONS.find((r) => r.value === filters.region);
+    filters.market.length > 0 ||
+    filters.intent.length > 0 ||
+    filters.questionType.length > 0 ||
+    filters.protectedOnly;
 
   return (
-    <div className="flex items-center gap-2 overflow-x-auto pb-1 min-w-0">
-      {/* 层级 */}
-      <Select value={filters.layer} onValueChange={(v) => update("layer", v)}>
-        <SelectTrigger className="w-32 h-7 shrink-0 bg-white border-gray-300 text-gray-900 text-xs">
-          {filters.layer === "all"
-            ? <span className="text-xs text-gray-500">层级</span>
-            : <SelectValue />}
-        </SelectTrigger>
-        <SelectContent className="bg-white border-gray-200 text-gray-900">
-          <SelectItem value="all" className="text-xs">全部</SelectItem>
-          <SelectItem value="L1" className="text-xs">L1 骨架</SelectItem>
-          <SelectItem value="L2" className="text-xs">L2 独立候选</SelectItem>
-          <SelectItem value="L3" className="text-xs">L3 附属</SelectItem>
-          <SelectItem value="L4" className="text-xs">L4 暂缓</SelectItem>
-          <SelectItem value="pending" className="text-xs">待评估</SelectItem>
-        </SelectContent>
-      </Select>
+    <div className="flex items-center gap-2 overflow-x-auto py-1 min-w-0">
+      <MultiSelect
+        placeholder="市场"
+        values={filters.market}
+        options={marketOptions}
+        onChange={(v) => update("market", v)}
+        width="w-32"
+        showFlagOnTrigger
+        showFlagInItem
+      />
+      <MultiSelect
+        placeholder="搜索意图"
+        values={filters.intent}
+        options={intentOptions}
+        onChange={(v) => update("intent", v)}
+        width="w-36"
+      />
+      <MultiSelect
+        placeholder="问题类型"
+        values={filters.questionType}
+        options={questionTypeOptions}
+        onChange={(v) => update("questionType", v)}
+        width="w-32"
+      />
 
-      {/* 状态 */}
-      <Select value={filters.status} onValueChange={(v) => update("status", v)}>
-        <SelectTrigger className="w-32 h-7 shrink-0 bg-white border-gray-300 text-gray-900 text-xs">
-          {filters.status === "all"
-            ? <span className="text-xs text-gray-500">状态</span>
-            : <SelectValue />}
-        </SelectTrigger>
-        <SelectContent className="bg-white border-gray-200 text-gray-900">
-          <SelectItem value="all" className="text-xs">全部</SelectItem>
-          <SelectItem value="pending" className="text-xs">待评估</SelectItem>
-          <SelectItem value="evaluated" className="text-xs">已评估</SelectItem>
-          <SelectItem value="clustered" className="text-xs">已聚类</SelectItem>
-          <SelectItem value="excluded" className="text-xs">已排除</SelectItem>
-        </SelectContent>
-      </Select>
-
-      {/* 来源 */}
-      <Select value={filters.sourceNum} onValueChange={(v) => update("sourceNum", v)}>
-        <SelectTrigger className="w-28 h-7 shrink-0 bg-white border-gray-300 text-gray-900 text-xs">
-          {filters.sourceNum === "all"
-            ? <span className="text-xs text-gray-500">来源</span>
-            : <SelectValue />}
-        </SelectTrigger>
-        <SelectContent className="bg-white border-gray-200 text-gray-900">
-          <SelectItem value="all" className="text-xs">全部</SelectItem>
-          {([
-            ["0", "第一方数据词"],
-            ["1", "内部词根"],
-            ["2", "一级竞品词"],
-            ["3", "二级竞品词"],
-            ["4", "SERP 特征词"],
-            ["5", "工具扩展词"],
-            ["6", "社交听取词"],
-            ["7", "搜索行为词"],
-            ["8", "AI 可见度词"],
-          ] as [string, string][]).map(([n, label]) => (
-            <SelectItem key={n} value={n} className="text-xs">{label}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      {/* 语言（含国旗） */}
-      <Select value={filters.language} onValueChange={(v) => update("language", v)}>
-        <SelectTrigger className="w-32 h-7 shrink-0 bg-white border-gray-300 text-gray-900 text-xs">
-          {filters.language === "all"
-            ? <span className="text-xs text-gray-500">语言</span>
-            : <span className="flex items-center gap-1.5 text-xs">
-                <span>{selectedLang?.flag}</span>
-                <span>{selectedLang?.value}</span>
-              </span>}
-        </SelectTrigger>
-        <SelectContent className="bg-white border-gray-200 text-gray-900">
-          <SelectItem value="all" className="text-xs">全部</SelectItem>
-          {LANGUAGES.map((l) => (
-            <SelectItem key={l.value} value={l.value} className="text-xs">
-              <span className="flex items-center gap-2">
-                <span>{l.flag}</span>
-                <span>{l.value} · {l.label}</span>
-              </span>
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      {/* 地区（含国旗） */}
-      <Select value={filters.region} onValueChange={(v) => update("region", v)}>
-        <SelectTrigger className="w-32 h-7 shrink-0 bg-white border-gray-300 text-gray-900 text-xs">
-          {filters.region === "all"
-            ? <span className="text-xs text-gray-500">地区</span>
-            : <span className="flex items-center gap-1.5 text-xs">
-                <span>{selectedRegion?.flag}</span>
-                <span>{selectedRegion?.label}</span>
-              </span>}
-        </SelectTrigger>
-        <SelectContent className="bg-white border-gray-200 text-gray-900">
-          <SelectItem value="all" className="text-xs">全部</SelectItem>
-          {REGIONS.map((r) => (
-            <SelectItem key={r.value} value={r.value} className="text-xs">
-              <span className="flex items-center gap-2">
-                <span>{r.flag}</span>
-                <span>{r.label}</span>
-              </span>
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      {/* 承接 */}
-      <Select value={filters.handling} onValueChange={(v) => update("handling", v)}>
-        <SelectTrigger className="w-32 h-7 shrink-0 bg-white border-gray-300 text-gray-900 text-xs">
-          {filters.handling === "all"
-            ? <span className="text-xs text-gray-500">承接</span>
-            : <SelectValue />}
-        </SelectTrigger>
-        <SelectContent className="bg-white border-gray-200 text-gray-900">
-          <SelectItem value="all" className="text-xs">全部</SelectItem>
-          <SelectItem value="independent" className="text-xs">独立建页</SelectItem>
-          <SelectItem value="merge" className="text-xs">附属合并</SelectItem>
-          <SelectItem value="defer" className="text-xs">暂缓观察</SelectItem>
-          <SelectItem value="exclude" className="text-xs">排除</SelectItem>
-        </SelectContent>
-      </Select>
+      <label className="h-7 shrink-0 inline-flex items-center gap-1.5 px-2.5 border border-gray-300 rounded-md text-xs text-gray-600 cursor-pointer hover:border-gray-400 select-none">
+        <input
+          type="checkbox"
+          checked={filters.protectedOnly}
+          onChange={(e) => update("protectedOnly", e.target.checked)}
+          className="accent-emerald-500"
+        />
+        仅显示受保护
+      </label>
 
       {hasFilters && (
         <Button

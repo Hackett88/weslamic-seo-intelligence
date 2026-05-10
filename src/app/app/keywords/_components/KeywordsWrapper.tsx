@@ -5,12 +5,11 @@ import type { Keyword } from "@/db/schema";
 
 type Stats = {
   total: number;
-  l1: number;
-  l2: number;
-  l3: number;
-  l4: number;
-  pending: number;
-  excluded: number;
+  scored: number;
+  unscored: number;
+  protected: number;
+  avgSv: number;
+  avgCpc: number;
   lastSync: Date | null;
 };
 

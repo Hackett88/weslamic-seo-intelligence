@@ -141,7 +141,7 @@ export function KeywordsClient({ initialData, stats }: KeywordsClientProps) {
         <div className="px-5 py-4 border-b border-gray-200 bg-white flex items-center justify-between shrink-0">
           <div>
             <h1 className="text-base font-semibold text-gray-900">关键词库</h1>
-            <p className="text-xs text-gray-400 mt-0.5">候选词池 · 来源 N8N keywords_pool · 含搜索量 / KD / CPC / 意图 / SERP 特征</p>
+            <p className="text-xs text-gray-400 mt-0.5">候选词池 · 来源 keywords_pool</p>
           </div>
           <Input
             className="w-52 h-7 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 text-xs focus-visible:ring-emerald-500 focus-visible:border-emerald-500"

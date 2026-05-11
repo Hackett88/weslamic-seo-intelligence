@@ -10,7 +10,7 @@ export const keywords = pgTable("keywords", {
   keyword:           text("keyword").notNull(),
   market:            text("market"),
   month:             text("month"),
-  rowKey:            text("row_key"),
+  rowKey:            text("row_key").notNull().unique(),
 
   // Metrics
   searchVolume:      integer("search_volume"),

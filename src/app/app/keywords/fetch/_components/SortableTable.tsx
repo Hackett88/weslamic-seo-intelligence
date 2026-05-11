@@ -105,7 +105,7 @@ export function SortableTh({
         active ? (dir === "asc" ? "ascending" : "descending") : "none"
       }
       className={[
-        "select-none cursor-pointer font-medium hover:text-emerald-700 transition-colors",
+        "select-none cursor-pointer font-medium hover:text-emerald-700 transition-colors whitespace-nowrap",
         align === "right" ? "text-right" : "text-left",
         className ?? "",
       ].join(" ")}

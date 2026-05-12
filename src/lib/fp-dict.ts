@@ -6,7 +6,7 @@ export type FpEntry = {
 };
 
 export const FP_DICT: Record<number, FpEntry> = {
-  0: { code: 0, nameEn: "Instant Answer", nameCn: "即时灰框答案", linking: false },
+  0: { code: 0, nameEn: "Instant Answer", nameCn: "即时回答", linking: false },
   1: { code: 1, nameEn: "Knowledge Panel", nameCn: "知识面板", linking: true },
   2: { code: 2, nameEn: "Carousel", nameCn: "图片/产品轮播", linking: false },
   3: { code: 3, nameEn: "Local pack", nameCn: "本地包", linking: true },
@@ -27,10 +27,10 @@ export const FP_DICT: Record<number, FpEntry> = {
   18: { code: 18, nameEn: "Jobs search", nameCn: "招聘搜索", linking: false },
   19: { code: 19, nameEn: "Featured images", nameCn: "精选图片", linking: false },
   20: { code: 20, nameEn: "Video Carousel", nameCn: "视频轮播", linking: true },
-  21: { code: 21, nameEn: "People also ask", nameCn: "也问了 PAA", linking: true },
+  21: { code: 21, nameEn: "People also ask", nameCn: "其他人还问", linking: true },
   22: { code: 22, nameEn: "FAQ", nameCn: "FAQ 富结果", linking: true },
   23: { code: 23, nameEn: "Flights", nameCn: "航班预订", linking: false },
-  24: { code: 24, nameEn: "Find results on", nameCn: "域名块", linking: true },
+  24: { code: 24, nameEn: "Find results on", nameCn: "按站点查找", linking: true },
   25: { code: 25, nameEn: "Recipes", nameCn: "菜谱", linking: true },
   26: { code: 26, nameEn: "Related Topics", nameCn: "相关话题", linking: false },
   27: { code: 27, nameEn: "Twitter carousel", nameCn: "推文轮播", linking: true },
@@ -43,7 +43,7 @@ export const FP_DICT: Record<number, FpEntry> = {
   34: { code: 34, nameEn: "Popular products", nameCn: "热门商品", linking: false },
   35: { code: 35, nameEn: "Related products", nameCn: "相关商品", linking: false },
   36: { code: 36, nameEn: "Related searches", nameCn: "相关搜索", linking: false },
-  37: { code: 37, nameEn: "See results about", nameCn: "精确查询", linking: false },
+  37: { code: 37, nameEn: "See results about", nameCn: "实体说明", linking: false },
   38: { code: 38, nameEn: "Short videos", nameCn: "短视频", linking: true },
   39: { code: 39, nameEn: "Web stories", nameCn: "网页故事", linking: true },
   40: { code: 40, nameEn: "Application list", nameCn: "应用列表", linking: true },
@@ -56,7 +56,7 @@ export const FP_DICT: Record<number, FpEntry> = {
   47: { code: 47, nameEn: "Questions and answers", nameCn: "问答轮播", linking: true },
   48: { code: 48, nameEn: "Popular stores", nameCn: "热门商店", linking: true },
   49: { code: 49, nameEn: "Refine", nameCn: "查询细化", linking: false },
-  50: { code: 50, nameEn: "People also search", nameCn: "相关搜索(底部)", linking: false },
+  50: { code: 50, nameEn: "People also search", nameCn: "其他人还在搜", linking: false },
   51: { code: 51, nameEn: "Ads middle", nameCn: "中部广告", linking: false },
   52: { code: 52, nameEn: "AI overview", nameCn: "AI 综述", linking: true },
 };

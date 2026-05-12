@@ -106,7 +106,7 @@ function SerpFeaturesRow({
       endpoint: "W03",
       keyword: keywordText,
       markets: market,
-      display_limit: "3",
+      display_limit: "1",
       refresh_pool: "1",
       row_key: rowKey,
     });
@@ -184,7 +184,7 @@ function SerpFeaturesRow({
             rows: allRows,
             summary,
             dataSource: "semrush_phrase_organic（实时）",
-            params: { keyword: keywordText, market, display_limit: 3 },
+            params: { keyword: keywordText, market, display_limit: 1 },
           },
           "drawer"
         ).catch(() => {});

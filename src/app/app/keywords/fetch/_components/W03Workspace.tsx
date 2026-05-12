@@ -70,7 +70,13 @@ export function W03Workspace() {
   const submittedDisplayLimitRef = useRef<number>(DEFAULT_LIMIT);
 
   useEffect(() => {
-    setHistory(loadHistory<W03ResultRow>(ENDPOINT_KEY));
+    let alive = true;
+    loadHistory<W03ResultRow>(ENDPOINT_KEY).then((h) => {
+      if (alive) setHistory(h);
+    });
+    return () => {
+      alive = false;
+    };
   }, []);
 
   const trimmedKeyword = keyword.trim();
@@ -100,7 +106,7 @@ export function W03Workspace() {
       !recordedRef.current
     ) {
       recordedRef.current = true;
-      const next = appendHistory<W03ResultRow>(ENDPOINT_KEY, {
+      appendHistory<W03ResultRow>(ENDPOINT_KEY, {
         label: submittedKeywordRef.current || "(空关键词)",
         tooltip: `${submittedKeywordRef.current} · ${submittedMarketsRef.current.map(m => m.toUpperCase()).join(",")}`,
         rows,
@@ -118,8 +124,9 @@ export function W03Workspace() {
           markets: submittedMarketsRef.current,
           displayLimit: submittedDisplayLimitRef.current,
         },
-      });
-      setHistory(next);
+      })
+        .then(setHistory)
+        .catch(() => {});
     }
   }, [
     progress.status,
@@ -476,11 +483,14 @@ export function W03Workspace() {
             renderTable={(rs) => <SerpResultTable rows={rs} />}
             onClose={() => setHistoryMode(false)}
             onRemove={(id) =>
-              setHistory(removeHistoryEntry<W03ResultRow>(ENDPOINT_KEY, id))
+              removeHistoryEntry<W03ResultRow>(ENDPOINT_KEY, id)
+                .then(setHistory)
+                .catch(() => {})
             }
             onClear={() => {
-              clearHistory(ENDPOINT_KEY);
-              setHistory([]);
+              clearHistory(ENDPOINT_KEY)
+                .then(() => setHistory([]))
+                .catch(() => setHistory([]));
               setHistoryMode(false);
             }}
           />

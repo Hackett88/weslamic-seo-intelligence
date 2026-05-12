@@ -69,7 +69,13 @@ export function W09Workspace() {
   const submittedDisplayLimitRef = useRef<number>(DEFAULT_LIMIT);
 
   useEffect(() => {
-    setHistory(loadHistory<W09ResultRow>(ENDPOINT_KEY));
+    let alive = true;
+    loadHistory<W09ResultRow>(ENDPOINT_KEY).then((h) => {
+      if (alive) setHistory(h);
+    });
+    return () => {
+      alive = false;
+    };
   }, []);
 
   const trimmedDomain = advertiserDomain.trim().toLowerCase();
@@ -103,7 +109,7 @@ export function W09Workspace() {
       !recordedRef.current
     ) {
       recordedRef.current = true;
-      const next = appendHistory<W09ResultRow>(ENDPOINT_KEY, {
+      appendHistory<W09ResultRow>(ENDPOINT_KEY, {
         label: submittedDomainRef.current || "(空域名)",
         tooltip: `${submittedDomainRef.current} · ${submittedMarketsRef.current.map(m => m.toUpperCase()).join(",")}`,
         rows,
@@ -121,8 +127,9 @@ export function W09Workspace() {
           markets: submittedMarketsRef.current,
           displayLimit: submittedDisplayLimitRef.current,
         },
-      });
-      setHistory(next);
+      })
+        .then(setHistory)
+        .catch(() => {});
     }
   }, [
     progress.status,
@@ -485,11 +492,14 @@ export function W09Workspace() {
             renderTable={(rs) => <AdwordsHistoricalResultTable rows={rs} />}
             onClose={() => setHistoryMode(false)}
             onRemove={(id) =>
-              setHistory(removeHistoryEntry<W09ResultRow>(ENDPOINT_KEY, id))
+              removeHistoryEntry<W09ResultRow>(ENDPOINT_KEY, id)
+                .then(setHistory)
+                .catch(() => {})
             }
             onClear={() => {
-              clearHistory(ENDPOINT_KEY);
-              setHistory([]);
+              clearHistory(ENDPOINT_KEY)
+                .then(() => setHistory([]))
+                .catch(() => setHistory([]));
               setHistoryMode(false);
             }}
           />

@@ -1,5 +1,5 @@
 import {
-  pgTable, text, integer, real, timestamp, serial, boolean, jsonb, index
+  pgTable, text, integer, real, timestamp, serial, boolean, jsonb, index, uuid, varchar
 } from "drizzle-orm/pg-core";
 
 // ---- Main keyword table (mirrors N8N keywords_pool DataTable) ----
@@ -92,3 +92,31 @@ export type N8nCallbackEventRow = typeof n8nCallbackEvents.$inferSelect;
 export type NewN8nCallbackEventRow = typeof n8nCallbackEvents.$inferInsert;
 export type N8nCallbackProjection = typeof n8nCallbackProjections.$inferSelect;
 export type BatchLog = typeof batchLogs.$inferSelect;
+
+// ---- Query history for W01-W10 workspace endpoints ----
+// Per (user_id, endpoint) keep most recent 5 entries; trimming done at API layer.
+// Backed by NextAuth session.user.id (currently hardcoded "1" for admin).
+export const queryHistory = pgTable(
+  "query_history",
+  {
+    id:           uuid("id").primaryKey().defaultRandom(),
+    userId:       varchar("user_id", { length: 64 }).notNull(),  // from NextAuth session.user.id
+    endpoint:     varchar("endpoint", { length: 8 }).notNull(),  // "W01".."W10"
+    source:       varchar("source", { length: 16 }).notNull().default("workspace"),  // workspace | drawer
+    label:        text("label").notNull(),
+    tooltip:      text("tooltip"),
+    params:       jsonb("params"),
+    rows:         jsonb("rows").notNull(),       // full query result rows (mirrors localStorage)
+    summary:      jsonb("summary").notNull(),    // { rowsTotal, unitsActual, totalBatches, failedBatches, ... }
+    dataSource:   text("data_source"),
+    submittedAt:  timestamp("submitted_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    userEndpointSubmittedIdx: index("idx_query_history_user_endpoint_submitted").on(
+      t.userId, t.endpoint, t.submittedAt
+    ),
+  })
+);
+
+export type QueryHistoryRow = typeof queryHistory.$inferSelect;
+export type NewQueryHistoryRow = typeof queryHistory.$inferInsert;

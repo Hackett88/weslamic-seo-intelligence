@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Loader2, Search, X } from "lucide-react";
 import type { Keyword } from "@/db/schema";
 import { SerpFeatureChips } from "../fetch/_components/SerpFeatureChips";
+import { appendHistory } from "@/lib/query-history";
 import { bpLabel, csLabel, formatIntent, parseTrends, Sparkline } from "./_utils";
 
 interface DetailDrawerProps {
@@ -114,6 +115,12 @@ function SerpFeaturesRow({
     const ac = new AbortController();
     const timeout = setTimeout(() => ac.abort(), 90_000);
 
+    // 收集 SSE 流里的 rows + _done summary，结束后写一条 source="drawer" 的历史。
+    let allRows: unknown[] = [];
+    let unitsActual: number | undefined;
+    let failedBatches: number | undefined;
+    let doneStatus: string | undefined;
+
     try {
       const res = await fetch(url, {
         method: "GET",
@@ -124,7 +131,15 @@ function SerpFeaturesRow({
         throw new Error(`HTTP ${res.status}`);
       }
       for await (const ev of readSseEvents(res.body)) {
-        const data = ev.data as { node_name?: string; node_status?: string; payload?: { codes?: string | null; pg_updated?: boolean } } | null;
+        // event: rows 是单独的 SSE event 名，payload 形如 { rows: [...] }
+        if (ev.event === "rows") {
+          const rowsData = ev.data as { rows?: unknown[] } | null;
+          if (rowsData && Array.isArray(rowsData.rows)) {
+            allRows = rowsData.rows;
+          }
+          continue;
+        }
+        const data = ev.data as { node_name?: string; node_status?: string; payload?: { codes?: string | null; pg_updated?: boolean; units_actual?: number; failed_batches?: number } } | null;
         if (!data) continue;
         if (data.node_name === "Refresh Pool") {
           const payload = data.payload ?? {};
@@ -138,7 +153,41 @@ function SerpFeaturesRow({
             setErrMsg("实时查询出错，请稍后重试");
           }
         }
-        if (data.node_name === "_done") break;
+        if (data.node_name === "_done") {
+          const payload = data.payload ?? {};
+          if (typeof payload.units_actual === "number") unitsActual = payload.units_actual;
+          if (typeof payload.failed_batches === "number") failedBatches = payload.failed_batches;
+          doneStatus = data.node_status;
+          break;
+        }
+      }
+
+      // SSE 收尾成功（_done 到达）后，写一条 drawer 来源的 W03 历史。静默失败。
+      if (doneStatus === "succeeded" || doneStatus === "warning") {
+        const summary: {
+          rowsTotal: number;
+          totalBatches: number;
+          unitsActual?: number;
+          failedBatches?: number;
+        } = {
+          rowsTotal: allRows.length,
+          totalBatches: 1,
+        };
+        if (typeof unitsActual === "number") summary.unitsActual = unitsActual;
+        if (typeof failedBatches === "number") summary.failedBatches = failedBatches;
+
+        appendHistory(
+          "W03",
+          {
+            label: keywordText,
+            tooltip: `${keywordText} · ${market.toUpperCase()} · 来自详情抽屉`,
+            rows: allRows,
+            summary,
+            dataSource: "semrush_phrase_organic（实时）",
+            params: { keyword: keywordText, market, display_limit: 3 },
+          },
+          "drawer"
+        ).catch(() => {});
       }
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);

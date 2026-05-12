@@ -70,7 +70,13 @@ export function W05Workspace() {
   const submittedDisplayLimitRef = useRef<number>(DEFAULT_LIMIT);
 
   useEffect(() => {
-    setHistory(loadHistory<W05ResultRow>(ENDPOINT_KEY));
+    let alive = true;
+    loadHistory<W05ResultRow>(ENDPOINT_KEY).then((h) => {
+      if (alive) setHistory(h);
+    });
+    return () => {
+      alive = false;
+    };
   }, []);
 
   const trimmedSeed = seedKeyword.trim();
@@ -100,7 +106,7 @@ export function W05Workspace() {
       !recordedRef.current
     ) {
       recordedRef.current = true;
-      const next = appendHistory<W05ResultRow>(ENDPOINT_KEY, {
+      appendHistory<W05ResultRow>(ENDPOINT_KEY, {
         label: submittedSeedRef.current || "(空关键词)",
         tooltip: `${submittedSeedRef.current} · ${submittedMarketsRef.current.map(m => m.toUpperCase()).join(",")}`,
         rows,
@@ -118,8 +124,9 @@ export function W05Workspace() {
           markets: submittedMarketsRef.current,
           displayLimit: submittedDisplayLimitRef.current,
         },
-      });
-      setHistory(next);
+      })
+        .then(setHistory)
+        .catch(() => {});
     }
   }, [
     progress.status,
@@ -469,11 +476,14 @@ export function W05Workspace() {
             renderTable={(rs) => <RelatedResultTable rows={rs} />}
             onClose={() => setHistoryMode(false)}
             onRemove={(id) =>
-              setHistory(removeHistoryEntry<W05ResultRow>(ENDPOINT_KEY, id))
+              removeHistoryEntry<W05ResultRow>(ENDPOINT_KEY, id)
+                .then(setHistory)
+                .catch(() => {})
             }
             onClear={() => {
-              clearHistory(ENDPOINT_KEY);
-              setHistory([]);
+              clearHistory(ENDPOINT_KEY)
+                .then(() => setHistory([]))
+                .catch(() => setHistory([]));
               setHistoryMode(false);
             }}
           />

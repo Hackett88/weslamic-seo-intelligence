@@ -64,7 +64,13 @@ export function W01Workspace() {
   const submittedMarketsRef = useRef<Market[]>([]);
 
   useEffect(() => {
-    setHistory(loadHistory<W01ResultRow>(ENDPOINT_KEY));
+    let alive = true;
+    loadHistory<W01ResultRow>(ENDPOINT_KEY).then((h) => {
+      if (alive) setHistory(h);
+    });
+    return () => {
+      alive = false;
+    };
   }, []);
 
   const lines = keywords
@@ -107,7 +113,7 @@ export function W01Workspace() {
           : kws.length === 1
           ? kws[0]
           : `${kws[0]} 等 ${kws.length} 个`;
-      const next = appendHistory<W01ResultRow>(ENDPOINT_KEY, {
+      appendHistory<W01ResultRow>(ENDPOINT_KEY, {
         label,
         tooltip: `${kws.join(", ")} · ${submittedMarketsRef.current.join(",").toUpperCase()}`,
         rows,
@@ -124,8 +130,9 @@ export function W01Workspace() {
           keywords: submittedKeywordsRef.current,
           markets: submittedMarketsRef.current,
         },
-      });
-      setHistory(next);
+      })
+        .then(setHistory)
+        .catch(() => {});
     }
   }, [
     progress.status,
@@ -458,11 +465,14 @@ export function W01Workspace() {
             renderTable={(rs) => <ResultTable rows={rs} />}
             onClose={() => setHistoryMode(false)}
             onRemove={(id) =>
-              setHistory(removeHistoryEntry<W01ResultRow>(ENDPOINT_KEY, id))
+              removeHistoryEntry<W01ResultRow>(ENDPOINT_KEY, id)
+                .then(setHistory)
+                .catch(() => {})
             }
             onClear={() => {
-              clearHistory(ENDPOINT_KEY);
-              setHistory([]);
+              clearHistory(ENDPOINT_KEY)
+                .then(() => setHistory([]))
+                .catch(() => setHistory([]));
               setHistoryMode(false);
             }}
           />

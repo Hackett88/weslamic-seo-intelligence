@@ -1,7 +1,6 @@
 "use client";
 
 const MAX_ENTRIES = 5;
-const KEY_PREFIX = "weslamic:history:";
 
 export type HistorySummary = {
   rowsTotal: number;
@@ -12,10 +11,13 @@ export type HistorySummary = {
   failedBatches?: number;
 };
 
+export type HistorySource = "workspace" | "drawer";
+
 export type HistoryEntry<TRows = unknown> = {
   id: string;
   endpoint: string;
   submittedAt: number;
+  source: HistorySource;
   label: string;
   tooltip?: string;
   rows: TRows[];
@@ -24,76 +26,99 @@ export type HistoryEntry<TRows = unknown> = {
   params?: unknown;
 };
 
-function storageKey(endpoint: string) {
-  return `${KEY_PREFIX}${endpoint.toLowerCase()}`;
+function apiUrl(endpoint: string, extra?: Record<string, string>): string {
+  const sp = new URLSearchParams({ endpoint });
+  if (extra) {
+    for (const [k, v] of Object.entries(extra)) sp.set(k, v);
+  }
+  return `/api/query-history?${sp.toString()}`;
 }
 
-export function loadHistory<R = unknown>(endpoint: string): HistoryEntry<R>[] {
-  if (typeof window === "undefined") return [];
+// 服务端响应统一以数组形式返回（最多 MAX_ENTRIES 条，已按 submittedAt 倒序）。
+// 出错（401 / 5xx / 网络异常）一律 console.error + 返回空数组，不阻塞 UI。
+async function readEntries<R>(res: Response): Promise<HistoryEntry<R>[]> {
+  if (!res.ok) {
+    // 401 / 4xx / 5xx 一律降级
+    console.error(`[query-history] HTTP ${res.status} ${res.statusText}`);
+    return [];
+  }
   try {
-    const raw = window.localStorage.getItem(storageKey(endpoint));
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter(
-      (x): x is HistoryEntry<R> =>
-        x &&
-        typeof x === "object" &&
-        typeof (x as HistoryEntry<R>).id === "string" &&
-        Array.isArray((x as HistoryEntry<R>).rows)
-    );
-  } catch {
+    const data = (await res.json()) as unknown;
+    if (!Array.isArray(data)) return [];
+    return data as HistoryEntry<R>[];
+  } catch (err) {
+    console.error("[query-history] parse error:", err);
     return [];
   }
 }
 
-export function appendHistory<R = unknown>(
-  endpoint: string,
-  entry: Omit<HistoryEntry<R>, "id" | "submittedAt" | "endpoint">
-): HistoryEntry<R>[] {
+export async function loadHistory<R = unknown>(
+  endpoint: string
+): Promise<HistoryEntry<R>[]> {
   if (typeof window === "undefined") return [];
-  const list = loadHistory<R>(endpoint);
-  const full: HistoryEntry<R> = {
-    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    endpoint,
-    submittedAt: Date.now(),
-    ...entry,
-  };
-  const next = [full, ...list].slice(0, MAX_ENTRIES);
   try {
-    window.localStorage.setItem(storageKey(endpoint), JSON.stringify(next));
-  } catch {
-    // localStorage 写入失败（quota / 隐私模式），降级返回内存值不持久化
+    const res = await fetch(apiUrl(endpoint), {
+      method: "GET",
+      credentials: "same-origin",
+      cache: "no-store",
+    });
+    return await readEntries<R>(res);
+  } catch (err) {
+    console.error("[query-history] loadHistory failed:", err);
+    return [];
   }
-  return next;
 }
 
-export function clearHistory(endpoint: string): void {
+export async function appendHistory<R = unknown>(
+  endpoint: string,
+  entry: Omit<HistoryEntry<R>, "id" | "submittedAt" | "endpoint" | "source">,
+  source: HistorySource = "workspace"
+): Promise<HistoryEntry<R>[]> {
+  if (typeof window === "undefined") return [];
+  try {
+    const res = await fetch("/api/query-history", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ endpoint, source, ...entry }),
+    });
+    return await readEntries<R>(res);
+  } catch (err) {
+    console.error("[query-history] appendHistory failed:", err);
+    return [];
+  }
+}
+
+export async function clearHistory(endpoint: string): Promise<void> {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.removeItem(storageKey(endpoint));
-  } catch {
-    /* ignore */
+    const res = await fetch(apiUrl(endpoint), {
+      method: "DELETE",
+      credentials: "same-origin",
+    });
+    if (!res.ok) {
+      console.error(`[query-history] clearHistory HTTP ${res.status}`);
+    }
+  } catch (err) {
+    console.error("[query-history] clearHistory failed:", err);
   }
 }
 
-export function removeHistoryEntry<R = unknown>(
+export async function removeHistoryEntry<R = unknown>(
   endpoint: string,
   id: string
-): HistoryEntry<R>[] {
+): Promise<HistoryEntry<R>[]> {
   if (typeof window === "undefined") return [];
-  const list = loadHistory<R>(endpoint);
-  const next = list.filter((e) => e.id !== id);
   try {
-    if (next.length === 0) {
-      window.localStorage.removeItem(storageKey(endpoint));
-    } else {
-      window.localStorage.setItem(storageKey(endpoint), JSON.stringify(next));
-    }
-  } catch {
-    /* ignore */
+    const res = await fetch(apiUrl(endpoint, { id }), {
+      method: "DELETE",
+      credentials: "same-origin",
+    });
+    return await readEntries<R>(res);
+  } catch (err) {
+    console.error("[query-history] removeHistoryEntry failed:", err);
+    return [];
   }
-  return next;
 }
 
 export function formatHistoryTime(submittedAt: number): string {

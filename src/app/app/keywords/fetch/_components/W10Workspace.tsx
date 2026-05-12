@@ -114,7 +114,13 @@ export function W10Workspace() {
   const submittedDisplayLimitRef = useRef<number>(DEFAULT_LIMIT);
 
   useEffect(() => {
-    setHistory(loadHistory<W10ResultRow>(ENDPOINT_KEY));
+    let alive = true;
+    loadHistory<W10ResultRow>(ENDPOINT_KEY).then((h) => {
+      if (alive) setHistory(h);
+    });
+    return () => {
+      alive = false;
+    };
   }, []);
 
   const trimmedOurDomain = ourDomain.trim().toLowerCase();
@@ -160,7 +166,7 @@ export function W10Workspace() {
     ) {
       recordedRef.current = true;
       const label = `${submittedOurDomainRef.current} vs ${submittedCompetitorDomainsRef.current.length} 个竞品`;
-      const next = appendHistory<W10ResultRow>(ENDPOINT_KEY, {
+      appendHistory<W10ResultRow>(ENDPOINT_KEY, {
         label,
         tooltip: `${submittedOurDomainRef.current} · ${submittedMarketsRef.current.map(m => m.toUpperCase()).join(",")}`,
         rows,
@@ -180,8 +186,9 @@ export function W10Workspace() {
           markets: submittedMarketsRef.current,
           displayLimit: submittedDisplayLimitRef.current,
         },
-      });
-      setHistory(next);
+      })
+        .then(setHistory)
+        .catch(() => {});
     }
   }, [
     progress.status,
@@ -685,11 +692,14 @@ export function W10Workspace() {
             renderTable={(rs) => <GapResultTable rows={rs} />}
             onClose={() => setHistoryMode(false)}
             onRemove={(id) =>
-              setHistory(removeHistoryEntry<W10ResultRow>(ENDPOINT_KEY, id))
+              removeHistoryEntry<W10ResultRow>(ENDPOINT_KEY, id)
+                .then(setHistory)
+                .catch(() => {})
             }
             onClear={() => {
-              clearHistory(ENDPOINT_KEY);
-              setHistory([]);
+              clearHistory(ENDPOINT_KEY)
+                .then(() => setHistory([]))
+                .catch(() => setHistory([]));
               setHistoryMode(false);
             }}
           />

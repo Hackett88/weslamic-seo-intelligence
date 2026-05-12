@@ -88,7 +88,13 @@ export function W04Workspace() {
   const submittedDisplayLimitRef = useRef<number>(DEFAULT_LIMIT);
 
   useEffect(() => {
-    setHistory(loadHistory<W04ResultRow>(ENDPOINT_KEY));
+    let alive = true;
+    loadHistory<W04ResultRow>(ENDPOINT_KEY).then((h) => {
+      if (alive) setHistory(h);
+    });
+    return () => {
+      alive = false;
+    };
   }, []);
 
   const trimmedSeed = seedKeyword.trim();
@@ -118,7 +124,7 @@ export function W04Workspace() {
       !recordedRef.current
     ) {
       recordedRef.current = true;
-      const next = appendHistory<W04ResultRow>(ENDPOINT_KEY, {
+      appendHistory<W04ResultRow>(ENDPOINT_KEY, {
         label: submittedSeedRef.current || "(空关键词)",
         tooltip: `${submittedSeedRef.current} · ${submittedMarketsRef.current.map(m => m.toUpperCase()).join(",")}`,
         rows,
@@ -136,8 +142,9 @@ export function W04Workspace() {
           markets: submittedMarketsRef.current,
           displayLimit: submittedDisplayLimitRef.current,
         },
-      });
-      setHistory(next);
+      })
+        .then(setHistory)
+        .catch(() => {});
     }
   }, [
     progress.status,
@@ -524,11 +531,14 @@ export function W04Workspace() {
             renderTable={(rs) => <QuestionResultTable rows={rs} />}
             onClose={() => setHistoryMode(false)}
             onRemove={(id) =>
-              setHistory(removeHistoryEntry<W04ResultRow>(ENDPOINT_KEY, id))
+              removeHistoryEntry<W04ResultRow>(ENDPOINT_KEY, id)
+                .then(setHistory)
+                .catch(() => {})
             }
             onClear={() => {
-              clearHistory(ENDPOINT_KEY);
-              setHistory([]);
+              clearHistory(ENDPOINT_KEY)
+                .then(() => setHistory([]))
+                .catch(() => setHistory([]));
               setHistoryMode(false);
             }}
           />

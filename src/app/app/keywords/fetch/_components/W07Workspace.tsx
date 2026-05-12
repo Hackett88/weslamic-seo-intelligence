@@ -49,7 +49,13 @@ export function W07Workspace() {
   const submittedDisplayLimitRef = useRef<number>(DEFAULT_LIMIT);
 
   useEffect(() => {
-    setHistory(loadHistory<W07ResultRow>(ENDPOINT_KEY));
+    let alive = true;
+    loadHistory<W07ResultRow>(ENDPOINT_KEY).then((h) => {
+      if (alive) setHistory(h);
+    });
+    return () => {
+      alive = false;
+    };
   }, []);
 
   const trimmedKeyword = keyword.trim();
@@ -74,7 +80,7 @@ export function W07Workspace() {
       !recordedRef.current
     ) {
       recordedRef.current = true;
-      const next = appendHistory<W07ResultRow>(ENDPOINT_KEY, {
+      appendHistory<W07ResultRow>(ENDPOINT_KEY, {
         label: submittedKeywordRef.current || "(空关键词)",
         rows,
         summary: {
@@ -90,8 +96,9 @@ export function W07Workspace() {
           keyword: submittedKeywordRef.current,
           displayLimit: submittedDisplayLimitRef.current,
         },
-      });
-      setHistory(next);
+      })
+        .then(setHistory)
+        .catch(() => {});
     }
   }, [
     progress.status,
@@ -407,11 +414,14 @@ export function W07Workspace() {
             renderTable={(rs) => <CrossMarketTable rows={rs} />}
             onClose={() => setHistoryMode(false)}
             onRemove={(id) =>
-              setHistory(removeHistoryEntry<W07ResultRow>(ENDPOINT_KEY, id))
+              removeHistoryEntry<W07ResultRow>(ENDPOINT_KEY, id)
+                .then(setHistory)
+                .catch(() => {})
             }
             onClear={() => {
-              clearHistory(ENDPOINT_KEY);
-              setHistory([]);
+              clearHistory(ENDPOINT_KEY)
+                .then(() => setHistory([]))
+                .catch(() => setHistory([]));
               setHistoryMode(false);
             }}
           />

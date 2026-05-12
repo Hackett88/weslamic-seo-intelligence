@@ -36,6 +36,7 @@ export const keywords = pgTable("keywords", {
 
   // Timestamps
   createdAt:         timestamp("created_at").defaultNow(),
+  lastManualW03At:   timestamp("last_manual_w03_at", { withTimezone: true }),
   updatedAt:         timestamp("updated_at").defaultNow(),
 });
 

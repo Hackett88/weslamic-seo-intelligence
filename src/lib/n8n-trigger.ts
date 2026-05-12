@@ -11,6 +11,7 @@ const W08_WEBHOOK_PATH = "/webhook/w08-domain-adwords";
 const W09_WEBHOOK_PATH = "/webhook/w09-domain-adwords-historical";
 const W10_WEBHOOK_PATH = "/webhook/w10-domain-domains";
 const STAGING_TABLE_ID = "4tzNtqRC3683ZoBy";
+const KEYWORDS_POOL_TABLE_ID = "3irgfvwK6W7XumHj";
 const W03_STAGING_TABLE_ID = "0gqbKO9OzoSJBjZV";
 const W04_STAGING_TABLE_ID = "hqfErV8GT9Ko0T4Z";
 const W05_STAGING_TABLE_ID = "mYl4WTuyGHb5gqTk";
@@ -1227,4 +1228,46 @@ export async function getW06StagingRowsByBatch(
     keyword_serp_features_codes: strOrNull(r.keyword_serp_features_codes),
     batch_id:                    str(r.batch_id),
   }));
+}
+
+export async function patchKeywordsPoolRow(
+  rowKey: string,
+  fields: Record<string, unknown>
+): Promise<{ rowsAffected: number }> {
+  const url = `${n8nBase()}/api/v1/data-tables/${KEYWORDS_POOL_TABLE_ID}/rows/update`;
+  const body = {
+    filter: {
+      type: "and",
+      filters: [{ columnName: "row_key", condition: "eq", value: rowKey }],
+    },
+    data: fields,
+    returnData: true,
+  };
+
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      method: "PATCH",
+      headers: n8nApiHeaders(),
+      body: JSON.stringify(body),
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    throw Object.assign(new Error(`N8N DataTable network error: ${msg}`), { status: 503 });
+  }
+  if (!res.ok) {
+    const txt = await res.text().catch(() => "");
+    throw Object.assign(new Error(`N8N DataTable ${res.status}: ${txt}`), { status: res.status });
+  }
+  const data = (await res.json()) as unknown;
+  // OpenAPI spec: with returnData=true, response is an array of updated rows.
+  // We map array length → rowsAffected. Defensive fallback: if server still
+  // returns boolean (true/false), map true→1 / false→0 so contract holds.
+  if (Array.isArray(data)) return { rowsAffected: data.length };
+  if (data === true) return { rowsAffected: 1 };
+  if (data === false) return { rowsAffected: 0 };
+  throw Object.assign(
+    new Error(`N8N DataTable unexpected response shape: ${JSON.stringify(data)}`),
+    { status: 502 }
+  );
 }

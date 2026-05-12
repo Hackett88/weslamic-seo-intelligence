@@ -1,12 +1,189 @@
 "use client";
 
-import { X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Loader2, Search, X } from "lucide-react";
 import type { Keyword } from "@/db/schema";
+import { SerpFeatureChips } from "../fetch/_components/SerpFeatureChips";
 import { bpLabel, csLabel, formatIntent, parseTrends, Sparkline } from "./_utils";
 
 interface DetailDrawerProps {
   keyword: Keyword | null;
   onClose: () => void;
+}
+
+// 同月判断：用户 local 月份对比 last_manual_w03_at 的 local 月份（YYYY-MM）。
+// 入参为 Date | string | null，统一过 new Date()。
+function isSameLocalMonth(ts: Date | string | null | undefined): boolean {
+  if (!ts) return false;
+  const d = new Date(ts);
+  if (Number.isNaN(d.getTime())) return false;
+  const now = new Date();
+  return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+}
+
+// 解析 SSE 流的最小实现：把 ReadableStream 的字节流按 \n\n 切分成 events，
+// 抽取 data: 行的 JSON 内容。不区分 event: type —— 调用方按 payload.node_name 自行分发。
+async function* readSseEvents(
+  stream: ReadableStream<Uint8Array>
+): AsyncGenerator<{ event: string | null; data: unknown }> {
+  const reader = stream.getReader();
+  const decoder = new TextDecoder();
+  let buf = "";
+  try {
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      let sep: number;
+      while ((sep = buf.indexOf("\n\n")) !== -1) {
+        const block = buf.slice(0, sep);
+        buf = buf.slice(sep + 2);
+        let evName: string | null = null;
+        const dataLines: string[] = [];
+        for (const line of block.split("\n")) {
+          if (line.startsWith(":")) continue;
+          if (line.startsWith("event:")) evName = line.slice(6).trim();
+          else if (line.startsWith("data:")) dataLines.push(line.slice(5).trimStart());
+        }
+        if (dataLines.length === 0) continue;
+        try {
+          yield { event: evName, data: JSON.parse(dataLines.join("\n")) };
+        } catch {
+          /* skip invalid */
+        }
+      }
+    }
+  } finally {
+    reader.releaseLock();
+  }
+}
+
+interface SerpFeaturesRowProps {
+  rowKey: string | null;
+  market: string | null;
+  keywordText: string;
+  initialCodes: string | null;
+  initialLastManualW03At: Date | string | null;
+}
+
+// SERP 特征行：根据本地状态机决定显示 chips 和 🔍 按钮。
+// 点击按钮 → 调 W03 SSE，监听 Refresh Pool 事件后乐观更新本地 state。
+// 若用户重开 drawer，会从 server 重新拿到真实状态。
+function SerpFeaturesRow({
+  rowKey,
+  market,
+  keywordText,
+  initialCodes,
+  initialLastManualW03At,
+}: SerpFeaturesRowProps) {
+  const [codes, setCodes] = useState<string | null>(initialCodes);
+  const [lastManualW03At, setLastManualW03At] = useState<Date | string | null>(
+    initialLastManualW03At
+  );
+  const [loading, setLoading] = useState(false);
+  const [errMsg, setErrMsg] = useState<string | null>(null);
+
+  // keyword 切换（drawer 切到另一行）时同步初始值
+  useEffect(() => {
+    setCodes(initialCodes);
+    setLastManualW03At(initialLastManualW03At);
+    setLoading(false);
+    setErrMsg(null);
+  }, [rowKey, initialCodes, initialLastManualW03At]);
+
+  const hasCodes = !!codes && codes.trim() !== "";
+  const usedThisMonth = isSameLocalMonth(lastManualW03At);
+  const showButton = !hasCodes;
+  const buttonDisabled = usedThisMonth || loading;
+
+  async function handleClick() {
+    if (!rowKey || !market || !keywordText || buttonDisabled) return;
+    setLoading(true);
+    setErrMsg(null);
+
+    const params = new URLSearchParams({
+      endpoint: "W03",
+      keyword: keywordText,
+      markets: market,
+      display_limit: "3",
+      refresh_pool: "1",
+      row_key: rowKey,
+    });
+    const url = `/api/keywords/fetch?${params.toString()}`;
+
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 90_000);
+
+    try {
+      const res = await fetch(url, {
+        method: "GET",
+        headers: { accept: "text/event-stream" },
+        signal: ac.signal,
+      });
+      if (!res.ok || !res.body) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+      for await (const ev of readSseEvents(res.body)) {
+        const data = ev.data as { node_name?: string; node_status?: string; payload?: { codes?: string | null; pg_updated?: boolean } } | null;
+        if (!data) continue;
+        if (data.node_name === "Refresh Pool") {
+          const payload = data.payload ?? {};
+          if (payload.pg_updated === true) {
+            setLastManualW03At(new Date());
+          }
+          if (payload.codes !== null && payload.codes !== undefined) {
+            setCodes(payload.codes);
+          }
+          if (data.node_status === "warning") {
+            setErrMsg("实时查询出错，请稍后重试");
+          }
+        }
+        if (data.node_name === "_done") break;
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setErrMsg(`实时查询失败：${msg}`);
+    } finally {
+      clearTimeout(timeout);
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-start gap-2">
+        <div className="flex-1 min-w-0">
+          <SerpFeatureChips codes={codes} />
+        </div>
+        {showButton && (
+          <button
+            type="button"
+            onClick={handleClick}
+            disabled={buttonDisabled}
+            title={
+              loading
+                ? undefined
+                : usedThisMonth
+                  ? undefined
+                  : "实时查询 SERP 特征"
+            }
+            className={[
+              "shrink-0 inline-flex items-center justify-center w-6 h-6 rounded border transition-colors",
+              buttonDisabled
+                ? "border-gray-200 text-gray-300 cursor-not-allowed bg-gray-50"
+                : "border-gray-300 text-gray-500 hover:border-emerald-400 hover:text-emerald-600 cursor-pointer bg-white",
+            ].join(" ")}
+            aria-label="实时查询 SERP 特征"
+          >
+            {loading ? <Loader2 size={12} className="animate-spin" /> : <Search size={12} />}
+          </button>
+        )}
+      </div>
+      {errMsg && (
+        <div className="text-[10px] text-red-500 leading-tight">{errMsg}</div>
+      )}
+    </div>
+  );
 }
 
 function Field({ label, value }: { label: string; value: React.ReactNode }) {
@@ -188,7 +365,13 @@ export function DetailDrawer({ keyword, onClose }: DetailDrawerProps) {
         {/* 区块5 - SERP 特征 */}
         <Section title="SERP 特征">
           <div className="col-span-2">
-            <PipeList value={keyword.serpFeaturesKeyword} />
+            <SerpFeaturesRow
+              rowKey={keyword.rowKey ?? null}
+              market={keyword.market ?? null}
+              keywordText={keyword.keyword}
+              initialCodes={keyword.serpFeaturesKeyword}
+              initialLastManualW03At={keyword.lastManualW03At}
+            />
           </div>
         </Section>
 

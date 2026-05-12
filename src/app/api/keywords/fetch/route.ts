@@ -1,9 +1,9 @@
 import { NextRequest } from "next/server";
 import { randomUUID } from "node:crypto";
-import { and, eq, gt, asc } from "drizzle-orm";
+import { and, eq, gt, asc, sql } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { n8nCallbackEvents } from "@/db/schema";
+import { n8nCallbackEvents, keywords } from "@/db/schema";
 import { N8nCallbackEventSchema } from "@/contracts/n8n-callback";
 import {
   triggerW01PhraseThese,
@@ -35,6 +35,7 @@ import {
   getW08StagingRowsByBatch,
   getW09StagingRowsByBatch,
   getW10StagingRowsByBatch,
+  patchKeywordsPoolRow,
   type W01Market,
   type StagingRow,
   type W03StagingRow,
@@ -356,11 +357,25 @@ export async function GET(req: NextRequest) {
       return new Response("at least one market required\n", { status: 400 });
     }
 
+    const refreshPool = req.nextUrl.searchParams.get("refresh_pool") === "1";
+    const rowKey = req.nextUrl.searchParams.get("row_key");
+    if (refreshPool && !rowKey) {
+      return new Response("row_key required when refresh_pool=1\n", { status: 400 });
+    }
+
     if (isMockEnabled(req)) {
       return mockEndpointStream(req, "W03");
     }
 
-    return realW03Stream(req, keyword, markets, displayLimit, seedKeyword);
+    return realW03Stream(
+      req,
+      keyword,
+      markets,
+      displayLimit,
+      seedKeyword,
+      refreshPool,
+      refreshPool ? rowKey : null
+    );
   }
 
   const keywordsRaw = req.nextUrl.searchParams.get("keywords") ?? "";
@@ -827,7 +842,9 @@ function realW03Stream(
   keyword: string,
   markets: W01Market[],
   displayLimit: number,
-  seedKeyword: string | undefined
+  seedKeyword: string | undefined,
+  refreshPool: boolean,
+  rowKey: string | null
 ): Response {
   const encoder = new TextEncoder();
   const batches = markets.map((m) => ({ batchId: buildW03BatchId(m), market: m }));
@@ -1007,6 +1024,87 @@ function realW03Stream(
       }
 
       enqueue(`event: rows\ndata: ${JSON.stringify({ rows: allRows })}\n\n`);
+
+      // ---- refresh_pool=1: dual-write SERP features back to N8N pool + local PG ----
+      // 触发口径：query 参数 refresh_pool=1 + row_key=<rowKey>。
+      // 配额已在用户点击时消耗——本地 PG 的 last_manual_w03_at 无条件刷成 NOW()，
+      // 与 N8N PATCH 是否成功、staging 是否拿到 codes 都解耦。
+      // 仅当 W03 拿到 keyword_serp_features_codes 时，才同步 serp_features_keyword 列。
+      if (refreshPool && rowKey) {
+        const rawCodes = allRows[0]?.keyword_serp_features_codes;
+        const codes: string | null =
+          rawCodes && rawCodes !== "" ? rawCodes : null;
+
+        let pgUpdated = false;
+        let n8nUpdated = false;
+
+        // 1) 本地 PG：无条件 UPDATE last_manual_w03_at；codes 非空时一并写 serp_features_keyword。
+        try {
+          const updateValues: Record<string, unknown> = {
+            lastManualW03At: sql`NOW()`,
+          };
+          if (codes !== null) {
+            updateValues.serpFeaturesKeyword = codes;
+          }
+          await db
+            .update(keywords)
+            .set(updateValues)
+            .where(eq(keywords.rowKey, rowKey));
+          pgUpdated = true;
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          enqueue(
+            `event: error\ndata: ${JSON.stringify({
+              error: `refresh_pool local pg update failed: ${msg}`,
+            })}\n\n`
+          );
+        }
+
+        // 2) N8N keywords_pool：仅当 codes 非空时 PATCH serp_features_keyword。
+        //    注意：last_manual_w03_at 仅存在于本地 PG，绝对不要 PATCH 到 N8N。
+        if (codes !== null) {
+          try {
+            const { rowsAffected } = await patchKeywordsPoolRow(rowKey, {
+              serp_features_keyword: codes,
+            });
+            n8nUpdated = rowsAffected > 0;
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
+            enqueue(
+              `event: error\ndata: ${JSON.stringify({
+                error: `refresh_pool n8n patch failed: ${msg}`,
+              })}\n\n`
+            );
+          }
+        }
+
+        // 3) 发一条 Refresh Pool 节点事件，让前端能看到双写结果。
+        //    任一目标失败 → warning；都成功（或都跳过）→ succeeded。
+        const refreshFailed =
+          !pgUpdated || (codes !== null && !n8nUpdated);
+        const refreshEvt = {
+          version: "2025-01" as const,
+          event_id: `${batches[0]?.batchId ?? "unknown"}-refresh-pool`,
+          seq: 95,
+          ts: new Date().toISOString(),
+          batch_id: batches[0]?.batchId ?? "unknown",
+          workflow_id: "W03",
+          execution_id: "refresh_pool",
+          node_name: "Refresh Pool",
+          node_status: (refreshFailed ? "warning" : "succeeded") as
+            | "succeeded"
+            | "warning",
+          payload: {
+            codes,
+            pg_updated: pgUpdated,
+            n8n_updated: n8nUpdated,
+            row_key: rowKey,
+          },
+        };
+        enqueue(
+          `id: ${refreshEvt.event_id}\ndata: ${JSON.stringify(refreshEvt)}\n\n`
+        );
+      }
 
       const failed = Object.keys(triggerErrors).length > 0;
       const doneEvt = {

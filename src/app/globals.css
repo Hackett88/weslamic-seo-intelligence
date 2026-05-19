@@ -4,12 +4,52 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ============================================================
+   MANOR HALL — English manor / leather library theme
+   Source: Manor Hall.html (design handoff, claude.ai/design)
+   ------------------------------------------------------------ */
 @theme inline {
+  /* Manor palette — deep opera-house black/oak base */
+  --color-manor-void:     #030806;
+  --color-manor-bg:       #050C09;
+  --color-manor-bg2:      #08130D;
+  --color-manor-bg3:      #0C1A12;
+  --color-manor-bg4:      #122418;
+  --color-manor-line:     #1B2E20;
+  --color-manor-line2:    #2A4233;
+  /* Brass — primary accent */
+  --color-manor-brass:    #D4B36F;
+  --color-manor-brassHi:  #EFD89A;
+  --color-manor-brassDim: #A08850;
+  /* Sage — healthy / mature crops */
+  --color-manor-sage:     #5C8A6B;
+  --color-manor-sageHi:   #7BA67D;
+  --color-manor-sageDim:  #3D5C46;
+  /* Oxblood — alerts, neighbour, volatility */
+  --color-manor-oxblood:    #C46B5A;
+  --color-manor-oxbloodHi:  #D88876;
+  --color-manor-oxbloodDim: #7A4239;
+  /* Gold — ornament alias */
+  --color-manor-gold:    #D4B36F;
+  --color-manor-goldDim: #A08850;
+  /* Ink — parchment cream typography */
+  --color-manor-ink:      #E8E2D5;
+  --color-manor-inkDim:   #9B9384;
+  --color-manor-inkFaint: #5D5A4F;
+  --color-manor-inkGhost: #3D3A33;
+  /* Amber legacy */
+  --color-manor-amber:    #D4A574;
+  --color-manor-amberDim: #8A6E4D;
+
+  /* Shadcn semantic tokens — map to manor */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-serif: var(--font-serif);
+  --font-sc: var(--font-sc);
+  --font-tight: var(--font-tight);
+  --font-heading: var(--font-serif);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -48,112 +88,1640 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* Single manor theme — light mode is locked to manor as well.
+   Reference image is a damp emerald-green palette, NOT pure black.
+   Background tint pulled toward #0A1E18 family. */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --background: #07140F;
+  --foreground: #E8E2D5;
+  --card: #0B1C15;
+  --card-foreground: #E8E2D5;
+  --popover: #0B1C15;
+  --popover-foreground: #E8E2D5;
+  --primary: #D4B36F;
+  --primary-foreground: #07140F;
+  --secondary: #0F2419;
+  --secondary-foreground: #E8E2D5;
+  --muted: #0F2419;
+  --muted-foreground: #9B9384;
+  --accent: #14301F;
+  --accent-foreground: #E8E2D5;
+  --destructive: #C46B5A;
+  --border: #1F3A28;
+  --input: #1F3A28;
+  --ring: #D4B36F;
+  --chart-1: #D4B36F;
+  --chart-2: #5C8A6B;
+  --chart-3: #C46B5A;
+  --chart-4: #A08850;
+  --chart-5: #7BA67D;
+  --radius: 0.25rem;
+  --sidebar: #0F2018;
+  --sidebar-foreground: #E8E2D5;
+  --sidebar-primary: #D4B36F;
+  --sidebar-primary-foreground: #0D1B14;
+  --sidebar-accent: #13261C;
+  --sidebar-accent-foreground: #E8E2D5;
+  --sidebar-border: #1F3328;
+  --sidebar-ring: #D4B36F;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: #07140F;
+  --foreground: #E8E2D5;
+  --card: #0B1C15;
+  --card-foreground: #E8E2D5;
+  --popover: #0B1C15;
+  --popover-foreground: #E8E2D5;
+  --primary: #D4B36F;
+  --primary-foreground: #07140F;
+  --secondary: #0F2419;
+  --secondary-foreground: #E8E2D5;
+  --muted: #0F2419;
+  --muted-foreground: #9B9384;
+  --accent: #14301F;
+  --accent-foreground: #E8E2D5;
+  --destructive: #C46B5A;
+  --border: #1F3A28;
+  --input: #1F3A28;
+  --ring: #D4B36F;
+  --chart-1: #D4B36F;
+  --chart-2: #5C8A6B;
+  --chart-3: #C46B5A;
+  --chart-4: #A08850;
+  --chart-5: #7BA67D;
+  --sidebar: #0F2018;
+  --sidebar-foreground: #E8E2D5;
+  --sidebar-primary: #D4B36F;
+  --sidebar-primary-foreground: #0D1B14;
+  --sidebar-accent: #13261C;
+  --sidebar-accent-foreground: #E8E2D5;
+  --sidebar-border: #1F3328;
+  --sidebar-ring: #D4B36F;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+  html, body {
+    /* Damp opera-house emerald — radial gradient so the center reads warmer,
+       edges drop into deeper green-black. Mirrors the reference image. */
+    background:
+      radial-gradient(120% 90% at 50% 0%, #0F2419 0%, #07140F 55%, #03090A 100%) fixed;
+    color: #E8E2D5;
+    font-family: var(--font-serif), 'EB Garamond', Georgia, serif;
+  }
   body {
-    @apply bg-background text-foreground;
+    @apply min-h-full;
   }
-  html {
-    @apply font-sans;
+  /* Numbers feel right in tabular form on data screens */
+  input, select, textarea, .tabnum {
+    font-variant-numeric: tabular-nums;
   }
+}
+
+/* ============================================================
+   TYPOGRAPHIC UTILITIES
+   ------------------------------------------------------------ */
+.sc-label {
+  font-family: var(--font-sc), 'Cormorant SC', serif;
+  letter-spacing: 0.18em;
+}
+.copperplate {
+  font-family: var(--font-sc), 'Cormorant SC', serif;
+  letter-spacing: 0.28em;
+  font-weight: 500;
+}
+.ital-italic {
+  font-family: var(--font-serif), 'EB Garamond', serif;
+  font-style: italic;
+}
+.tabnum { font-variant-numeric: tabular-nums; }
+.roman { font-family: var(--font-serif), 'EB Garamond', serif; font-feature-settings: "smcp"; }
+.font-serif { font-family: var(--font-serif), 'EB Garamond', Georgia, serif; }
+.font-sc { font-family: var(--font-sc), 'Cormorant SC', serif; }
+.font-tight { font-family: var(--font-tight), 'Inter Tight', Inter, sans-serif; }
+.font-mono { font-family: var(--font-mono), 'JetBrains Mono', monospace; }
+
+/* ============================================================
+   ORNAMENT / ATMOSPHERE
+   ------------------------------------------------------------ */
+
+/* Engraved double rule */
+.rule-engrave {
+  height: 4px;
+  border-top: 1px solid rgba(201, 169, 97, .45);
+  border-bottom: 1px solid rgba(201, 169, 97, .22);
+}
+
+/* Diamond ornament */
+.diamond {
+  width: 5px;
+  height: 5px;
+  transform: rotate(45deg);
+  display: inline-block;
+}
+
+/* Filigree corner positioning helper */
+.filigree-corner {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+}
+
+/* ============================================================
+   GLASS PANELS — opera-house gold-on-black surface system
+   Wrapped in @layer components so Tailwind utilities (e.g. `fixed`,
+   `absolute`, `sticky`) reliably override the default position:relative
+   without needing inline-style workarounds at every call site.
+   ------------------------------------------------------------ */
+@layer components {
+
+/* Standard glass panel — damp emerald crystal. */
+.glass-panel {
+  position: relative;
+  background:
+    /* warm spotlight near top */
+    radial-gradient(140% 70% at 50% -10%, rgba(224, 197, 122, .1) 0%, transparent 60%),
+    /* damp emerald — lighter mid, deeper edge */
+    linear-gradient(180deg, rgba(34, 66, 46, .94) 0%, rgba(18, 40, 28, .96) 55%, rgba(10, 24, 17, .98) 100%);
+  border: 1px solid rgba(201, 169, 97, .32);
+  box-shadow:
+    /* top inner highlight */
+    inset 0 1px 0 rgba(224, 197, 122, .26),
+    /* bottom inner shadow */
+    inset 0 -1px 0 rgba(0, 0, 0, .45),
+    /* warm ambient bottom glow */
+    inset 0 -28px 48px -30px rgba(201, 169, 97, .28),
+    /* hairline outer ring */
+    0 0 0 1px rgba(0, 0, 0, .4),
+    /* depth shadow */
+    0 18px 44px -18px rgba(0, 0, 0, .8);
+  transition: border-color .35s ease, box-shadow .35s ease, transform .35s ease;
+}
+.glass-panel::after {
+  /* faint glass refraction line near top */
+  content: "";
+  position: absolute;
+  inset: 1px 1px auto 1px;
+  height: 38%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .04), transparent 80%);
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* Brass-framed panel — heavier baroque border, used for hero panels */
+.glass-panel-brass {
+  position: relative;
+  background:
+    radial-gradient(130% 90% at 50% 0%, rgba(240, 222, 160, .2) 0%, transparent 55%),
+    linear-gradient(180deg, rgba(38, 72, 50, .96) 0%, rgba(16, 36, 24, .98) 60%, rgba(6, 16, 11, .99) 100%);
+  border: 1px solid rgba(224, 197, 122, .65);
+  box-shadow:
+    inset 0 1px 0 rgba(240, 222, 160, .45),
+    inset 0 0 38px rgba(143, 119, 64, .18),
+    inset 0 -28px 48px -32px rgba(224, 197, 122, .35),
+    inset 0 -1px 0 rgba(0, 0, 0, .55),
+    0 0 0 1px rgba(0, 0, 0, .4),
+    0 28px 64px -22px rgba(0, 0, 0, .95),
+    0 0 24px -8px rgba(201, 169, 97, .25);
+  transition: border-color .35s ease, box-shadow .35s ease;
+}
+.glass-panel-brass::after {
+  content: "";
+  position: absolute;
+  inset: 1px 1px auto 1px;
+  height: 36%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .06), transparent 85%);
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* Inset well — for data trays, status bars, search inputs */
+.glass-well {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, .55) 0%, rgba(6, 16, 11, .9) 100%);
+  border: 1px solid rgba(201, 169, 97, .2);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, .7),
+    inset 0 -1px 0 rgba(201, 169, 97, .1);
+}
+
+/* ---- Interactive lift — applied to clickable glass cards ---- */
+.glass-panel-interactive {
+  cursor: pointer;
+  transition: transform .28s cubic-bezier(.2,.7,.2,1), border-color .25s ease, box-shadow .28s ease, filter .25s ease;
+  isolation: isolate;
+  animation-name: skill-card-mount;
+  animation-duration: 0.65s;
+  animation-timing-function: cubic-bezier(.22,.61,.36,1);
+  animation-fill-mode: both;
+  animation-delay: calc(var(--skill-i, 0) * 55ms);
+}
+@keyframes skill-card-mount {
+  0%   { opacity: 0; transform: translateY(14px) scale(.96); filter: blur(4px); }
+  100% { opacity: 1; transform: translateY(0)  scale(1);    filter: blur(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .glass-panel-interactive { animation-name: none !important; }
+}
+.glass-panel-interactive:hover {
+  border-color: rgba(240, 222, 160, .75);
+  /* Pure light/shadow swell — no geometric lift so cards inside overflow-hidden
+     grid containers never get their top edge clipped. */
+  box-shadow:
+    inset 0 1px 0 rgba(240, 222, 160, .55),
+    inset 0 -1px 0 rgba(0, 0, 0, .55),
+    inset 0 -32px 52px -28px rgba(224, 197, 122, .55),
+    inset 0 32px 60px -32px rgba(123, 166, 125, .45),
+    0 0 0 1px rgba(0, 0, 0, .45),
+    0 26px 60px -18px rgba(0, 0, 0, .9),
+    0 0 46px -4px rgba(224, 197, 122, .7),
+    0 0 32px -2px rgba(92, 138, 107, .45);
+  filter: brightness(1.04);
+}
+
+/* Diagonal brass sheen — sweeps across once on hover-in */
+.glass-panel-interactive > .sheen-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 2;
+  opacity: 0;
+}
+.glass-panel-interactive > .sheen-overlay::before {
+  content: "";
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: -40%;
+  width: 40%;
+  transform: translateX(-100%) skewX(-18deg);
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255, 240, 190, .22) 35%,
+    rgba(255, 248, 210, .55) 50%,
+    rgba(255, 240, 190, .22) 65%,
+    transparent 100%);
+  filter: blur(2px);
+}
+.glass-panel-interactive:hover > .sheen-overlay {
+  opacity: 1;
+}
+.glass-panel-interactive:hover > .sheen-overlay::before {
+  animation: sheen-sweep 1.05s cubic-bezier(.22,.61,.36,1) forwards;
+}
+@keyframes sheen-sweep {
+  0%   { transform: translateX(-100%) skewX(-18deg); }
+  100% { transform: translateX(420%) skewX(-18deg); }
+}
+
+/* Press feedback — quick scale crunch + amber ring flash on mousedown */
+.glass-panel-interactive:active {
+  transform: scale(.985);
+  transition: transform .07s cubic-bezier(.4,0,.2,1), box-shadow .12s ease, filter .12s ease;
+  filter: brightness(1.12) saturate(1.08);
+  box-shadow:
+    inset 0 1px 0 rgba(240, 222, 160, .65),
+    inset 0 -1px 0 rgba(0, 0, 0, .55),
+    inset 0 0 28px rgba(224, 197, 122, .32),
+    0 0 0 2px rgba(239, 216, 154, .7),
+    0 0 44px -2px rgba(224, 197, 122, .9),
+    0 18px 44px -18px rgba(0, 0, 0, .85);
+}
+
+/* Medallion wakes up when hovering the parent card */
+.glass-panel-interactive .skill-medallion-wrap {
+  display: inline-block;
+  transition: transform .45s cubic-bezier(.34,1.56,.64,1), filter .35s ease;
+  transform-origin: center;
+}
+.glass-panel-interactive:hover .skill-medallion-wrap {
+  transform: rotate(-7deg) scale(1.08);
+  filter: drop-shadow(0 0 14px rgba(239, 216, 154, .75)) brightness(1.12);
+}
+.glass-panel-interactive:active .skill-medallion-wrap {
+  transform: rotate(-2deg) scale(.96);
+  transition: transform .1s ease;
+}
+
+/* DISPATCH pill — picks up extra glow when card is hovered, presses on click */
+.dispatch-pill {
+  transition: box-shadow .28s ease, transform .15s cubic-bezier(.4,0,.2,1), filter .18s ease;
+}
+.glass-panel-interactive:hover .dispatch-pill {
+  box-shadow:
+    inset 0 1px 0 rgba(189, 230, 177, .6),
+    0 0 22px rgba(123, 166, 125, .85),
+    0 0 38px -6px rgba(123, 166, 125, .55);
+  filter: brightness(1.08);
+}
+.glass-panel-interactive:active .dispatch-pill {
+  transform: scale(.94);
+  filter: brightness(1.2);
+}
+
+/* Endpoint pill — brass label gets a subtle scale on hover-via-parent */
+.glass-panel-interactive .endpoint-pill {
+  transition: transform .3s ease, box-shadow .3s ease, color .25s ease;
+}
+.glass-panel-interactive:hover .endpoint-pill {
+  transform: translateY(-1px) scale(1.06);
+  box-shadow: inset 0 1px 0 rgba(224,197,122,.45), 0 0 10px rgba(239,216,154,.55);
+  color: #FBEDB8;
+}
+
+} /* end @layer components — glass-panel system */
+
+/* ============================================================
+   CABINET HUD readout cards — staggered roll-in + hover bloom
+   Used by HudRail.tsx readout cards in the left rail.
+   ------------------------------------------------------------ */
+.hud-card {
+  position: relative;
+  transition: transform .25s cubic-bezier(.34,1.56,.64,1), border-color .25s ease, box-shadow .25s ease, filter .25s ease;
+  animation: hud-card-mount .55s cubic-bezier(.22,.61,.36,1) both;
+  animation-delay: calc(var(--hud-i, 0) * 55ms);
+}
+.hud-card:hover {
+  transform: translateX(2px) scale(1.03);
+  filter: brightness(1.1);
+  border-color: rgba(240, 222, 160, .7);
+  box-shadow:
+    inset 0 1px 0 rgba(240, 222, 160, .45),
+    inset 0 -1px 0 rgba(0, 0, 0, .55),
+    0 0 0 1px rgba(0, 0, 0, .4),
+    0 0 22px -4px rgba(224, 197, 122, .7);
+}
+.hud-card .hud-num {
+  display: inline-block;
+  animation: hud-num-roll .9s cubic-bezier(.22,.61,.36,1) both;
+  animation-delay: calc(var(--hud-i, 0) * 55ms + 120ms);
+  transition: text-shadow .25s ease, transform .25s ease;
+}
+.hud-card:hover .hud-num {
+  text-shadow: 0 0 14px rgba(255, 240, 190, .85), 0 0 28px rgba(224, 197, 122, .45);
+  transform: scale(1.08);
+}
+@keyframes hud-card-mount {
+  0%   { opacity: 0; transform: translateX(-12px) scale(.92); filter: blur(4px); }
+  100% { opacity: 1; transform: translateX(0) scale(1); filter: blur(0); }
+}
+@keyframes hud-num-roll {
+  0%   { opacity: 0; transform: translateY(10px) scale(.5); filter: blur(6px); }
+  55%  { opacity: 1; transform: translateY(-2px) scale(1.18); filter: blur(0); }
+  100% { transform: translateY(0) scale(1); }
+}
+/* CABINET header pill — soft halo pulse */
+.hud-header {
+  position: relative;
+  animation: hud-card-mount .55s cubic-bezier(.22,.61,.36,1) both;
+}
+.hud-header::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  background: radial-gradient(60% 60% at 50% 50%, rgba(224,197,122,.4) 0%, transparent 70%);
+  filter: blur(8px);
+  opacity: 0;
+  z-index: -1;
+  pointer-events: none;
+  animation: hud-header-breath 4.2s ease-in-out infinite;
+}
+@keyframes hud-header-breath {
+  0%, 100% { opacity: .25; }
+  50%      { opacity: .65; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hud-card,
+  .hud-card .hud-num,
+  .hud-header,
+  .hud-header::after {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}
+
+/* ------------------------------------------------------------
+   HudRail · 数字变更涌动反馈 (r17)
+   Card gets `.is-pulsing` for ~800ms when its number changes:
+   - ring expands outward 0→12px (brass color)
+   - card briefly translates 2px right + scale 1.05
+   - inner number flashes white-gold then settles
+   ------------------------------------------------------------ */
+/* Pulse ring overlay — pseudo element, so card's mount animation is untouched.
+   `.is-pulsing` toggles a one-shot ring expansion + brief scale via transition. */
+.hud-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow: 0 0 0 0 rgba(239,216,154,.85);
+}
+.hud-card.is-pulsing::after {
+  animation: hud-card-ring 0.8s cubic-bezier(.22,.61,.36,1) both;
+}
+@keyframes hud-card-ring {
+  0%   { opacity: 1; box-shadow: 0 0 0 0 rgba(239,216,154,.85), 0 0 0 0 rgba(239,216,154,.55); }
+  40%  { opacity: 1; box-shadow: 0 0 0 5px rgba(239,216,154,.55), 0 0 18px -3px rgba(239,216,154,.8); }
+  100% { opacity: 0; box-shadow: 0 0 0 12px rgba(239,216,154,0), 0 0 0 12px rgba(239,216,154,0); }
+}
+.hud-card.is-pulsing .hud-num {
+  color: #fff4d0;
+  text-shadow:
+    0 0 16px rgba(255,244,208,.9),
+    0 0 32px rgba(239,216,154,.55);
+  transition: color .15s ease, text-shadow .15s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hud-card.is-pulsing::after { animation: none !important; }
+  .hud-card.is-pulsing .hud-num { color: inherit !important; text-shadow: inherit !important; }
+}
+
+/* ============================================================
+   STATUS BAR cartridges — staggered roll-in + hover gold-pop
+   Used by StatusBar.tsx
+   ------------------------------------------------------------ */
+.status-cart {
+  position: relative;
+  overflow: hidden;
+  animation: status-cart-mount .6s cubic-bezier(.22,.61,.36,1) both;
+  animation-delay: calc(var(--cart-i, 0) * 80ms);
+  transition: transform .25s cubic-bezier(.34,1.56,.64,1), border-color .25s ease, box-shadow .25s ease, filter .25s ease;
+}
+.status-cart:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+  border-color: rgba(240, 222, 160, .65);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, .65),
+    inset 0 -1px 0 rgba(224, 197, 122, .35),
+    0 0 0 1px rgba(224, 197, 122, .35),
+    0 0 18px -2px rgba(224, 197, 122, .55);
+}
+.status-cart::before {
+  /* slow brass sweep that drifts across the well */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255, 240, 190, .12) 50%,
+    transparent 100%);
+  transform: translateX(-100%);
+  width: 40%;
+  pointer-events: none;
+}
+.status-cart:hover::before {
+  animation: status-cart-sweep 1.2s cubic-bezier(.22,.61,.36,1) forwards;
+}
+@keyframes status-cart-sweep {
+  0%   { transform: translateX(-100%); opacity: 0; }
+  20%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translateX(380%); opacity: 0; }
+}
+.status-cart .status-value {
+  display: inline-block;
+  animation: status-value-pop .8s cubic-bezier(.34,1.56,.64,1) both;
+  animation-delay: calc(var(--cart-i, 0) * 80ms + 180ms);
+  transition: transform .25s ease, text-shadow .25s ease;
+}
+.status-cart:hover .status-value {
+  transform: scale(1.08);
+  text-shadow: 0 0 16px rgba(255, 240, 190, .9), 0 0 32px rgba(224, 197, 122, .45);
+}
+@keyframes status-cart-mount {
+  0%   { opacity: 0; transform: translateY(14px) scale(.94); filter: blur(3px); }
+  100% { opacity: 1; transform: translateY(0)  scale(1);   filter: blur(0); }
+}
+@keyframes status-value-pop {
+  0%   { opacity: 0; transform: scale(.4) translateY(6px); filter: blur(4px); }
+  60%  { opacity: 1; transform: scale(1.15) translateY(0); filter: blur(0); }
+  100% { transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .status-cart,
+  .status-cart .status-value,
+  .status-cart::before,
+  .status-cart:hover::before {
+    animation: none !important;
+    transform: none !important;
+    filter: none !important;
+    opacity: 1 !important;
+  }
+}
+
+/* ============================================================
+   SORTABLE TABLE 表头 · hover 弹动 + active 闪烁
+   ------------------------------------------------------------ */
+.sort-th {
+  transition: color .2s ease, background .2s ease, transform .15s cubic-bezier(.34,1.56,.64,1);
+}
+.sort-th:hover {
+  background: linear-gradient(180deg, rgba(224,197,122,.06), rgba(224,197,122,.02));
+}
+.sort-th:active {
+  transform: scale(.97);
+}
+.sort-th .sort-icon {
+  transition: transform .25s cubic-bezier(.34,1.56,.64,1), color .2s ease;
+  display: inline-block;
+}
+.sort-th:hover .sort-icon {
+  transform: scale(1.35) translateY(-1px);
+  color: #F8E6B0 !important;
+  filter: drop-shadow(0 0 4px rgba(239,216,154,.7));
+}
+.sort-th[aria-sort="ascending"] .sort-icon,
+.sort-th[aria-sort="descending"] .sort-icon {
+  animation: sort-icon-flash .55s cubic-bezier(.22,.61,.36,1);
+}
+@keyframes sort-icon-flash {
+  0%   { transform: translateY(-6px) scale(.6); opacity: .2; filter: drop-shadow(0 0 0 rgba(239,216,154,0)); }
+  60%  { transform: translateY(0)    scale(1.4); opacity: 1; filter: drop-shadow(0 0 12px rgba(239,216,154,.95)); }
+  100% { transform: translateY(0)    scale(1);   opacity: 1; filter: drop-shadow(0 0 4px rgba(239,216,154,.4)); }
+}
+
+/* ============================================================
+   PROGRESS STRIPES + BRASS SHIMMER · 进度横条二级流光
+   ------------------------------------------------------------ */
+.progress-track {
+  position: relative;
+  overflow: hidden;
+}
+.progress-track::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0;
+  left: 0;
+  width: 30%;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,240,190,.55) 50%, transparent 100%);
+  transform: translateX(-100%);
+  animation: progress-shimmer 1.6s cubic-bezier(.22,.61,.36,1) infinite;
+  pointer-events: none;
+}
+@keyframes progress-shimmer {
+  0%   { transform: translateX(-120%); opacity: 0; }
+  20%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translateX(440%); opacity: 0; }
+}
+
+/* ============================================================
+   HISTORY TABS · 历史记录条 stagger 入场 + hover 金边
+   ------------------------------------------------------------ */
+.history-tab {
+  animation: history-tab-mount .5s cubic-bezier(.22,.61,.36,1) both;
+  animation-delay: calc(var(--hist-i, 0) * 80ms);
+  transition: transform .2s cubic-bezier(.34,1.56,.64,1), filter .2s ease, box-shadow .25s ease;
+}
+.history-tab:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+  box-shadow: 0 0 0 1px rgba(239,216,154,.5), 0 0 12px -2px rgba(224,197,122,.55);
+}
+.history-tab .history-remove {
+  transition: background .2s ease, color .2s ease, transform .15s ease;
+}
+.history-tab .history-remove:hover {
+  transform: scale(1.15);
+  background: rgba(196,107,90,.25) !important;
+  color: #D88876 !important;
+}
+@keyframes history-tab-mount {
+  0%   { opacity: 0; transform: translateX(18px) scale(.9); filter: blur(3px); }
+  100% { opacity: 1; transform: translateX(0)   scale(1);  filter: blur(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sort-th,
+  .sort-th .sort-icon,
+  .progress-track::after,
+  .history-tab,
+  .history-tab .history-remove {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}
+
+/* ============================================================
+   W01 工作区动效 · 输入框 / 派发按钮 / 表格行
+   ------------------------------------------------------------ */
+/* Textarea / Input — focus 时金边发光 + 内部柔光晕 */
+.input-brass {
+  transition: border-color .22s ease, box-shadow .22s ease, background .22s ease;
+}
+.input-brass:focus,
+.input-brass:focus-visible {
+  outline: none;
+  border-color: rgba(239, 216, 154, .85) !important;
+  background: rgba(12, 28, 19, .95);
+  box-shadow:
+    0 0 0 1px rgba(239, 216, 154, .55),
+    0 0 18px -2px rgba(224, 197, 122, .55),
+    inset 0 0 14px rgba(224, 197, 122, .12);
+}
+
+/* DISPATCH launch — 提交按钮被点击后的"派发"飞光
+   使用方法：button 加 .dispatch-launch；JS 在 click 后短暂加上 .is-launching */
+.dispatch-launch {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition: transform .15s cubic-bezier(.4,0,.2,1), filter .2s ease, box-shadow .25s ease;
+}
+.dispatch-launch:active {
+  transform: scale(.94);
+  filter: brightness(1.25);
+}
+.dispatch-launch.is-launching::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 60%;
+  height: 200%;
+  transform: translate(-100%, -50%) skewX(-22deg);
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255, 250, 220, .95) 50%,
+    transparent 100%);
+  filter: blur(2px);
+  pointer-events: none;
+  z-index: 2;
+  animation: dispatch-flash 0.7s cubic-bezier(.22,.61,.36,1) forwards;
+}
+.dispatch-launch.is-launching::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  box-shadow: 0 0 0 0 rgba(239, 216, 154, .85);
+  pointer-events: none;
+  animation: dispatch-ring 0.65s cubic-bezier(.22,.61,.36,1) forwards;
+}
+@keyframes dispatch-flash {
+  0%   { transform: translate(-130%, -50%) skewX(-22deg); opacity: 0; }
+  30%  { opacity: 1; }
+  100% { transform: translate(260%, -50%) skewX(-22deg); opacity: 0; }
+}
+@keyframes dispatch-ring {
+  0%   { box-shadow: 0 0 0 0 rgba(239, 216, 154, .85), 0 0 0 0 rgba(224, 197, 122, .65); }
+  100% { box-shadow: 0 0 0 16px rgba(239, 216, 154, 0), 0 0 0 28px rgba(224, 197, 122, 0); }
+}
+
+/* Result table rows — hover 金色横向 wash + 左侧金竖线指示 */
+.row-brass {
+  position: relative;
+  transition: background .25s ease, box-shadow .25s ease;
+}
+.row-brass:hover {
+  background: linear-gradient(90deg,
+    rgba(224, 197, 122, .02) 0%,
+    rgba(224, 197, 122, .14) 50%,
+    rgba(224, 197, 122, .02) 100%) !important;
+  box-shadow:
+    inset 3px 0 0 rgba(239, 216, 154, .85),
+    inset 0 -1px 0 rgba(224, 197, 122, .25);
+}
+.row-brass:hover td {
+  color: #F0EBE0;
+}
+
+/* Market chip — checked 时持续金光呼吸，hover 时轻微抬升 */
+.market-chip {
+  transition: transform .18s cubic-bezier(.34,1.56,.64,1), border-color .22s ease, background .22s ease, color .22s ease, box-shadow .22s ease;
+}
+.market-chip:hover {
+  transform: translateY(-1px) scale(1.04);
+}
+.market-chip:active {
+  transform: scale(.94);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .input-brass,
+  .dispatch-launch,
+  .dispatch-launch.is-launching::before,
+  .dispatch-launch.is-launching::after,
+  .row-brass,
+  .market-chip {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+/* ============================================================
+   COUNT-UP NUMBER · CSS-only digit roll-up for budget/stat numbers
+   Add the .count-up class to any large number span; it does a one-shot
+   blur-scale-slide reveal on first paint.
+   ------------------------------------------------------------ */
+.count-up {
+  display: inline-block;
+  animation: count-up .9s cubic-bezier(.22,.61,.36,1) both;
+  animation-delay: var(--countup-delay, 0ms);
+}
+@keyframes count-up {
+  0%   { opacity: 0; transform: translateY(14px) scale(.55); filter: blur(8px); }
+  55%  { opacity: 1; transform: translateY(-3px) scale(1.16); filter: blur(0); }
+  100% { transform: translateY(0) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .count-up { animation: none !important; }
+}
+
+/* ============================================================
+   ROUTE FADE · 路由切换淡入幕
+   Used by RouteFader.tsx — replays on every pathname change.
+   ------------------------------------------------------------ */
+.route-fade {
+  animation: route-fade-in .55s cubic-bezier(.22,.61,.36,1) both;
+}
+@keyframes route-fade-in {
+  0%   { opacity: 0; transform: translateY(8px) scale(.995); filter: blur(4px); }
+  100% { opacity: 1; transform: translateY(0)  scale(1);    filter: blur(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .route-fade { animation: none !important; }
+}
+
+/* ============================================================
+   BRAND HEADER · 顶栏品牌区 + Bell + 时间动效
+   ------------------------------------------------------------ */
+.brand-crest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform .35s cubic-bezier(.34,1.56,.64,1), filter .3s ease;
+  animation: brand-crest-mount .8s cubic-bezier(.22,.61,.36,1) both;
+}
+.brand-crest:hover {
+  transform: rotate(15deg) scale(1.15);
+  filter: drop-shadow(0 0 16px rgba(239,216,154,.85)) brightness(1.2);
+}
+@keyframes brand-crest-mount {
+  0%   { opacity: 0; transform: scale(.4) rotate(-90deg); filter: blur(8px); }
+  60%  { opacity: 1; transform: scale(1.15) rotate(10deg); filter: blur(0); }
+  100% { transform: scale(1) rotate(0); }
+}
+.brand-title {
+  animation: brand-title-rise .9s cubic-bezier(.22,.61,.36,1) .1s both;
+}
+.brand-subtitle {
+  animation: brand-title-rise .9s cubic-bezier(.22,.61,.36,1) .25s both;
+}
+.brand-anno {
+  animation: brand-title-rise .9s cubic-bezier(.22,.61,.36,1) .4s both;
+}
+@keyframes brand-title-rise {
+  0%   { opacity: 0; transform: translateY(6px); letter-spacing: .12em; filter: blur(3px); }
+  100% { opacity: 1; transform: translateY(0);   filter: blur(0); }
+}
+
+/* Bell button — hover swing + click pulse */
+.bell-btn {
+  position: relative;
+  transition: color .2s ease, transform .15s ease, filter .2s ease;
+  transform-origin: top center;
+}
+.bell-btn:hover {
+  filter: drop-shadow(0 0 8px rgba(239,216,154,.7));
+  animation: bell-swing .55s cubic-bezier(.4,0,.2,1);
+}
+.bell-btn:active {
+  transform: scale(.86);
+  filter: brightness(1.3) drop-shadow(0 0 12px rgba(255,240,190,.9));
+  transition: transform .07s ease, filter .07s ease;
+}
+.bell-btn::after {
+  content: "";
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 5px;
+  height: 5px;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 30% 30%, #F8E6B0, #D4B36F 55%, #A08850);
+  box-shadow: 0 0 6px rgba(239,216,154,.85);
+  opacity: 0;
+  animation: bell-dot-pulse 3s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes bell-swing {
+  0%   { transform: rotate(0); }
+  20%  { transform: rotate(-15deg); }
+  40%  { transform: rotate(12deg); }
+  60%  { transform: rotate(-8deg); }
+  80%  { transform: rotate(5deg); }
+  100% { transform: rotate(0); }
+}
+@keyframes bell-dot-pulse {
+  0%, 100% { opacity: 0; transform: scale(.6); }
+  50%      { opacity: 1; transform: scale(1.1); }
+}
+
+/* Current time display — soft breath glow on the digits */
+.current-time {
+  display: inline-block;
+  animation: brand-title-rise .9s cubic-bezier(.22,.61,.36,1) .5s both;
+  transition: color .25s ease, text-shadow .25s ease;
+}
+.current-time:hover {
+  color: #F8E6B0;
+  text-shadow: 0 0 10px rgba(239,216,154,.7);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-crest,
+  .brand-title,
+  .brand-subtitle,
+  .brand-anno,
+  .current-time,
+  .bell-btn:hover,
+  .bell-btn::after {
+    animation: none !important;
+    transform: none !important;
+    filter: none !important;
+    opacity: 1 !important;
+  }
+}
+
+/* ============================================================
+   DIARIUM ticker entries — slide-in stagger + hover gold ring
+   ------------------------------------------------------------ */
+.diarium-entry {
+  position: relative;
+  padding: 0 6px;
+  border-radius: 3px;
+  animation: diarium-slide-in .6s cubic-bezier(.22,.61,.36,1) both;
+  animation-delay: calc(var(--diarium-i, 0) * 100ms + 120ms);
+  transition: background .25s ease, box-shadow .25s ease, transform .2s ease;
+}
+.diarium-entry:hover {
+  background: linear-gradient(90deg, rgba(224,197,122,.04), rgba(224,197,122,.14) 50%, rgba(224,197,122,.04));
+  box-shadow:
+    inset 0 0 0 1px rgba(224,197,122,.4),
+    0 0 12px -2px rgba(224,197,122,.45);
+  transform: translateY(-1px);
+}
+.diarium-entry:hover .diarium-ts,
+.diarium-entry:hover .diarium-kind {
+  text-shadow: 0 0 8px rgba(255, 240, 190, .85);
+  filter: brightness(1.15);
+}
+@keyframes diarium-slide-in {
+  0%   { opacity: 0; transform: translateX(20px); filter: blur(3px); }
+  100% { opacity: 1; transform: translateX(0);   filter: blur(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .diarium-entry {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}
+
+/* DIARIUM · 新条目高光 (r18) — for newly prepended entries.
+   `.is-fresh` toggles a 1.2s gold halo via ::after, plus a brightness
+   boost on the entry text. We deliberately avoid touching the entry's
+   `animation` property so the slide-in stays intact. */
+.diarium-entry::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow: 0 0 0 0 rgba(239,216,154,0);
+}
+.diarium-entry.is-fresh::after {
+  animation: diarium-fresh-glow 1.2s cubic-bezier(.22,.61,.36,1) both;
+  animation-delay: 0.5s; /* let slide-in finish first */
+}
+@keyframes diarium-fresh-glow {
+  0%   { opacity: 0; box-shadow: inset 0 0 0 1px rgba(239,216,154,0), 0 0 0 0 rgba(239,216,154,0); }
+  30%  { opacity: 1; box-shadow: inset 0 0 0 1px rgba(239,216,154,.65), 0 0 14px -1px rgba(239,216,154,.7); }
+  70%  { opacity: .85; box-shadow: inset 0 0 0 1px rgba(239,216,154,.4), 0 0 20px -1px rgba(239,216,154,.45); }
+  100% { opacity: 0; box-shadow: inset 0 0 0 1px rgba(239,216,154,0), 0 0 32px -1px rgba(239,216,154,0); }
+}
+.diarium-entry.is-fresh .diarium-ts,
+.diarium-entry.is-fresh .diarium-kind {
+  animation: diarium-fresh-text 1.2s ease both;
+  animation-delay: 0.5s;
+}
+@keyframes diarium-fresh-text {
+  0%, 100% { filter: brightness(1); text-shadow: none; }
+  30%      { filter: brightness(1.25); text-shadow: 0 0 8px rgba(255,240,190,.85); }
+  70%      { filter: brightness(1.1);  text-shadow: 0 0 4px rgba(255,240,190,.5); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .diarium-entry.is-fresh::after { animation: none !important; }
+  .diarium-entry.is-fresh .diarium-ts,
+  .diarium-entry.is-fresh .diarium-kind { animation: none !important; filter: none !important; text-shadow: none !important; }
+}
+
+/* ============================================================
+   HEX BADGE — staggered mount + hover scale + value pop
+   Used by HexBadge component (top-right trio on hero strips).
+   ------------------------------------------------------------ */
+.hex-badge-anim {
+  animation: hex-badge-mount .65s cubic-bezier(.34,1.56,.64,1) both;
+  animation-delay: calc(var(--badge-i, 0) * 110ms);
+  transition: transform .3s cubic-bezier(.34,1.56,.64,1), filter .25s ease;
+  cursor: default;
+}
+.hex-badge-anim:hover {
+  transform: translateY(-2px) scale(1.06);
+  filter: brightness(1.12) drop-shadow(0 0 12px rgba(224,197,122,.55));
+}
+.hex-badge-anim .hex-badge-value {
+  display: inline-block;
+  animation: hex-value-pop .85s cubic-bezier(.34,1.56,.64,1) both;
+  animation-delay: calc(var(--badge-i, 0) * 110ms + 220ms);
+  transition: transform .25s ease, text-shadow .25s ease;
+}
+.hex-badge-anim:hover .hex-badge-value {
+  transform: scale(1.12);
+  text-shadow: 0 0 16px rgba(255, 240, 190, .9), 0 0 32px rgba(224, 197, 122, .45) !important;
+}
+@keyframes hex-badge-mount {
+  0%   { opacity: 0; transform: translateY(-12px) scale(.65) rotate(-8deg); filter: blur(6px); }
+  60%  { opacity: 1; transform: translateY(0) scale(1.05) rotate(2deg); filter: blur(0); }
+  100% { transform: translateY(0) scale(1) rotate(0); }
+}
+@keyframes hex-value-pop {
+  0%   { opacity: 0; transform: scale(.3) translateY(8px); filter: blur(8px); }
+  60%  { opacity: 1; transform: scale(1.2) translateY(0); filter: blur(0); }
+  100% { transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hex-badge-anim,
+  .hex-badge-anim .hex-badge-value {
+    animation: none !important;
+    transform: none !important;
+    filter: none !important;
+    opacity: 1 !important;
+  }
+}
+
+/* HUD tube — vertical resource pill for left rail readouts */
+.hud-tube {
+  position: relative;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, .6) 0%, rgba(8, 19, 13, .9) 50%, rgba(0, 0, 0, .6) 100%);
+  border: 1px solid rgba(201, 169, 97, .35);
+  box-shadow:
+    inset 0 1px 0 rgba(224, 197, 122, .3),
+    inset 0 -1px 0 rgba(0, 0, 0, .55),
+    0 0 0 1px rgba(0, 0, 0, .5),
+    0 0 8px -2px rgba(201, 169, 97, .15);
+}
+.hud-tube::before {
+  /* glass highlight reflection */
+  content: "";
+  position: absolute;
+  inset: 1px 1px auto 1px;
+  height: 40%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .06), transparent);
+  pointer-events: none;
+}
+
+/* Medallion ring — circular brass frame for hex/round badge readouts.
+   Wraps a slow-rotating conic-gradient halo so the ring "breathes" subtly. */
+.medallion-ring {
+  position: relative;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(240, 222, 160, .35), transparent 55%),
+    radial-gradient(circle at 50% 50%, rgba(22, 44, 30, .96), rgba(6, 16, 11, .98));
+  border: 1.5px solid rgba(201, 169, 97, .7);
+  box-shadow:
+    inset 0 1px 0 rgba(240, 222, 160, .55),
+    inset 0 -1px 0 rgba(0, 0, 0, .55),
+    0 0 0 1px rgba(0, 0, 0, .55),
+    0 0 14px -2px rgba(224, 197, 122, .45);
+}
+.medallion-ring::before {
+  /* Rotating conic-gradient halo — visible only on the outer ring */
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 9999px;
+  background:
+    conic-gradient(from 0deg,
+      rgba(201, 169, 97, 0) 0deg,
+      rgba(240, 222, 160, .75) 80deg,
+      rgba(201, 169, 97, 0) 160deg,
+      rgba(240, 222, 160, .55) 260deg,
+      rgba(201, 169, 97, 0) 340deg);
+  -webkit-mask: radial-gradient(circle, transparent 56%, black 58%);
+  mask: radial-gradient(circle, transparent 56%, black 58%);
+  animation: ring-spin 9s linear infinite;
+  pointer-events: none;
+  opacity: .85;
+}
+@keyframes ring-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Hex badge — six-sided clip + brass rim (the right-top stat trio) */
+.hex-badge {
+  position: relative;
+  clip-path: polygon(50% 0, 100% 28%, 100% 72%, 50% 100%, 0 72%, 0 28%);
+  background:
+    radial-gradient(circle at 50% 20%, rgba(224, 197, 122, .22), transparent 60%),
+    linear-gradient(180deg, rgba(18, 36, 24, .96), rgba(5, 12, 9, .98));
+}
+.hex-badge::after {
+  /* simulated brass outline using a second clipped shape */
+  content: "";
+  position: absolute;
+  inset: 1px;
+  clip-path: polygon(50% 0, 100% 28%, 100% 72%, 50% 100%, 0 72%, 0 28%);
+  background: transparent;
+  box-shadow: inset 0 0 0 1px rgba(201, 169, 97, .65);
+  pointer-events: none;
+}
+
+/* Brass divider — gradient hairline (now with slow shimmer drift) */
+.brass-divider {
+  position: relative;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(201, 169, 97, .55) 25%,
+    rgba(224, 197, 122, .8) 50%,
+    rgba(201, 169, 97, .55) 75%,
+    transparent 100%);
+  overflow: hidden;
+}
+.brass-divider::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255, 240, 190, .9) 50%,
+    transparent 100%);
+  transform: translateX(-100%);
+  animation: brass-flow 5.5s ease-in-out infinite;
+  width: 30%;
+}
+.brass-divider-v {
+  width: 1px;
+  background: linear-gradient(180deg,
+    transparent 0%,
+    rgba(201, 169, 97, .55) 25%,
+    rgba(224, 197, 122, .8) 50%,
+    rgba(201, 169, 97, .55) 75%,
+    transparent 100%);
+}
+@keyframes brass-flow {
+  0%   { transform: translateX(-100%); opacity: 0; }
+  20%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translateX(360%); opacity: 0; }
+}
+
+/* Brass text gradient for hero titles */
+.text-brass-gradient {
+  background: linear-gradient(180deg, #F8E6B0 0%, #D4B36F 55%, #9A8048 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, .4);
+}
+
+/* Top-nav tab — pill with brass underline */
+.nav-tab {
+  position: relative;
+  padding: 0.4rem 0.9rem;
+  color: #9B9384;
+  letter-spacing: 0.18em;
+  font-family: var(--font-sc), 'Cormorant SC', serif;
+  font-size: 13px;
+  transition: color .2s ease;
+}
+.nav-tab:hover { color: #E8E2D5; }
+.nav-tab[data-active="true"] {
+  color: #EFD89A;
+  text-shadow: 0 0 12px rgba(201, 169, 97, .55);
+}
+.nav-tab[data-active="true"]::after {
+  content: "";
+  position: absolute;
+  left: 12%; right: 12%; bottom: -3px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(224, 197, 122, .9), transparent);
+}
+
+/* ---- Top-nav link interactive — used by TopNav.tsx ---- */
+.nav-link {
+  position: relative;
+  transition: transform .18s cubic-bezier(.4,0,.2,1), filter .2s ease, color .2s ease;
+}
+.nav-link:hover {
+  filter: brightness(1.08);
+}
+.nav-link:active {
+  transform: scale(.94);
+  filter: brightness(1.18);
+  transition: transform .07s cubic-bezier(.4,0,.2,1);
+}
+/* Hover underline — grows from center, replaces the static opacity fade */
+.nav-link .nav-underline {
+  position: absolute;
+  left: 12px; right: 12px;
+  bottom: -3px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(212,179,111,.7), transparent);
+  transform: scaleX(0);
+  transform-origin: center;
+  opacity: 0;
+  transition: transform .35s cubic-bezier(.34,1.56,.64,1), opacity .25s ease;
+  pointer-events: none;
+}
+.nav-link:hover .nav-underline {
+  transform: scaleX(1);
+  opacity: 1;
+}
+/* Active sentinel diamond on top — slow breath */
+.nav-link[data-active="true"] .nav-sentinel {
+  animation: sentinel-breath 2.4s ease-in-out infinite;
+}
+@keyframes sentinel-breath {
+  0%, 100% { box-shadow: 0 0 6px rgba(239,216,154,.65); transform: translateX(-50%) rotate(45deg) scale(1); }
+  50%      { box-shadow: 0 0 14px rgba(255,240,190,.95); transform: translateX(-50%) rotate(45deg) scale(1.25); }
+}
+/* Active underline shimmer drift */
+.nav-link[data-active="true"] .nav-active-underline {
+  position: absolute;
+  left: 12px; right: 12px;
+  bottom: -3px;
+  height: 1px;
+  overflow: hidden;
+  pointer-events: none;
+}
+.nav-link[data-active="true"] .nav-active-underline::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(240,222,160,.95), transparent);
+  filter: drop-shadow(0 0 6px rgba(224,197,122,.75));
+}
+.nav-link[data-active="true"] .nav-active-underline::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0;
+  left: 0;
+  width: 35%;
+  background: linear-gradient(90deg, transparent, rgba(255,250,220,.9), transparent);
+  transform: translateX(-120%);
+  animation: nav-shimmer 3.4s ease-in-out infinite;
+}
+@keyframes nav-shimmer {
+  0%   { transform: translateX(-120%); opacity: 0; }
+  20%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translateX(380%); opacity: 0; }
+}
+/* Active pill background subtle pulse */
+.nav-link[data-active="true"] .nav-pill-pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: radial-gradient(120% 100% at 50% 50%, rgba(224,197,122,.18) 0%, transparent 70%);
+  opacity: 0;
+  animation: nav-pill-pulse 3.6s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+@keyframes nav-pill-pulse {
+  0%, 100% { opacity: 0; }
+  50%      { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-link .nav-underline,
+  .nav-link[data-active="true"] .nav-active-underline::after,
+  .nav-link[data-active="true"] .nav-sentinel,
+  .nav-link[data-active="true"] .nav-pill-pulse {
+    animation: none !important;
+    transition: none !important;
+    transform: scaleX(1) !important;
+    opacity: 1 !important;
+  }
+}
+
+/* Page-level paper grain — applies to a container that fills the viewport.
+   Uses isolation + negative-z pseudos so children keep their natural positioning
+   (fixed/absolute/sticky etc) instead of being forced to position:relative. */
+.paper-grain {
+  position: relative;
+  isolation: isolate;
+}
+.paper-grain::before,
+.paper-grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+}
+.paper-grain::before {
+  background:
+    radial-gradient(1100px 700px at 16% 8%, rgba(201, 169, 97, .07), transparent 60%),
+    radial-gradient(900px 600px at 90% 90%, rgba(92, 138, 107, .04), transparent 60%),
+    radial-gradient(1400px 900px at 50% 50%, rgba(20, 17, 12, 0) 50%, rgba(0, 0, 0, .45) 100%);
+}
+.paper-grain::after {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.91  0 0 0 0 0.89  0 0 0 0 0.84  0 0 0 0.04 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 220px 220px;
+  mix-blend-mode: screen;
+  opacity: .55;
+}
+
+/* Drawer mask */
+.drawer-mask {
+  background: rgba(8, 18, 13, .62);
+  backdrop-filter: blur(4px);
+}
+
+.no-scrollbar::-webkit-scrollbar { width: 0; height: 0; }
+.no-scrollbar { scrollbar-width: none; }
+
+button:focus { outline: none; }
+
+/* ============================================================
+   MANOR SCROLLBAR — brass on oak
+   ------------------------------------------------------------ */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2A4233 #0D1B14;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: #0D1B14;
+}
+*::-webkit-scrollbar-thumb {
+  background: #2A4233;
+  border: 1px solid #1F3328;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: #A08850;
+}
+
+/* ============================================================
+   ANIMATIONS
+   ------------------------------------------------------------ */
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; transform: scaleY(1); }
+  50% { opacity: 0.55; transform: scaleY(0.94); }
+}
+.animate-pulse-soft { animation: pulse-soft 2.6s ease-in-out infinite; }
+
+@keyframes glow-brass {
+  0%, 100% { box-shadow: 0 0 6px rgba(201, 169, 97, .55); }
+  50% { box-shadow: 0 0 12px rgba(224, 197, 122, .9); }
+}
+.glow-brass { animation: glow-brass 2.6s ease-in-out infinite; }
+
+@keyframes glow-sage {
+  0%, 100% { box-shadow: 0 0 5px rgba(123, 166, 125, .45); }
+  50% { box-shadow: 0 0 11px rgba(123, 166, 125, .85); }
+}
+.glow-sage { animation: glow-sage 3s ease-in-out infinite; }
+
+@keyframes glow-oxblood {
+  0%, 100% { box-shadow: 0 0 5px rgba(196, 107, 90, .5); }
+  50% { box-shadow: 0 0 10px rgba(216, 136, 118, .85); }
+}
+.glow-oxblood { animation: glow-oxblood 3.4s ease-in-out infinite; }
+
+@keyframes drift-in {
+  from { transform: translateY(8px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.drift-in { animation: drift-in .35s ease-out both; }
+
+/* Tab content fade-up — applied to active tab body so module switches feel cinematic */
+@keyframes tab-fade-up {
+  0%   { opacity: 0; transform: translateY(6px) scale(.995); filter: blur(2px); }
+  100% { opacity: 1; transform: translateY(0)  scale(1);    filter: blur(0); }
+}
+.tab-fade-up { animation: tab-fade-up .42s cubic-bezier(.22,.61,.36,1) both; }
+
+/* Tab button press feedback — quick crunch on mousedown */
+.tab-press {
+  transition: transform .12s cubic-bezier(.4,0,.2,1), filter .15s ease;
+}
+.tab-press:active {
+  transform: scale(.96) translateY(1px);
+  filter: brightness(1.12);
 }
 
 @keyframes indeterminate {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(400%);
-  }
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
 }
 
-/* 进度条流动条带（45° 斜纹背景流动） */
 @keyframes progress-stripes {
-  0% {
-    background-position: 0 0;
+  0% { background-position: 0 0; }
+  100% { background-position: 28px 0; }
+}
+
+@keyframes progress-shine {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(250%); }
+}
+
+/* ============================================================
+   v2 — AMBIENT GLOW / SHIMMER / BREATH
+   Added so the page feels "alive": cards drift-lit, brass
+   highlights shimmer, hero numbers breathe.
+   ------------------------------------------------------------ */
+
+/* Outer brass aura — wrap any panel/badge to give it a hot rim */
+.brass-aura {
+  position: relative;
+}
+.brass-aura::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: inherit;
+  background: radial-gradient(60% 60% at 50% 50%, rgba(224, 197, 122, .35) 0%, transparent 70%);
+  filter: blur(8px);
+  opacity: .55;
+  z-index: -1;
+  pointer-events: none;
+  animation: aura-breath 4.6s ease-in-out infinite;
+}
+@keyframes aura-breath {
+  0%, 100% { opacity: .35; transform: scale(1); }
+  50%      { opacity: .7;  transform: scale(1.04); }
+}
+
+/* Number breath — apply on key metric digits */
+.num-breath {
+  animation: num-breath 3.8s ease-in-out infinite;
+}
+@keyframes num-breath {
+  0%, 100% { text-shadow: 0 0 8px rgba(224, 197, 122, .25); }
+  50%      { text-shadow: 0 0 18px rgba(224, 197, 122, .55), 0 0 32px rgba(201, 169, 97, .25); }
+}
+
+/* Horizontal sweep — for header underlines, top/bottom rails */
+.sweep-line {
+  position: relative;
+  overflow: hidden;
+}
+.sweep-line::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255, 240, 190, .65) 50%,
+    transparent 100%);
+  width: 25%;
+  transform: translateX(-120%);
+  animation: sweep-x 6s linear infinite;
+}
+@keyframes sweep-x {
+  0%   { transform: translateX(-120%); }
+  100% { transform: translateX(420%); }
+}
+
+/* Drifting vignette spotlight — behind the page so background "moves" */
+.atmosphere {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(1100px 700px at 18% 14%, rgba(224, 197, 122, .11), transparent 60%),
+    radial-gradient(900px 600px at 82% 82%, rgba(123, 166, 125, .085), transparent 62%),
+    radial-gradient(600px 400px at 50% 50%, rgba(92, 138, 107, .04), transparent 70%);
+  animation: atmosphere-drift 22s ease-in-out infinite alternate;
+}
+@keyframes atmosphere-drift {
+  0%   { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-3%, 2%, 0); }
+}
+
+/* Faint brass grid — paper feel on the main content area */
+.hairline-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    linear-gradient(to right, rgba(201, 169, 97, .04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(201, 169, 97, .04) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(80% 60% at 50% 40%, #000 0%, transparent 90%);
+  -webkit-mask-image: radial-gradient(80% 60% at 50% 40%, #000 0%, transparent 90%);
+}
+
+/* Brass status dot — pulsing live indicator */
+.brass-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 30% 30%, #F0DEA0, #D4B36F 55%, #A08850);
+  box-shadow: 0 0 8px rgba(224, 197, 122, .65);
+  animation: dot-breath 2.2s ease-in-out infinite;
+}
+@keyframes dot-breath {
+  0%, 100% { box-shadow: 0 0 6px rgba(224, 197, 122, .45); transform: scale(1); }
+  50%      { box-shadow: 0 0 14px rgba(240, 222, 160, .9); transform: scale(1.18); }
+}
+
+/* Etched border — finer, ledger-like rule used inside cards */
+.brass-etch {
+  height: 1px;
+  background:
+    linear-gradient(90deg,
+      transparent 0%,
+      rgba(201, 169, 97, .35) 12%,
+      rgba(201, 169, 97, .35) 88%,
+      transparent 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, .35), rgba(0, 0, 0, .35));
+}
+
+/* Sage emerald CTA — for W## launch buttons / DISPATCH */
+.btn-launch-sage {
+  background: linear-gradient(180deg, rgba(56, 102, 71, .96) 0%, rgba(24, 52, 34, .98) 100%);
+  border: 1px solid rgba(123, 166, 125, .75);
+  color: #F0FAE8;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, .55);
+  box-shadow:
+    inset 0 1px 0 rgba(189, 230, 177, .45),
+    inset 0 -1px 0 rgba(0, 0, 0, .45),
+    0 0 0 1px rgba(0, 0, 0, .35),
+    0 0 14px -2px rgba(92, 138, 107, .55);
+  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+}
+.btn-launch-sage:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+  box-shadow:
+    inset 0 1px 0 rgba(189, 230, 177, .55),
+    inset 0 -1px 0 rgba(0, 0, 0, .5),
+    0 0 0 1px rgba(0, 0, 0, .4),
+    0 0 22px -2px rgba(123, 166, 125, .7);
+}
+.btn-launch-sage:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+/* Soft hover lift for action buttons */
+.btn-lift {
+  transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+}
+.btn-lift:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .35),
+    0 0 14px rgba(224, 197, 122, .55);
+}
+.btn-lift:active {
+  transform: translateY(0) scale(.96);
+  transition: transform .08s ease, filter .08s ease;
+  filter: brightness(1.18);
+}
+
+/* Reduced motion — disable sweep + medallion spin so vestibular-sensitive users get a static experience */
+@media (prefers-reduced-motion: reduce) {
+  .glass-panel-interactive > .sheen-overlay,
+  .glass-panel-interactive:hover > .sheen-overlay {
+    opacity: 0 !important;
+    animation: none !important;
   }
-  100% {
-    background-position: 28px 0;
+  .glass-panel-interactive:hover .skill-medallion-wrap,
+  .glass-panel-interactive:active .skill-medallion-wrap {
+    transform: none !important;
+  }
+  .glass-panel-interactive:active {
+    transform: none !important;
   }
 }
 
-/* 进度条主光带（左→右扫光） */
-@keyframes progress-shine {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(250%);
-  }
+/* Selected/active row glow — for table & list items */
+.row-glow:hover {
+  background:
+    linear-gradient(90deg, rgba(201, 169, 97, .04) 0%, rgba(201, 169, 97, .12) 50%, rgba(201, 169, 97, .04) 100%);
+}
+
+/* ============================================================
+   POPOVER · brass-edged dropdown / notification panel (r19)
+   Triggers via Radix `data-state="open|closed"`, or plain
+   `data-state` attribute set by custom React state.
+   - open: opacity 0→1, translateY -8px→0, 0.18s ease-out
+   - close: reverse, 0.14s ease-in
+   ------------------------------------------------------------ */
+.popover-brass {
+  transform-origin: top right;
+  will-change: opacity, transform;
+}
+.popover-brass[data-state="open"],
+.popover-brass[data-open] {
+  animation: popover-brass-in 0.18s cubic-bezier(.22,.61,.36,1) both;
+}
+.popover-brass[data-state="closed"],
+.popover-brass[data-closed] {
+  animation: popover-brass-out 0.14s cubic-bezier(.4,0,.6,1) both;
+}
+@keyframes popover-brass-in {
+  0%   { opacity: 0; transform: translateY(-8px) scale(.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes popover-brass-out {
+  0%   { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-6px) scale(.98); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .popover-brass[data-state="open"],
+  .popover-brass[data-state="closed"],
+  .popover-brass[data-open],
+  .popover-brass[data-closed] { animation: none !important; }
+}
+
+/* Bell button — gentle brass glow + tilt on hover, deep tilt on active */
+.bell-btn {
+  position: relative;
+  transition: color .2s ease, transform .2s cubic-bezier(.34,1.56,.64,1), filter .2s ease;
+}
+.bell-btn:hover {
+  transform: rotate(-8deg);
+  filter: drop-shadow(0 0 6px rgba(239,216,154,.55));
+}
+.bell-btn:active {
+  transform: rotate(2deg) scale(.94);
+}
+.bell-btn[data-open="true"] {
+  color: var(--manor-brassHi, #EFD89A);
+  filter: drop-shadow(0 0 8px rgba(239,216,154,.7));
+}
+.bell-btn::after {
+  /* unread badge dot */
+  content: "";
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 30% 30%, #FF8B6E, #C44A2E 55%, #5A1E10);
+  box-shadow: 0 0 6px rgba(196,74,46,.85);
+  opacity: 0;
+  transition: opacity .25s ease;
+}
+.bell-btn[data-unread="true"]::after {
+  opacity: 1;
+  animation: bell-dot-pulse 2.2s ease-in-out infinite;
+}
+@keyframes bell-dot-pulse {
+  0%, 100% { transform: scale(1);   box-shadow: 0 0 6px rgba(196,74,46,.85); }
+  50%      { transform: scale(1.25); box-shadow: 0 0 12px rgba(255,139,110,.95); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bell-btn { transition: color .2s ease; }
+  .bell-btn:hover, .bell-btn:active { transform: none !important; }
+  .bell-btn[data-unread="true"]::after { animation: none !important; }
+}
+
+/* Sticky table-head ground guard: ensure the gradient sits on a fully
+   opaque base, so scrolled tbody text never bleeds through.
+   Use by adding `thead-sticky-solid` to any sticky <thead>. */
+.thead-sticky-solid {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: rgb(10, 24, 16); /* matches the gradient's dark end */
+}
+.thead-sticky-solid th {
+  background-color: rgb(10, 24, 16);
 }

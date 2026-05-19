@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { BaroqueCorners, Monogram } from "@/components/ManorOrnaments";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -33,45 +34,93 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-950">
-      <div className="w-full max-w-sm rounded-xl border border-zinc-800 bg-zinc-900 p-8 shadow-xl">
-        <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold text-white">WESLAMIC</h1>
-          <p className="mt-1 text-sm text-zinc-400">SEO Intelligence App</p>
+    <div className="flex min-h-screen items-center justify-center bg-manor-void paper-grain">
+      <div
+        className="relative w-full max-w-sm glass-panel-brass p-10"
+        style={{ borderRadius: 6 }}
+      >
+        <BaroqueCorners size={22} />
+
+        {/* Monogram crest */}
+        <div className="flex justify-center mb-5">
+          <Monogram size={70} />
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="text-center">
+          <h1
+            className="text-brass-gradient text-2xl font-semibold tracking-[0.18em] font-sc"
+            style={{ fontFamily: "var(--font-sc), 'Cormorant SC', serif" }}
+          >
+            WESLAMIC HALL
+          </h1>
+          <div className="flex justify-center my-3 opacity-70">
+            <svg width="100" height="8" aria-hidden="true">
+              <use href="#orn-flourish" />
+            </svg>
+          </div>
+          <p
+            className="text-xs text-manor-inkDim italic tracking-wider"
+            style={{ fontFamily: "var(--font-serif), 'EB Garamond', serif" }}
+          >
+            SEO Intelligence · Anno MMXXVI
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="mt-8 space-y-4">
           <div>
+            <label
+              className="block text-[10px] tracking-[0.28em] text-manor-brass mb-1.5 font-sc"
+              style={{ fontFamily: "var(--font-sc), 'Cormorant SC', serif" }}
+            >
+              NOMEN · 用户名
+            </label>
             <Input
               name="username"
               type="text"
-              placeholder="用户名"
+              placeholder="username"
               required
-              className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500"
+              className="bg-manor-void/60 border-manor-brass/30 text-manor-ink placeholder:text-manor-inkFaint focus-visible:border-manor-brass focus-visible:ring-manor-brass/30"
             />
           </div>
           <div>
+            <label
+              className="block text-[10px] tracking-[0.28em] text-manor-brass mb-1.5 font-sc"
+              style={{ fontFamily: "var(--font-sc), 'Cormorant SC', serif" }}
+            >
+              SIGILLUM · 密码
+            </label>
             <Input
               name="password"
               type="password"
-              placeholder="密码"
+              placeholder="••••••••"
               required
-              className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500"
+              className="bg-manor-void/60 border-manor-brass/30 text-manor-ink placeholder:text-manor-inkFaint focus-visible:border-manor-brass focus-visible:ring-manor-brass/30"
             />
           </div>
 
           {error && (
-            <p className="text-sm text-red-400">{error}</p>
+            <p className="text-xs text-manor-oxbloodHi italic flex items-center gap-2">
+              <span className="diamond bg-manor-oxblood" />
+              {error}
+            </p>
           )}
 
           <Button
             type="submit"
             disabled={loading}
-            className="w-full bg-amber-500 hover:bg-amber-400 text-black font-semibold"
+            className="w-full bg-gradient-to-b from-manor-brassHi to-manor-brassDim hover:from-manor-brass hover:to-manor-brass text-manor-bg font-semibold tracking-[0.22em] font-sc disabled:opacity-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_0_12px_rgba(201,169,97,0.4)]"
+            style={{ fontFamily: "var(--font-sc), 'Cormorant SC', serif" }}
           >
-            {loading ? "登录中..." : "登录"}
+            {loading ? "正在加盖印玺..." : "INTRARE · 进入庄园"}
           </Button>
         </form>
+
+        <div className="mt-8 flex items-center justify-center gap-2 text-[9px] tracking-[0.32em] text-manor-brassDim"
+             style={{ fontFamily: "var(--font-sc), 'Cormorant SC', serif" }}>
+          <span>PER STUDIA</span>
+          <span className="diamond bg-manor-brass opacity-70" />
+          <span>ARVUM CRESCIT</span>
+        </div>
       </div>
     </div>
   );

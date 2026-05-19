@@ -2,11 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { History, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronUp, History, Loader2 } from "lucide-react";
 import type { ProgressState, W06ResultRow } from "./SeoTaskCard";
 import { SerpFeatureChips } from "./SerpFeatureChips";
 import { HistoryView } from "./HistoryView";
 import { SortableTh, useTableSort, type Getter } from "./SortableTable";
+import { formatIntent, parseTrends, Sparkline } from "../../_components/_utils";
 import {
   appendHistory,
   clearHistory,
@@ -64,6 +65,8 @@ export function W06Workspace() {
 
   const [history, setHistory] = useState<HistoryEntry<W06ResultRow>[]>([]);
   const [historyMode, setHistoryMode] = useState(false);
+  const [toolbarCollapsed, setToolbarCollapsed] = useState(false);
+  const [launchPulse, setLaunchPulse] = useState(false);
   const recordedRef = useRef(false);
   const submittedSeedRef = useRef("");
   const submittedMarketsRef = useRef<Market[]>([]);
@@ -284,59 +287,64 @@ export function W06Workspace() {
     (status === "idle" || status === "succeeded" || status === "failed");
 
   let btnLabel = "开始查询";
-  let btnExtraCls = "bg-emerald-600 hover:bg-emerald-700 text-white";
+  let btnExtraCls = "btn-launch-sage";
   if (isRunning) {
     btnLabel = "查询中…";
-    btnExtraCls = "bg-emerald-300 text-white cursor-not-allowed";
+    btnExtraCls = "bg-manor-brassDim text-manor-bg cursor-not-allowed opacity-80";
   } else if (status === "succeeded") {
     btnLabel = "再查一次";
-    btnExtraCls = "bg-emerald-600 hover:bg-emerald-700 text-white";
+    btnExtraCls = "btn-launch-sage";
   } else if (status === "failed") {
     btnLabel = "重试";
     btnExtraCls =
-      "bg-white border border-red-400 text-red-600 hover:bg-red-50";
+      "bg-manor-bg2 border border-manor-oxbloodHi text-manor-oxbloodHi hover:bg-manor-oxbloodDim/20";
   }
 
   let statusText: string;
-  let statusTextCls = "text-gray-500";
+  let statusTextCls = "text-manor-inkDim";
   if (status === "idle") {
-    statusText = "等待提交";
+    statusText = "静候启动";
   } else if (isRunning) {
     statusText = `处理中… ${progress.nodeName ?? ""} (seq ${progress.seq ?? 0}/${progress.totalEstimated ?? 6})`;
-    statusTextCls = "text-emerald-700";
+    statusTextCls = "text-manor-brassHi";
   } else if (status === "succeeded") {
     const parts = [`已完成 · 返回 ${rows.length} 行`];
     if (progress.unitsActual != null)
       parts.push(`实耗 ${progress.unitsActual}u`);
     statusText = parts.join(" · ");
-    statusTextCls = "text-emerald-700";
+    statusTextCls = "text-manor-brassHi";
   } else {
-    statusText = `查询失败：${progress.errorMessage ?? "调用失败"}`;
-    statusTextCls = "text-red-600";
+    statusText = `查询未果 · ${progress.errorMessage ?? "调用失败"}`;
+    statusTextCls = "text-manor-oxbloodHi";
   }
 
   return (
     <div className="flex flex-1 min-h-0 flex-col">
       {/* 顶部工具栏 */}
-      <div className="px-5 py-3 border-b border-gray-200 bg-white shrink-0">
+      {!toolbarCollapsed && (
+      <div className="px-5 py-3 border-b border-manor-brass/25 shrink-0 relative">
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-12">
           {/* 种子词主输入 */}
           <div className="lg:col-span-9">
-            <label className="mb-1 block text-[11px] font-medium text-gray-500">
+            <label className="mb-1 flex items-center gap-1.5 text-[11px] font-medium text-manor-inkDim">
+              <span aria-hidden="true" style={{ width: 3, height: 3, transform: "rotate(45deg)", background: "linear-gradient(135deg, #EFD89A 0%, #A08850 100%)", boxShadow: "0 0 4px rgba(239,216,154,.55)" }} />
+              
               种子词
             </label>
             <input
               type="text"
               value={seedKeyword}
               onChange={(e) => setSeedKeyword(e.target.value)}
-              className="w-full rounded border border-gray-300 px-2 py-1.5 text-xs outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
+              className="input-brass w-full rounded border border-manor-brass/30 bg-[rgba(8,20,13,.85)] px-2 py-1.5 text-xs text-manor-ink placeholder:text-manor-inkFaint"
               placeholder="zikr ring"
             />
           </div>
 
           {/* display_limit */}
           <div className="lg:col-span-3">
-            <label className="mb-1 block text-[11px] font-medium text-gray-500">
+            <label className="mb-1 flex items-center gap-1.5 text-[11px] font-medium text-manor-inkDim">
+              <span aria-hidden="true" style={{ width: 3, height: 3, transform: "rotate(45deg)", background: "linear-gradient(135deg, #EFD89A 0%, #A08850 100%)", boxShadow: "0 0 4px rgba(239,216,154,.55)" }} />
+              
               取拓词数 N（{MIN_LIMIT}-{MAX_LIMIT}）
             </label>
             <input
@@ -348,7 +356,7 @@ export function W06Workspace() {
                 const n = Number(e.target.value);
                 setDisplayLimit(Number.isFinite(n) ? n : DEFAULT_LIMIT);
               }}
-              className="w-full rounded border border-gray-300 px-2 py-1.5 text-xs outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
+              className="input-brass w-full rounded border border-manor-brass/30 bg-[rgba(8,20,13,.85)] px-2 py-1.5 text-xs text-manor-ink placeholder:text-manor-inkFaint"
             />
           </div>
         </div>
@@ -362,17 +370,17 @@ export function W06Workspace() {
                 <label
                   key={m.value}
                   className={[
-                    "inline-flex cursor-pointer items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] transition-colors select-none",
+                    "market-chip inline-flex cursor-pointer items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] select-none",
                     checked
-                      ? "border-emerald-400 bg-emerald-50 text-emerald-700"
-                      : "border-gray-300 bg-white text-gray-700 hover:border-emerald-300",
+                      ? "border-[#EFD89A]/65 bg-[rgba(36,72,50,.85)] text-[#F0DEA0] shadow-[inset_0_1px_0_rgba(240,222,160,.25),0_0_10px_-2px_rgba(123,166,125,.55)]"
+                      : "border-manor-brass/25 bg-[rgba(12,26,18,.85)] text-manor-ink/85 hover:border-[#EFD89A]/60 hover:bg-[rgba(20,42,28,.95)] hover:text-manor-brassHi",
                   ].join(" ")}
                 >
                   <input
                     type="checkbox"
                     checked={checked}
                     onChange={() => toggleMarket(m.value)}
-                    className="h-3 w-3 accent-emerald-600"
+                    className="h-3 w-3 accent-manor-brass"
                   />
                   <span>
                     {m.cn} {m.code}
@@ -383,17 +391,17 @@ export function W06Workspace() {
           </div>
 
           {/* units 估算 */}
-          <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-[11px] text-gray-500">
+          <span className="inline-flex items-center rounded-full border border-manor-brass/30 bg-[rgba(8,20,13,.85)] px-2 py-0.5 text-[11px] text-manor-brassDim tabnum">
             {displayLimit} 行 × {marketCount} 市场 · 预估 {units}u
           </span>
           {needsSecondaryAuth && (
-            <span className="text-[11px] text-amber-600">需密码门</span>
+            <span className="text-[11px] text-manor-brassDim">高耗 · 需印玺</span>
           )}
           {noMarket && (
-            <span className="text-[11px] text-red-600">至少选 1 个市场</span>
+            <span className="text-[11px] text-manor-oxbloodHi">至少选一处市场</span>
           )}
           {!limitInRange && (
-            <span className="text-[11px] text-red-600">
+            <span className="text-[11px] text-manor-oxbloodHi">
               N 取值 {MIN_LIMIT}-{MAX_LIMIT}
             </span>
           )}
@@ -402,10 +410,17 @@ export function W06Workspace() {
           <div className="ml-auto flex items-center gap-2">
             <button
               type="button"
-              onClick={handleSubmit}
+              onClick={() => {
+                if (canSubmit) {
+                  setLaunchPulse(true);
+                  setTimeout(() => setLaunchPulse(false), 750);
+                }
+                handleSubmit();
+              }}
               disabled={!canSubmit}
               className={[
-                "inline-flex items-center justify-center gap-1.5 rounded px-4 py-1.5 text-xs font-medium transition-colors",
+                "dispatch-launch inline-flex items-center justify-center gap-1.5 rounded px-4 py-1.5 text-xs font-medium transition-colors",
+                launchPulse ? "is-launching" : "",
                 btnExtraCls,
                 !canSubmit && status !== "running" && status !== "submitting"
                   ? "disabled:opacity-50 disabled:cursor-not-allowed"
@@ -427,8 +442,8 @@ export function W06Workspace() {
               className={[
                 "inline-flex items-center justify-center gap-1.5 rounded border px-3 py-1.5 text-xs font-medium transition-colors",
                 historyMode
-                  ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                  : "border-gray-300 bg-white text-gray-700 hover:border-emerald-400 hover:text-emerald-700",
+                  ? "border-[#EFD89A]/65 bg-[rgba(36,72,50,.85)] text-[#F0DEA0] shadow-[inset_0_1px_0_rgba(240,222,160,.25),0_0_10px_-2px_rgba(123,166,125,.55)]"
+                  : "border-manor-brass/30 text-manor-ink/85 hover:border-manor-brassHi hover:text-manor-brassHi bg-[rgba(12,26,18,.85)] hover:bg-[rgba(20,42,28,.95)]",
                 history.length === 0
                   ? "disabled:opacity-50 disabled:cursor-not-allowed"
                   : "",
@@ -440,15 +455,17 @@ export function W06Workspace() {
           </div>
         </div>
       </div>
+      )}
 
+      {!historyMode && (<>
       {/* 状态横条 */}
-      <div className="px-5 py-2 border-t border-b border-gray-200 bg-gray-50/50 shrink-0">
+      <div className="px-5 py-2 border-t border-b border-manor-brass/35 shrink-0 bg-[rgba(8,20,13,.85)]">
         <div className="flex items-center gap-3">
           <span className={["text-xs", statusTextCls].join(" ")}>
             {statusText}
           </span>
           {isRunning && (
-            <div className="relative h-1 flex-1 max-w-[220px] overflow-hidden rounded-full bg-gray-200">
+            <div className="progress-track relative h-1 flex-1 max-w-[220px] overflow-hidden rounded-full bg-manor-bg4">
               <div
                 className="absolute inset-0 rounded-full"
                 style={{
@@ -461,19 +478,45 @@ export function W06Workspace() {
             </div>
           )}
           {progress.mock && (
-            <span className="ml-auto rounded border border-amber-500 bg-amber-50 px-2 py-0.5 text-xs text-amber-700">
+            <span className="ml-auto rounded border border-manor-brass bg-manor-brassDim/15 px-2 py-0.5 text-xs text-manor-brassHi">
               Mock 模式
             </span>
           )}
+
         </div>
+      </div></>
+      )}
+
+      {!historyMode && (
+      <div className="px-3 py-1 border-b border-manor-brass/15 shrink-0 bg-[rgba(8,20,13,.6)] flex justify-end">
+        <button
+          type="button"
+          onClick={() => setToolbarCollapsed((v) => !v)}
+          title={toolbarCollapsed ? "展开工具栏" : "收起工具栏 · 让数据区占满"}
+          aria-label={toolbarCollapsed ? "展开工具栏" : "收起工具栏"}
+          className="inline-flex items-center justify-center rounded border px-1.5 py-0.5 transition-colors border-manor-brass/30 text-manor-brassDim hover:border-manor-brassHi hover:text-manor-brassHi bg-[rgba(12,26,18,.85)] hover:bg-[rgba(20,42,28,.95)]"
+        >
+          {toolbarCollapsed ? <ChevronDown size={13} /> : <ChevronUp size={13} />}
+        </button>
       </div>
+      )}
 
       {/* 主体结果区 */}
-      <div className="flex-1 overflow-auto bg-white">
+      <div className="flex-1 overflow-auto bg-[rgba(6,16,11,.6)]">
         {historyMode ? (
           <HistoryView<W06ResultRow>
             entries={history}
             renderTable={(rs) => <FullsearchResultTable rows={rs} />}
+            extraRightControls={
+            <button
+              type="button"
+              onClick={() => setToolbarCollapsed((v) => !v)}
+              title={toolbarCollapsed ? "展开工具栏" : "收起工具栏 · 让数据区占满"}
+              aria-label={toolbarCollapsed ? "展开工具栏" : "收起工具栏"}
+              className="inline-flex items-center justify-center rounded border px-1.5 py-0.5 transition-colors border-manor-brass/30 text-manor-brassDim hover:border-manor-brassHi hover:text-manor-brassHi bg-[rgba(12,26,18,.85)] hover:bg-[rgba(20,42,28,.95)]"
+            >
+              {toolbarCollapsed ? <ChevronDown size={13} /> : <ChevronUp size={13} />}
+            </button>            }
             onClose={() => setHistoryMode(false)}
             onRemove={(id) =>
               removeHistoryEntry<W06ResultRow>(ENDPOINT_KEY, id)
@@ -490,15 +533,15 @@ export function W06Workspace() {
         ) : (
           <>
         {status === "idle" && (
-          <div className="flex h-full min-h-[280px] items-center justify-center px-6 py-12 text-sm text-gray-400">
+          <div className="flex h-full min-h-[280px] items-center justify-center px-6 py-12 text-sm text-manor-inkFaint">
             提交后这里展示包含该种子词的全部相关关键词
           </div>
         )}
 
         {isRunning && (
           <div className="flex h-full min-h-[280px] flex-col items-center justify-center gap-3 px-6 py-12">
-            <Loader2 size={28} className="animate-spin text-emerald-500" />
-            <span className="text-sm text-gray-500">
+            <Loader2 size={28} className="animate-spin text-manor-brass" />
+            <span className="text-sm text-manor-inkDim">
               查询中… 结果表将在完成后显示
             </span>
           </div>
@@ -509,7 +552,7 @@ export function W06Workspace() {
             <FullsearchResultTable rows={rows} />
           ) : (
             <div className="flex h-full min-h-[280px] items-center justify-center px-6 py-12">
-              <div className="rounded border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
+              <div className="rounded border border-manor-line bg-manor-bg px-4 py-3 text-sm text-manor-inkDim">
                 查询完成但未返回数据（可能是 NOTHING_FOUND / EMPTY，或 staging 表中暂无该批次的写入）。
               </div>
             </div>
@@ -518,7 +561,7 @@ export function W06Workspace() {
 
         {status === "failed" && (
           <div className="flex h-full min-h-[280px] items-center justify-center px-6 py-12">
-            <div className="max-w-md rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div className="max-w-md rounded border border-manor-oxbloodDim/40 bg-manor-oxbloodDim/20 px-4 py-3 text-sm text-manor-oxblood">
               <p className="font-medium">查询失败</p>
               <p className="mt-1 text-xs">
                 {progress.errorMessage ?? "调用失败"}
@@ -537,13 +580,13 @@ export function W06Workspace() {
           onClick={() => !authSubmitting && setShowAuth(false)}
         >
           <div
-            className="w-80 rounded-lg bg-white p-4 shadow-lg"
+            className="w-80 rounded-lg bg-manor-bg2 p-4 shadow-lg"
             onClick={(e) => e.stopPropagation()}
           >
-            <h4 className="mb-2 text-sm font-semibold text-gray-900">
+            <h4 className="mb-2 text-sm font-semibold text-manor-ink">
               二次验证（&gt; {UNITS_PASSWORD_THRESHOLD}u）
             </h4>
-            <p className="mb-3 text-xs text-gray-500">
+            <p className="mb-3 text-xs text-manor-inkDim">
               请输入 8 位数字密码以继续。
             </p>
             <input
@@ -551,19 +594,19 @@ export function W06Workspace() {
               value={authPwd}
               onChange={(e) => setAuthPwd(e.target.value)}
               maxLength={8}
-              className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm outline-none focus:border-emerald-400"
+              className="input-brass w-full rounded border border-manor-brass/30 bg-[rgba(8,20,13,.85)] px-2 py-1.5 text-sm text-manor-ink placeholder:text-manor-inkFaint"
               placeholder="••••••••"
               autoFocus
             />
             {authError && (
-              <p className="mt-1 text-xs text-red-600">{authError}</p>
+              <p className="mt-1 text-xs text-manor-oxbloodHi">{authError}</p>
             )}
             <div className="mt-3 flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setShowAuth(false)}
                 disabled={authSubmitting}
-                className="rounded border border-gray-300 px-3 py-1 text-xs text-gray-700 hover:bg-gray-50"
+                className="rounded border border-manor-brass/40 px-3 py-1 text-xs text-manor-ink/85 hover:border-manor-brassHi hover:text-manor-brassHi transition-colors" style={{background:"linear-gradient(180deg, rgba(20,42,28,.92), rgba(8,20,13,.96))"}}
               >
                 取消
               </button>
@@ -571,7 +614,7 @@ export function W06Workspace() {
                 type="button"
                 onClick={submitAuth}
                 disabled={authSubmitting || authPwd.length === 0}
-                className="rounded bg-emerald-600 px-3 py-1 text-xs text-white hover:bg-emerald-700 disabled:opacity-50"
+                className="rounded px-3 py-1 text-xs btn-launch-sage disabled:opacity-50"
               >
                 {authSubmitting ? "校验中..." : "确认"}
               </button>
@@ -617,18 +660,18 @@ function FullsearchResultTable({ rows }: { rows: W06ResultRow[] }) {
 
   return (
     <div>
-      <div className="px-5 py-2 flex items-center justify-between border-b border-gray-200">
-        <span className="text-sm font-medium text-gray-700">
+      <div className="px-5 py-2 flex items-center justify-between border-b border-manor-brass/25 bg-manor-bg3/40">
+        <span className="text-sm font-semibold text-manor-brassHi tracking-[0.06em]" style={{ fontFamily: "var(--font-serif), 'EB Garamond', serif" }}>
           全搜索拓词 · 共 {rows.length} 行
         </span>
-        <span className="text-[11px] text-gray-400">
+        <span className="text-[10px] tracking-[0.22em] text-manor-brassDim font-sc" style={{ fontFamily: "var(--font-sc), 'Cormorant SC', serif" }}>
           数据源：semrush_kmt_staging（kmt_mode=&apos;fullsearch&apos;）
         </span>
       </div>
 
       <table className="w-full text-xs">
-        <thead className="sticky top-0 bg-gray-50 text-gray-500">
-          <tr className="border-b border-gray-200">
+        <thead className="thead-sticky-solid text-manor-brassHi tracking-[0.24em] uppercase" style={{backgroundImage:"linear-gradient(180deg, rgba(26,52,36,.97) 0%, rgba(10,24,16,.98) 100%)",boxShadow:"inset 0 1px 0 rgba(224,197,122,.22), inset 0 -1px 0 rgba(0,0,0,.5), 0 1px 0 rgba(224,197,122,.55)"}}>
+          <tr className="border-b border-manor-line">
             <SortableTh active={sortKey === "market"} dir={sortDir} onClick={() => toggle("market")} className={thCls}>市场</SortableTh>
             <SortableTh active={sortKey === "keyword"} dir={sortDir} onClick={() => toggle("keyword")} className={thCls}>关键词</SortableTh>
             <SortableTh active={sortKey === "search_volume"} dir={sortDir} align="right" onClick={() => toggle("search_volume")} className={thCls}>月搜量</SortableTh>
@@ -636,8 +679,8 @@ function FullsearchResultTable({ rows }: { rows: W06ResultRow[] }) {
             <SortableTh active={sortKey === "cpc"} dir={sortDir} align="right" onClick={() => toggle("cpc")} className={thCls}>CPC</SortableTh>
             <SortableTh active={sortKey === "competition"} dir={sortDir} align="right" onClick={() => toggle("competition")} className={thCls}>竞争度</SortableTh>
             <SortableTh active={sortKey === "number_of_results"} dir={sortDir} align="right" onClick={() => toggle("number_of_results")} className={thCls}>结果数</SortableTh>
-            <SortableTh active={sortKey === "intent"} dir={sortDir} onClick={() => toggle("intent")} className={thCls}>Intent</SortableTh>
-            <SortableTh active={sortKey === "trends"} dir={sortDir} onClick={() => toggle("trends")} className={thCls}>Trends</SortableTh>
+            <SortableTh active={sortKey === "intent"} dir={sortDir} onClick={() => toggle("intent")} className={thCls}>意图</SortableTh>
+            <SortableTh active={sortKey === "trends"} dir={sortDir} onClick={() => toggle("trends")} className={thCls}>趋势</SortableTh>
             <SortableTh active={sortKey === "relevance_rate"} dir={sortDir} align="right" onClick={() => toggle("relevance_rate")} className={thCls}>相关度</SortableTh>
             <SortableTh active={sortKey === "keyword_serp_features_codes"} dir={sortDir} onClick={() => toggle("keyword_serp_features_codes")} className={thCls}>SERP 特征</SortableTh>
           </tr>
@@ -646,32 +689,39 @@ function FullsearchResultTable({ rows }: { rows: W06ResultRow[] }) {
           {sorted.map((r) => (
             <tr
               key={`${r.market}-${r.keyword}`}
-              className="border-b border-gray-100 hover:bg-emerald-50/30 transition-colors"
+              className="row-brass border-b border-manor-brass/8"
             >
-              <td className="px-5 py-2 text-gray-700 uppercase">{r.market}</td>
-              <td className="px-5 py-2 text-gray-900">{r.keyword}</td>
-              <td className="px-5 py-2 text-right text-gray-700">
+              <td className="px-5 py-2 text-manor-ink uppercase">{r.market}</td>
+              <td className="px-5 py-2 text-manor-ink">{r.keyword}</td>
+              <td className="px-5 py-2 text-right text-manor-ink">
                 {r.search_volume != null ? r.search_volume.toLocaleString() : "—"}
               </td>
-              <td className="px-5 py-2 text-right text-gray-700">
+              <td className="px-5 py-2 text-right text-manor-ink">
                 {r.keyword_difficulty != null ? r.keyword_difficulty : "—"}
               </td>
-              <td className="px-5 py-2 text-right text-gray-700">
+              <td className="px-5 py-2 text-right text-manor-ink">
                 {r.cpc != null ? r.cpc.toFixed(2) : "—"}
               </td>
-              <td className="px-5 py-2 text-right text-gray-700">
+              <td className="px-5 py-2 text-right text-manor-ink">
                 {r.competition != null ? r.competition.toFixed(2) : "—"}
               </td>
-              <td className="px-5 py-2 text-right text-gray-700">
+              <td className="px-5 py-2 text-right text-manor-ink">
                 {r.number_of_results != null
                   ? r.number_of_results.toLocaleString()
                   : "—"}
               </td>
-              <td className="px-5 py-2 text-gray-700">{r.intent ?? "—"}</td>
-              <td className="px-5 py-2 text-gray-500 truncate max-w-[160px]">
-                {r.trends ?? "—"}
+              <td className="px-5 py-2 text-manor-ink">{formatIntent(r.intent)}</td>
+              <td className="px-5 py-2">
+                {(() => {
+                  const t = parseTrends(r.trends);
+                  return t ? (
+                    <Sparkline data={t} width={100} height={24} variant="line" />
+                  ) : (
+                    <span className="text-manor-inkGhost text-xs">—</span>
+                  );
+                })()}
               </td>
-              <td className="px-5 py-2 text-right text-gray-700">
+              <td className="px-5 py-2 text-right text-manor-ink">
                 {r.relevance_rate != null ? r.relevance_rate.toFixed(2) : "—"}
               </td>
               <td className="px-5 py-2 align-top max-w-[260px]">

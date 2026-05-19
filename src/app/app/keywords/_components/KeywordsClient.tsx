@@ -127,10 +127,10 @@ export function KeywordsClient({ initialData, stats }: KeywordsClientProps) {
 
   const btnCls = (disabled: boolean) =>
     [
-      "h-6 w-6 flex items-center justify-center rounded border text-xs transition-colors",
+      "h-6 w-6 flex items-center justify-center rounded border text-xs transition-all",
       disabled
-        ? "border-gray-100 text-gray-300 cursor-not-allowed"
-        : "border-gray-200 text-gray-500 hover:border-emerald-400 hover:text-emerald-600",
+        ? "border-manor-brass/15 text-manor-inkGhost cursor-not-allowed"
+        : "border-manor-brass/40 text-manor-brassDim hover:border-manor-brassHi hover:text-manor-brassHi hover:shadow-[0_0_8px_-2px_rgba(224,197,122,.65)]",
     ].join(" ");
 
   return (
@@ -138,13 +138,39 @@ export function KeywordsClient({ initialData, stats }: KeywordsClientProps) {
       {/* 左侧：标题栏 + 统计 + 筛选 + 表格 + 分页 */}
       <div className="flex flex-col flex-1 min-h-0 min-w-0">
         {/* 标题栏（含搜索） */}
-        <div className="px-5 py-4 border-b border-gray-200 bg-white flex items-center justify-between shrink-0">
-          <div>
-            <h1 className="text-base font-semibold text-gray-900">关键词库</h1>
-            <p className="text-xs text-gray-400 mt-0.5">候选词池 · 来源 keywords_pool</p>
+        <div className="px-5 py-3 border-b border-manor-brass/25 bg-manor-bg2 flex items-center justify-between shrink-0">
+          <div className="flex items-baseline gap-3">
+            <span
+              className="font-sc tracking-[0.32em] text-manor-brassHi/80"
+              style={{ fontFamily: "var(--font-sc), 'Cormorant SC', serif", fontSize: 10 }}
+            >
+              ◆ ARCHIVUM
+            </span>
+            <h1
+              className="text-brass-gradient font-serif font-semibold leading-none"
+              style={{
+                fontFamily: "var(--font-serif), 'EB Garamond', serif",
+                fontSize: 22,
+                letterSpacing: "0.04em",
+              }}
+            >
+              关键词库
+            </h1>
+            <span
+              className="font-sc tracking-[0.24em] text-manor-brassDim"
+              style={{ fontFamily: "var(--font-sc), 'Cormorant SC', serif", fontSize: 10 }}
+            >
+              〔ARCHIVUM · VERBORUM〕
+            </span>
+            <span
+              className="text-manor-inkDim italic"
+              style={{ fontFamily: "var(--font-serif), 'EB Garamond', serif", fontSize: 11 }}
+            >
+              候选词池 · 来源 keywords_pool
+            </span>
           </div>
           <Input
-            className="w-52 h-7 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 text-xs focus-visible:ring-emerald-500 focus-visible:border-emerald-500"
+            className="w-52 h-7 bg-manor-void/60 border-manor-brass/30 text-manor-ink placeholder:text-manor-inkFaint text-xs focus-visible:ring-manor-brass focus-visible:border-manor-brass"
             placeholder="搜索关键词..."
             value={filters.search}
             onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
@@ -152,7 +178,7 @@ export function KeywordsClient({ initialData, stats }: KeywordsClientProps) {
         </div>
 
         {/* 统计指标栏 */}
-        <div className="px-5 py-3 border-b border-gray-200 bg-white shrink-0">
+        <div className="px-5 py-3 border-b border-manor-brass/15 bg-manor-bg2 shrink-0">
           <SummaryBar
             stats={stats}
             onCardClick={(key) => {
@@ -167,7 +193,7 @@ export function KeywordsClient({ initialData, stats }: KeywordsClientProps) {
         </div>
 
         {/* 筛选条件栏 */}
-        <div className="px-4 py-2 border-b border-gray-200 bg-white shrink-0">
+        <div className="px-4 py-2 border-b border-manor-brass/15 bg-manor-bg2 shrink-0">
           <FilterBar
             filters={filters}
             onFilterChange={setFilters}
@@ -178,24 +204,54 @@ export function KeywordsClient({ initialData, stats }: KeywordsClientProps) {
         </div>
 
         {/* 表格 */}
-        <div className="flex-1 overflow-auto bg-white">
+        <div className="flex-1 overflow-auto bg-manor-bg2">
           <KeywordTable data={paginatedData} onRowClick={handleRowClick} />
         </div>
 
-        {/* 底部分页栏 */}
-        <div className="px-4 py-2 border-t border-gray-200 bg-white shrink-0 flex items-center gap-3 text-xs">
-          <span className="text-gray-400 mr-auto">
+        {/* 底部分页栏 — manor edition */}
+        <div className="px-4 py-2 border-t border-manor-brass/25 bg-manor-bg2 shrink-0 flex items-center gap-3 text-xs">
+          {/* Latin section anchor */}
+          <span className="flex items-center gap-1.5 shrink-0">
+            <span
+              aria-hidden="true"
+              style={{
+                width: 3,
+                height: 3,
+                transform: "rotate(45deg)",
+                background:
+                  "linear-gradient(135deg, #EFD89A 0%, #A08850 100%)",
+                boxShadow: "0 0 4px rgba(239,216,154,.55)",
+              }}
+            />
+            <span
+              className="font-sc tracking-[0.26em] text-manor-brassHi/80 leading-none"
+              style={{ fontFamily: "var(--font-sc), 'Cormorant SC', serif", fontSize: 9 }}
+            >
+              PAGINATIO
+            </span>
+            <span
+              className="h-px w-5"
+              style={{
+                background:
+                  "linear-gradient(90deg, rgba(212,179,111,.4), transparent)",
+              }}
+            />
+          </span>
+
+          <span className="text-manor-inkDim tabnum">
             {totalCount !== initialData.length
               ? `已筛选 ${totalCount} / ${initialData.length} 条`
               : `共 ${totalCount} 条`}
           </span>
 
-          <div className="flex items-center gap-1.5 text-gray-400">
+          <span className="flex-1" />
+
+          <div className="flex items-center gap-1.5 text-manor-inkDim">
             <span>每页</span>
             <select
               value={pageSize}
               onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
-              className="h-6 border border-gray-200 rounded px-1.5 text-xs text-gray-600 bg-white focus:outline-none focus:border-emerald-400 cursor-pointer"
+              className="h-6 border border-manor-brass/40 rounded px-1.5 text-xs text-manor-brassHi bg-manor-bg2 focus:outline-none focus:border-manor-brassHi cursor-pointer hover:border-manor-brassHi transition-colors"
             >
               {PAGE_SIZE_OPTIONS.map((n) => (
                 <option key={n} value={n}>{n}</option>
@@ -204,7 +260,7 @@ export function KeywordsClient({ initialData, stats }: KeywordsClientProps) {
             <span>条</span>
           </div>
 
-          <span className="text-gray-400">
+          <span className="text-manor-brassDim tabnum">
             {rangeStart}–{rangeEnd} / {totalCount}
           </span>
 
@@ -221,8 +277,22 @@ export function KeywordsClient({ initialData, stats }: KeywordsClientProps) {
               className={btnCls(safePage === 1)}
               title="上一页"
             >‹</button>
-            <span className="px-2 text-gray-500 select-none">
-              {safePage} / {totalPages}
+            <span className="inline-flex items-center gap-1.5 px-2.5 select-none">
+              <span
+                aria-hidden="true"
+                className="brass-dot"
+                style={{
+                  width: 4,
+                  height: 4,
+                  borderRadius: 9999,
+                  background:
+                    "radial-gradient(circle at 30% 30%, #F8E6B0, #D4B36F 55%, #A08850)",
+                  boxShadow: "0 0 6px rgba(239,216,154,.7)",
+                }}
+              />
+              <span className="text-manor-brassHi tabnum num-breath">{safePage}</span>
+              <span className="text-manor-inkFaint">/</span>
+              <span className="text-manor-inkDim tabnum">{totalPages}</span>
             </span>
             <button
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
@@ -244,7 +314,7 @@ export function KeywordsClient({ initialData, stats }: KeywordsClientProps) {
       <div
         style={{ scrollbarGutter: "stable" }}
         className={[
-          "flex-shrink-0 border-l border-gray-200 bg-gray-50 overflow-y-auto",
+          "flex-shrink-0 border-l border-manor-line bg-manor-bg overflow-y-auto",
           "transition-[width] duration-300 ease-in-out",
           drawerOpen ? "w-[440px]" : "w-0 overflow-hidden",
         ].join(" ")}

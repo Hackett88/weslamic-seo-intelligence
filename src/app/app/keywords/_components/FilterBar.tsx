@@ -57,38 +57,44 @@ function MultiSelect({
       <DropdownMenuTrigger
         className={[
           width,
-          "h-7 shrink-0 bg-white border border-gray-300 rounded-md px-2.5",
+          "h-8 shrink-0 border border-manor-brass/30 rounded-md px-2.5",
           "flex items-center justify-between gap-1 text-xs text-left",
-          "hover:border-gray-400",
+          "hover:border-manor-brass/65 transition-colors",
           "focus:outline-none",
-          "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-emerald-500 focus-visible:border-emerald-500",
-          "data-[popup-open]:ring-1 data-[popup-open]:ring-inset data-[popup-open]:ring-emerald-500 data-[popup-open]:border-emerald-500",
+          "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-manor-brass focus-visible:border-manor-brass",
+          "data-[popup-open]:ring-1 data-[popup-open]:ring-inset data-[popup-open]:ring-manor-brass data-[popup-open]:border-manor-brass",
         ].join(" ")}
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(20,42,28,.95) 0%, rgba(8,20,13,.97) 100%)",
+          boxShadow:
+            "inset 0 1px 0 rgba(224,197,122,.18), inset 0 -1px 0 rgba(0,0,0,.45)",
+        }}
       >
         <span className="truncate flex items-center gap-1.5 min-w-0">
           {selected.length === 0 ? (
-            <span className="text-gray-500">{placeholder}</span>
+            <span className="text-manor-inkDim">{placeholder}</span>
           ) : selected.length === 1 ? (
             showFlagOnTrigger && selected[0].flag ? (
               <>
                 <span>{selected[0].flag}</span>
-                <span className="text-gray-900 truncate">{selected[0].label}</span>
+                <span className="text-manor-ink truncate">{selected[0].label}</span>
               </>
             ) : (
-              <span className="text-gray-900 truncate">{selected[0].label}</span>
+              <span className="text-manor-ink truncate">{selected[0].label}</span>
             )
           ) : (
-            <span className="text-gray-900">
+            <span className="text-manor-ink">
               {placeholder} · {selected.length}
             </span>
           )}
         </span>
-        <ChevronDown size={12} className="text-gray-400 shrink-0" />
+        <ChevronDown size={12} className="text-manor-inkFaint shrink-0" />
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="start"
         sideOffset={4}
-        className="bg-white border-gray-200 text-gray-900 w-auto! min-w-(--anchor-width) py-1"
+        className="bg-manor-bg2 border-manor-line text-manor-ink w-auto! min-w-(--anchor-width) py-1"
       >
         {options.map((opt) => {
           const checked = values.includes(opt.value);
@@ -100,7 +106,7 @@ function MultiSelect({
               className={[
                 "group relative flex cursor-default items-center gap-2",
                 "rounded-md py-1 pl-2 pr-8 text-xs outline-hidden select-none whitespace-nowrap",
-                "data-[highlighted]:bg-emerald-50 data-[highlighted]:text-gray-900",
+                "data-[highlighted]:bg-manor-bg3 data-[highlighted]:text-manor-ink",
                 "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
               ].join(" ")}
             >
@@ -117,10 +123,10 @@ function MultiSelect({
               <Check
                 size={14}
                 strokeWidth={2.5}
-                className="absolute right-2 text-gray-300 opacity-0 group-data-[highlighted]:opacity-100 group-data-[checked]:opacity-0"
+                className="absolute right-2 text-manor-inkGhost opacity-0 group-data-[highlighted]:opacity-100 group-data-[checked]:opacity-0"
               />
               <MenuPrimitive.CheckboxItemIndicator className="absolute right-2 flex items-center justify-center">
-                <Check size={14} strokeWidth={2.5} className="text-emerald-600" />
+                <Check size={14} strokeWidth={2.5} className="text-manor-brassHi" />
               </MenuPrimitive.CheckboxItemIndicator>
             </MenuPrimitive.CheckboxItem>
           );
@@ -154,6 +160,33 @@ export function FilterBar({ filters, onFilterChange, marketOptions, intentOption
 
   return (
     <div className="flex items-center gap-2 overflow-x-auto py-1 min-w-0">
+      {/* Latin section anchor — matches SummaryBar / DashboardKPI prefix pattern */}
+      <span className="flex items-center gap-1.5 shrink-0 pr-1">
+        <span
+          aria-hidden="true"
+          style={{
+            width: 3,
+            height: 3,
+            transform: "rotate(45deg)",
+            background:
+              "linear-gradient(135deg, #EFD89A 0%, #A08850 100%)",
+            boxShadow: "0 0 4px rgba(239,216,154,.55)",
+          }}
+        />
+        <span
+          className="font-sc tracking-[0.26em] text-manor-brassHi/80 leading-none"
+          style={{ fontFamily: "var(--font-sc), 'Cormorant SC', serif", fontSize: 9 }}
+        >
+          FILTRA
+        </span>
+        <span
+          className="h-px w-6"
+          style={{
+            background:
+              "linear-gradient(90deg, rgba(212,179,111,.4), transparent)",
+          }}
+        />
+      </span>
       <MultiSelect
         placeholder="市场"
         values={filters.market}
@@ -178,12 +211,20 @@ export function FilterBar({ filters, onFilterChange, marketOptions, intentOption
         width="w-32"
       />
 
-      <label className="h-7 shrink-0 inline-flex items-center gap-1.5 px-2.5 border border-gray-300 rounded-md text-xs text-gray-600 cursor-pointer hover:border-gray-400 select-none">
+      <label
+        className="h-8 shrink-0 inline-flex items-center gap-1.5 px-2.5 border border-manor-brass/30 rounded-md text-xs text-manor-ink/85 cursor-pointer hover:border-manor-brass/65 select-none transition-colors"
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(20,42,28,.95) 0%, rgba(8,20,13,.97) 100%)",
+          boxShadow:
+            "inset 0 1px 0 rgba(224,197,122,.18), inset 0 -1px 0 rgba(0,0,0,.45)",
+        }}
+      >
         <input
           type="checkbox"
           checked={filters.protectedOnly}
           onChange={(e) => update("protectedOnly", e.target.checked)}
-          className="accent-emerald-500"
+          className="accent-manor-brass"
         />
         仅显示受保护
       </label>
@@ -192,7 +233,7 @@ export function FilterBar({ filters, onFilterChange, marketOptions, intentOption
         <Button
           variant="ghost"
           size="sm"
-          className="h-7 px-2 shrink-0 text-gray-400 hover:text-gray-700 hover:bg-gray-100"
+          className="h-7 px-2 shrink-0 text-manor-inkFaint hover:text-manor-ink hover:bg-manor-bg3"
           onClick={reset}
         >
           <X size={13} />

@@ -13,8 +13,8 @@ import type { Keyword } from "@/db/schema";
 import { formatBP, formatCS, formatIntent, parseTrends, Sparkline } from "./_utils";
 
 function kdCell(kd: number | null) {
-  if (kd === null || kd === undefined) return <span className="text-gray-300">—</span>;
-  const cls = kd >= 70 ? "text-red-600" : kd >= 40 ? "text-amber-600" : "text-emerald-600";
+  if (kd === null || kd === undefined) return <span className="text-manor-inkGhost">—</span>;
+  const cls = kd >= 70 ? "text-manor-oxbloodHi" : kd >= 40 ? "text-manor-brassDim" : "text-manor-brassHi";
   return <span className={`text-xs font-medium ${cls}`}>{kd}</span>;
 }
 
@@ -43,7 +43,7 @@ export function KeywordTable({ data, onRowClick }: KeywordTableProps) {
       header: "关键词",
       size: 240,
       cell: ({ getValue }) => (
-        <span className="font-medium text-gray-900 text-xs">
+        <span className="font-medium text-manor-ink text-xs">
           {getValue() as string}
         </span>
       ),
@@ -53,7 +53,7 @@ export function KeywordTable({ data, onRowClick }: KeywordTableProps) {
       header: "市场",
       size: 64,
       cell: ({ getValue }) => (
-        <span className="text-xs text-gray-600 uppercase">
+        <span className="text-xs text-manor-inkDim uppercase">
           {(getValue() as string) ?? "—"}
         </span>
       ),
@@ -65,7 +65,7 @@ export function KeywordTable({ data, onRowClick }: KeywordTableProps) {
       cell: ({ getValue }) => {
         const v = getValue() as number | null;
         return (
-          <span className="text-xs text-gray-700 tabular-nums">
+          <span className="text-xs text-manor-ink tabular-nums">
             {v != null ? v.toLocaleString() : "—"}
           </span>
         );
@@ -84,7 +84,7 @@ export function KeywordTable({ data, onRowClick }: KeywordTableProps) {
       cell: ({ getValue }) => {
         const v = getValue() as number | null;
         return (
-          <span className="text-xs text-gray-700 tabular-nums">
+          <span className="text-xs text-manor-ink tabular-nums">
             {v != null ? `$${v.toFixed(2)}` : "—"}
           </span>
         );
@@ -115,7 +115,7 @@ export function KeywordTable({ data, onRowClick }: KeywordTableProps) {
       enableSorting: false,
       cell: ({ getValue }) => {
         const data = parseTrends(getValue() as string | null);
-        if (!data) return <span className="text-gray-300 text-xs">—</span>;
+        if (!data) return <span className="text-manor-inkGhost text-xs">—</span>;
         return <Sparkline data={data} width={100} height={24} variant="bar" />;
       },
     },
@@ -127,12 +127,12 @@ export function KeywordTable({ data, onRowClick }: KeywordTableProps) {
         const v = getValue() as boolean | null;
         if (v === true) {
           return (
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs border bg-blue-50 text-blue-700 border-blue-200">
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs border bg-manor-bg3 text-manor-brassHi border-manor-line2">
               是
             </span>
           );
         }
-        return <span className="text-gray-300 text-xs">—</span>;
+        return <span className="text-manor-inkGhost text-xs">—</span>;
       },
     },
     {
@@ -140,7 +140,7 @@ export function KeywordTable({ data, onRowClick }: KeywordTableProps) {
       header: "更新时间",
       size: 96,
       cell: ({ getValue }) => (
-        <span className="text-gray-400 text-xs">
+        <span className="text-manor-inkFaint text-xs">
           {formatDate(getValue() as Date | null)}
         </span>
       ),
@@ -161,28 +161,58 @@ export function KeywordTable({ data, onRowClick }: KeywordTableProps) {
       <table className="min-w-max w-full border-collapse">
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
-            <tr key={headerGroup.id} className="bg-gray-50 h-8">
-              {headerGroup.headers.map((header) => (
-                <th
-                  key={header.id}
-                  className="px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap border-b border-gray-200 cursor-pointer select-none hover:text-gray-900 transition-colors"
-                  style={{ width: header.getSize() }}
-                  onClick={header.column.getToggleSortingHandler()}
-                >
-                  <span className="flex items-center gap-1">
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
-                    {header.column.getIsSorted() === "asc" && (
-                      <span className="text-emerald-500">↑</span>
-                    )}
-                    {header.column.getIsSorted() === "desc" && (
-                      <span className="text-emerald-500">↓</span>
-                    )}
-                  </span>
-                </th>
-              ))}
+            <tr
+              key={headerGroup.id}
+              className="h-11 sticky top-0 z-10"
+              style={{
+                background:
+                  "linear-gradient(180deg, rgba(26,52,36,.97) 0%, rgba(10,24,16,.98) 100%)",
+                boxShadow:
+                  "inset 0 1px 0 rgba(224,197,122,.22), inset 0 -1px 0 rgba(0,0,0,.5), 0 1px 0 rgba(224,197,122,.55)",
+              }}
+            >
+              {headerGroup.headers.map((header) => {
+                const sorted = header.column.getIsSorted();
+                return (
+                  <th
+                    key={header.id}
+                    className="px-3 text-left text-[10.5px] font-semibold text-manor-brassHi uppercase tracking-[0.24em] whitespace-nowrap cursor-pointer select-none transition-all font-sc hover:text-[#F0DEA0]"
+                    style={{
+                      width: header.getSize(),
+                      fontFamily: "var(--font-sc), 'Cormorant SC', serif",
+                      textShadow: sorted ? "0 0 8px rgba(224,197,122,.55)" : undefined,
+                    }}
+                    onClick={header.column.getToggleSortingHandler()}
+                  >
+                    <span className="flex items-center gap-1.5">
+                      {sorted && (
+                        <span
+                          aria-hidden="true"
+                          style={{
+                            display: "inline-block",
+                            width: 4,
+                            height: 4,
+                            transform: "rotate(45deg)",
+                            background:
+                              "linear-gradient(135deg, #F8E6B0 0%, #D4B36F 55%, #A08850 100%)",
+                            boxShadow: "0 0 6px rgba(239,216,154,.85)",
+                          }}
+                        />
+                      )}
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                      {sorted === "asc" && (
+                        <span className="text-manor-brassHi" style={{ fontSize: 9 }}>▲</span>
+                      )}
+                      {sorted === "desc" && (
+                        <span className="text-manor-brassHi" style={{ fontSize: 9 }}>▼</span>
+                      )}
+                    </span>
+                  </th>
+                );
+              })}
             </tr>
           ))}
         </thead>
@@ -191,16 +221,25 @@ export function KeywordTable({ data, onRowClick }: KeywordTableProps) {
             <tr>
               <td
                 colSpan={columns.length}
-                className="text-center py-12 text-gray-400 text-sm"
+                className="text-center py-12 text-manor-inkFaint"
+                style={{ fontFamily: "var(--font-serif), 'EB Garamond', serif", fontSize: 13 }}
               >
-                暂无数据
+                〔 ARCHIVUM · VACUUM 〕<br />
+                <span className="text-manor-inkGhost text-xs">候选词池暂无记录</span>
               </td>
             </tr>
           ) : (
-            table.getRowModel().rows.map((row) => (
+            table.getRowModel().rows.map((row, idx) => (
               <tr
                 key={row.id}
-                className="h-9 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition-colors"
+                className="h-9 cursor-pointer transition-colors hover:bg-[rgba(224,197,122,.08)]"
+                style={{
+                  borderBottom: "1px solid rgba(201,169,97,.1)",
+                  background:
+                    idx % 2 === 0
+                      ? "rgba(16,32,22,.35)"
+                      : "rgba(6,16,11,.55)",
+                }}
                 onClick={() => onRowClick(row.original)}
               >
                 {row.getVisibleCells().map((cell) => (

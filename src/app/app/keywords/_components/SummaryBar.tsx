@@ -11,12 +11,12 @@ type Stats = {
 };
 
 const cards = [
-  { label: "总词数",   key: "total" as const,     color: "text-gray-900",     fmt: (v: number) => v.toLocaleString() },
-  { label: "已打分",   key: "scored" as const,    color: "text-emerald-600",  fmt: (v: number) => v.toLocaleString() },
-  { label: "未打分",   key: "unscored" as const,  color: "text-amber-600",    fmt: (v: number) => v.toLocaleString() },
-  { label: "受保护",   key: "protected" as const, color: "text-blue-600",     fmt: (v: number) => v.toLocaleString() },
-  { label: "平均搜索量", key: "avgSv" as const,   color: "text-purple-600",   fmt: (v: number) => v.toLocaleString() },
-  { label: "平均 CPC",  key: "avgCpc" as const,   color: "text-teal-600",     fmt: (v: number) => `$${v.toFixed(2)}` },
+  { label: "总词数",     latin: "VOCABULA",   key: "total" as const,     fmt: (v: number) => v.toLocaleString() },
+  { label: "已打分",     latin: "AESTIMATA",  key: "scored" as const,    fmt: (v: number) => v.toLocaleString() },
+  { label: "未打分",     latin: "RUDES",      key: "unscored" as const,  fmt: (v: number) => v.toLocaleString() },
+  { label: "受保护",     latin: "CUSTODITA",  key: "protected" as const, fmt: (v: number) => v.toLocaleString() },
+  { label: "平均搜索量", latin: "MEDIA SV",   key: "avgSv" as const,     fmt: (v: number) => v.toLocaleString() },
+  { label: "平均 CPC",   latin: "MEDIA CPC",  key: "avgCpc" as const,    fmt: (v: number) => `$${v.toFixed(2)}` },
 ];
 
 interface SummaryBarProps {
@@ -32,25 +32,133 @@ export function SummaryBar({ stats, onCardClick }: SummaryBarProps) {
       })()
     : "--:--";
 
+  const sc = "var(--font-sc), 'Cormorant SC', serif";
+  const serif = "var(--font-serif), 'EB Garamond', serif";
+
   return (
-    <div className="flex items-stretch gap-3">
+    <div className="flex items-stretch gap-2.5">
       {cards.map((card) => (
         <div
           key={card.key}
-          className="flex-1 bg-white border border-gray-200 rounded px-3 py-2 hover:border-emerald-400 hover:shadow-sm transition-colors cursor-pointer select-none"
+          className="glass-panel-interactive flex-1 px-3 py-2.5 select-none relative overflow-hidden"
+          style={{
+            borderRadius: 4,
+            background:
+              "linear-gradient(180deg, rgba(28, 56, 38, .92) 0%, rgba(14, 32, 22, .96) 100%)",
+            border: "1px solid rgba(201, 169, 97, .28)",
+            boxShadow:
+              "inset 0 1px 0 rgba(224, 197, 122, .18), inset 0 -1px 0 rgba(0, 0, 0, .5), 0 0 0 1px rgba(0, 0, 0, .35)",
+          }}
           onClick={() => onCardClick?.(card.key)}
         >
-          <p className="text-gray-400 text-xs mb-1">{card.label}</p>
-          <p className={`text-lg font-semibold ${card.color}`}>
+          <div className="flex items-center gap-1.5 mb-1">
+            <span
+              aria-hidden="true"
+              style={{
+                width: 3,
+                height: 3,
+                transform: "rotate(45deg)",
+                background:
+                  "linear-gradient(135deg, #EFD89A 0%, #A08850 100%)",
+                boxShadow: "0 0 4px rgba(239,216,154,.55)",
+              }}
+            />
+            <p
+              className="text-manor-brassHi/85 tracking-[0.26em]"
+              style={{ fontFamily: sc, fontSize: 9 }}
+            >
+              {card.latin}
+            </p>
+            <span
+              className="flex-1 h-px"
+              style={{
+                background:
+                  "linear-gradient(90deg, rgba(212,179,111,.4), transparent)",
+              }}
+            />
+          </div>
+          <p
+            className="text-brass-gradient font-semibold tabnum leading-none num-breath"
+            style={{ fontFamily: serif, fontSize: 22 }}
+          >
             {card.fmt(stats[card.key])}
           </p>
+          <p
+            className="text-manor-ink/70 mt-1.5"
+            style={{ fontFamily: serif, fontSize: 10.5, letterSpacing: "0.04em" }}
+          >
+            {card.label}
+          </p>
+          {/* subtle top brass line */}
+          <span
+            aria-hidden="true"
+            className="absolute top-0 left-3 right-3 h-px"
+            style={{
+              background:
+                "linear-gradient(90deg, transparent, rgba(224,197,122,.55), transparent)",
+            }}
+          />
         </div>
       ))}
 
       {/* 最近同步 */}
-      <div className="flex-1 bg-white border border-gray-200 rounded px-3 py-2">
-        <p className="text-gray-400 text-xs mb-1">最近同步</p>
-        <p className="text-sm font-medium text-gray-600">{syncTime}</p>
+      <div
+        className="flex-1 px-3 py-2.5 relative overflow-hidden"
+        style={{
+          borderRadius: 4,
+          background:
+            "linear-gradient(180deg, rgba(36, 28, 12, .92) 0%, rgba(18, 14, 6, .96) 100%)",
+          border: "1px solid rgba(224, 197, 122, .45)",
+          boxShadow:
+            "inset 0 1px 0 rgba(240, 222, 160, .28), inset 0 -1px 0 rgba(0, 0, 0, .55), 0 0 16px -6px rgba(224, 197, 122, .4)",
+        }}
+      >
+        <div className="flex items-center gap-1.5 mb-1">
+          <span
+            aria-hidden="true"
+            style={{
+              width: 3,
+              height: 3,
+              transform: "rotate(45deg)",
+              background:
+                "linear-gradient(135deg, #F8E6B0 0%, #C46B5A 100%)",
+              boxShadow: "0 0 5px rgba(248,230,176,.7)",
+            }}
+          />
+          <p
+            className="text-manor-brassHi tracking-[0.26em]"
+            style={{ fontFamily: sc, fontSize: 9 }}
+          >
+            ULTIMA · SYNC
+          </p>
+          <span
+            className="flex-1 h-px"
+            style={{
+              background:
+                "linear-gradient(90deg, rgba(240,222,160,.65), transparent)",
+            }}
+          />
+        </div>
+        <p
+          className="text-brass-gradient font-semibold tabnum leading-none num-breath"
+          style={{ fontFamily: serif, fontSize: 20 }}
+        >
+          {syncTime}
+        </p>
+        <p
+          className="text-manor-ink/70 mt-1.5"
+          style={{ fontFamily: serif, fontSize: 10.5, letterSpacing: "0.04em" }}
+        >
+          最近同步
+        </p>
+        <span
+          aria-hidden="true"
+          className="absolute top-0 left-3 right-3 h-px"
+          style={{
+            background:
+              "linear-gradient(90deg, transparent, rgba(240,222,160,.8), transparent)",
+          }}
+        />
       </div>
     </div>
   );

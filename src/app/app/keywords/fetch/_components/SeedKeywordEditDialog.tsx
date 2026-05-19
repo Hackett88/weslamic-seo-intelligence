@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { SeedKeyword, SeedKeywordInput } from "@/contracts/seed-keyword";
 import { SwitchInline } from "./SwitchInline";
 import { SecondaryAuthDialog } from "./SecondaryAuthDialog";
+import { BaroqueCorners } from "@/components/ManorOrnaments";
 
 interface SeedKeywordEditDialogProps {
   open: boolean;
@@ -139,77 +140,101 @@ export function SeedKeywordEditDialog({
 
   if (!open) return null;
 
+  const sc = "var(--font-sc), 'Cormorant SC', serif";
+  const serif = "var(--font-serif), 'EB Garamond', serif";
+  const inputCls =
+    "block w-full bg-manor-void/60 border border-manor-brass/30 px-3 py-2 text-sm text-manor-ink placeholder:text-manor-inkFaint focus:outline-none focus:border-manor-brass focus:ring-1 focus:ring-manor-brass/30";
+  const labelCls = "font-sc tracking-[0.22em] text-manor-brass leading-none";
+
   return (
     <>
       <div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+        className="fixed inset-0 z-50 flex items-center justify-center drawer-mask p-4"
         onClick={onClose}
       >
         <div
           role="dialog"
           aria-modal="true"
           onClick={(e) => e.stopPropagation()}
-          className="w-full max-w-lg rounded-xl bg-white shadow-2xl"
+          className="relative w-full max-w-lg glass-panel-brass"
+          style={{ borderRadius: 6 }}
         >
+          <BaroqueCorners size={20} />
           <div className="p-6 flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-base font-semibold text-gray-900">
-                {mode === "create" ? "新增种子词" : "编辑种子词"}
-              </h2>
+            <div className="flex items-start justify-between">
+              <div>
+                <div
+                  className="font-sc tracking-[0.32em] text-manor-brassHi/80 mb-1.5"
+                  style={{ fontFamily: sc, fontSize: 10 }}
+                >
+                  ◆ {mode === "create" ? "ADSCRIBO · 录入" : "EMENDARE · 修订"}
+                </div>
+                <h2
+                  className="text-brass-gradient font-serif font-semibold leading-tight"
+                  style={{ fontFamily: serif, fontSize: 20, letterSpacing: "0.02em" }}
+                >
+                  {mode === "create" ? "新增种子词" : "编辑种子词"}
+                </h2>
+              </div>
               <button
                 type="button"
                 onClick={onClose}
-                className="text-gray-400 hover:text-gray-600 text-xl leading-none"
+                className="text-manor-brassDim hover:text-manor-brassHi transition-colors text-xl leading-none mt-1"
+                aria-label="关闭"
               >
                 ×
               </button>
             </div>
+            <span className="brass-divider opacity-60 -mt-1" />
 
-            {/* seed_id readonly when edit */}
             {mode === "edit" && initial && (
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-medium text-gray-500">seed_id</label>
+              <div className="flex flex-col gap-1.5">
+                <label className={labelCls} style={{ fontFamily: sc, fontSize: 10 }}>
+                  SEED · 卷号
+                </label>
                 <input
                   readOnly
                   value={initial.seed_id}
-                  className="block w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-400 font-mono"
+                  className="block w-full bg-manor-void/40 border border-manor-line px-3 py-2 text-xs text-manor-inkFaint tabnum"
+                  style={{ borderRadius: 3, fontFamily: sc }}
                 />
               </div>
             )}
 
-            {/* keyword */}
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-700">
-                关键词 <span className="text-red-500">*</span>
+            <div className="flex flex-col gap-1.5">
+              <label className={labelCls} style={{ fontFamily: sc, fontSize: 10 }}>
+                VERBUM · 关键词 <span className="text-manor-oxbloodHi">*</span>
               </label>
               <input
                 type="text"
                 value={form.keyword}
                 onChange={(e) => update("keyword", e.target.value)}
-                placeholder="输入关键词"
-                className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                placeholder="录入关键词"
+                className={inputCls}
+                style={{ borderRadius: 3, fontFamily: serif }}
               />
             </div>
 
-            {/* enabled */}
             <div className="flex items-center gap-3">
               <SwitchInline
                 checked={form.enabled}
                 onChange={(v) => update("enabled", v)}
                 label="启用状态"
               />
-              <span className="text-sm text-gray-700">
-                {form.enabled ? "启用" : "禁用"}
+              <span className="text-sm text-manor-ink" style={{ fontFamily: serif }}>
+                {form.enabled ? "启用" : "封存"}
               </span>
             </div>
 
-            {/* layer_main */}
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-700">主层级 (layer_main)</label>
+            <div className="flex flex-col gap-1.5">
+              <label className={labelCls} style={{ fontFamily: sc, fontSize: 10 }}>
+                STRATUM · 主层级
+              </label>
               <select
                 value={form.layer_main}
                 onChange={(e) => update("layer_main", e.target.value)}
-                className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                className={inputCls}
+                style={{ borderRadius: 3, fontFamily: serif }}
               >
                 {LAYER_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -219,56 +244,69 @@ export function SeedKeywordEditDialog({
               </select>
             </div>
 
-            {/* anchor */}
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-700">锚点 (anchor)</label>
+            <div className="flex flex-col gap-1.5">
+              <label className={labelCls} style={{ fontFamily: sc, fontSize: 10 }}>
+                ANCORA · 锚点
+              </label>
               <input
                 type="text"
                 value={form.anchor}
                 onChange={(e) => update("anchor", e.target.value)}
                 placeholder="选填"
-                className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className={inputCls}
+                style={{ borderRadius: 3, fontFamily: serif }}
               />
             </div>
 
-            {/* disabled_reason — 始终可编辑（备注/禁用原因合用） */}
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-700">
-                备注 / 禁用原因
+            <div className="flex flex-col gap-1.5">
+              <label className={labelCls} style={{ fontFamily: sc, fontSize: 10 }}>
+                NOTA · 备注 / 封存缘由
                 {!form.enabled && (
-                  <span className="text-gray-400 text-xs ml-1">（建议填写）</span>
+                  <span
+                    className="ml-2 text-manor-inkFaint normal-case tracking-normal"
+                    style={{ fontFamily: serif, fontSize: 10 }}
+                  >
+                    （封存时建议填写）
+                  </span>
                 )}
               </label>
               <input
                 type="text"
                 value={form.disabled_reason}
                 onChange={(e) => update("disabled_reason", e.target.value)}
-                placeholder={form.enabled ? "可填写备注（选填）" : "禁用原因"}
-                className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                placeholder={form.enabled ? "可填写备注（选填）" : "封存缘由"}
+                className={inputCls}
+                style={{ borderRadius: 3, fontFamily: serif }}
               />
             </div>
 
             {error && (
-              <p className="text-sm text-red-600 bg-red-50 rounded-md px-3 py-2">
+              <p
+                className="text-xs text-manor-oxbloodHi border border-manor-oxblood/30 bg-manor-oxblood/10 px-3 py-2 flex items-center gap-2"
+                style={{ borderRadius: 3 }}
+              >
+                <span className="diamond bg-manor-oxblood shrink-0" />
                 {error}
               </p>
             )}
 
-            <div className="flex justify-end gap-2 pt-2">
+            <div className="flex justify-end gap-2 pt-1">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-sm rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                className="px-4 py-1.5 text-xs font-sc tracking-[0.22em] text-manor-inkDim border border-manor-line2 hover:text-manor-ink hover:border-manor-brass/40 transition-colors"
+                style={{ borderRadius: 3, fontFamily: sc }}
               >
-                取消
+                ABROGARE · 取消
               </button>
               <button
                 type="button"
                 onClick={doSubmit}
                 disabled={loading}
-                className="px-4 py-2 text-sm rounded-lg bg-emerald-600 text-white font-medium hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-5 py-1.5 text-xs font-sc tracking-[0.22em] text-manor-bg bg-gradient-to-b from-manor-brassHi to-manor-brassDim hover:from-manor-brass hover:to-manor-brass disabled:opacity-40 disabled:cursor-not-allowed shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_0_8px_rgba(201,169,97,0.35)] transition-colors"
+                style={{ borderRadius: 3, fontFamily: sc }}
               >
-                {loading ? "保存中..." : mode === "create" ? "新增" : "保存"}
+                {loading ? "存档中..." : mode === "create" ? "INSCRIBO · 新增" : "SERVARE · 保存"}
               </button>
             </div>
           </div>

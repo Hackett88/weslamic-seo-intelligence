@@ -17,10 +17,10 @@ const CS_LABELS: Record<number, string> = {
 };
 
 const SCORE_COLOR: Record<number, string> = {
-  3: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  2: "bg-blue-50 text-blue-700 border-blue-200",
-  1: "bg-amber-50 text-amber-700 border-amber-200",
-  0: "bg-gray-50 text-gray-500 border-gray-200",
+  3: "bg-manor-bg3 text-manor-brassHi border-manor-sageDim/60",
+  2: "bg-manor-bg3 text-manor-brassHi border-manor-line2",
+  1: "bg-manor-brassDim/15 text-manor-brassHi border-manor-brassDim/50",
+  0: "bg-manor-bg text-manor-inkDim border-manor-line",
 };
 
 const INTENT_LABELS: Record<string, string> = {
@@ -32,11 +32,11 @@ const INTENT_LABELS: Record<string, string> = {
 };
 
 const INTENT_COLOR: Record<string, string> = {
-  informational: "bg-teal-50 text-teal-700 border-teal-200",
-  commercial: "bg-purple-50 text-purple-700 border-purple-200",
-  mixed: "bg-blue-50 text-blue-700 border-blue-200",
-  navigational: "bg-amber-50 text-amber-700 border-amber-200",
-  transactional: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  informational: "bg-manor-bg3 text-manor-sage border-manor-line2",
+  commercial: "bg-manor-bg3 text-manor-brassHi border-manor-line2",
+  mixed: "bg-manor-bg3 text-manor-brassHi border-manor-line2",
+  navigational: "bg-manor-brassDim/15 text-manor-brassHi border-manor-brassDim/50",
+  transactional: "bg-manor-bg3 text-manor-brassHi border-manor-sageDim/60",
 };
 
 export function bpLabel(value: number | null | undefined): string | null {
@@ -51,7 +51,7 @@ export function csLabel(value: number | null | undefined): string | null {
 
 export function formatBP(value: number | null | undefined): React.ReactNode {
   if (value === null || value === undefined) {
-    return <span className="text-gray-300">—</span>;
+    return <span className="text-manor-inkGhost">—</span>;
   }
   const label = BP_LABELS[value] ?? "";
   const cls = SCORE_COLOR[value] ?? SCORE_COLOR[0];
@@ -65,7 +65,7 @@ export function formatBP(value: number | null | undefined): React.ReactNode {
 
 export function formatCS(value: number | null | undefined): React.ReactNode {
   if (value === null || value === undefined) {
-    return <span className="text-gray-300">—</span>;
+    return <span className="text-manor-inkGhost">—</span>;
   }
   const label = CS_LABELS[value] ?? "";
   const cls = SCORE_COLOR[value] ?? SCORE_COLOR[0];
@@ -91,12 +91,12 @@ export function intentLabel(value: string | null | undefined): string | null {
 }
 
 export function formatIntent(value: string | null | undefined): React.ReactNode {
-  if (!value) return <span className="text-gray-300">—</span>;
+  if (!value) return <span className="text-manor-inkGhost">—</span>;
   const tokens = value.split(/[,、|/]/);
   const labels = tokens.map(translateIntentToken).filter(Boolean) as string[];
-  if (labels.length === 0) return <span className="text-gray-300">—</span>;
+  if (labels.length === 0) return <span className="text-manor-inkGhost">—</span>;
   const primaryKey = tokens[0].trim().toLowerCase();
-  const cls = INTENT_COLOR[primaryKey] ?? "bg-gray-50 text-gray-600 border-gray-200";
+  const cls = INTENT_COLOR[primaryKey] ?? "bg-manor-bg text-manor-inkDim border-manor-line";
   return (
     <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs border ${cls}`}>
       {labels.join(" / ")}
@@ -127,8 +127,9 @@ export function Sparkline({
   height = 24,
   variant = "bar",
 }: SparklineProps) {
+  const reactId = React.useId();
   if (!data || data.length === 0) {
-    return <span className="text-gray-300 text-xs">—</span>;
+    return <span className="text-manor-inkGhost text-xs">—</span>;
   }
   const max = Math.max(...data, 0.0001);
   const n = data.length;
@@ -146,7 +147,7 @@ export function Sparkline({
       <svg
         width={width}
         height={height}
-        className="text-emerald-500 inline-block align-middle"
+        className="text-manor-brass inline-block align-middle"
         aria-hidden
       >
         <path d={path} fill="none" stroke="currentColor" strokeWidth="1.5" />
@@ -156,13 +157,21 @@ export function Sparkline({
 
   const gap = 1;
   const barW = Math.max(1, (width - gap * (n - 1)) / n);
+  const gradId = `spark-brass-${reactId}`;
   return (
     <svg
       width={width}
       height={height}
-      className="text-emerald-500 inline-block align-middle"
+      className="inline-block align-middle"
       aria-hidden
     >
+      <defs>
+        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor="#F0DEA0" />
+          <stop offset="55%"  stopColor="#D4B36F" />
+          <stop offset="100%" stopColor="#7A5F2E" />
+        </linearGradient>
+      </defs>
       {data.map((v, i) => {
         const h = Math.max(1, (v / max) * height);
         const x = i * (barW + gap);
@@ -174,7 +183,7 @@ export function Sparkline({
             y={y}
             width={barW}
             height={h}
-            fill="currentColor"
+            fill={`url(#${gradId})`}
             rx={0.5}
           />
         );

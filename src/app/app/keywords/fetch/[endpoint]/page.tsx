@@ -86,23 +86,45 @@ export default async function SkillDetailPage({ params }: PageProps) {
 
   return (
     <div className="flex flex-1 min-h-0 flex-col">
-      {/* 标题栏（参照关键词库 page-header：白底 / 下边框 / 紧凑三行：面包屑 / 标题 / 描述） */}
-      <div className="px-5 py-4 border-b border-gray-200 bg-white shrink-0">
+      {/* 标题栏：黄铜歌剧院皮肤，面包屑 / 大字标题 + Latin 编号 / 描述 */}
+      <div className="px-6 py-4 border-b border-manor-brass/25 bg-manor-bg2 shrink-0 relative">
         {/* 面包屑 */}
-        <div className="text-[11px] text-gray-400">
+        <div
+          className="font-sc tracking-[0.28em] text-manor-brass/80"
+          style={{ fontFamily: "var(--font-sc), 'Cormorant SC', serif", fontSize: 10 }}
+        >
           <Link
             href="/app/keywords/fetch"
-            className="transition-colors hover:text-emerald-700"
+            className="transition-colors hover:text-manor-brassHi"
           >
-            关键词功能库
+            ◆ INSTRUMENTA · 关键词功能库
           </Link>
-          <span className="mx-1.5 text-gray-300">/</span>
-          <span className="text-gray-500">{slug.toUpperCase()}</span>
+          <span className="mx-2 text-manor-brassDim">›</span>
+          <span className="text-manor-brassHi">{slug.toUpperCase()}</span>
         </div>
-        <h1 className="mt-1 text-base font-semibold text-gray-900">
-          {meta.title}
-        </h1>
-        <p className="mt-0.5 text-xs text-gray-400">
+        <div className="mt-1.5 flex items-baseline gap-3 flex-wrap">
+          <h1
+            className="text-brass-gradient font-serif font-semibold leading-none"
+            style={{
+              fontFamily: "var(--font-serif), 'EB Garamond', serif",
+              fontSize: 26,
+              letterSpacing: "0.04em",
+            }}
+          >
+            {meta.title}
+          </h1>
+          <span
+            className="font-sc tracking-[0.24em] text-manor-brassDim"
+            style={{ fontFamily: "var(--font-sc), 'Cormorant SC', serif", fontSize: 11 }}
+          >
+            〔OPUS · {slug.toUpperCase()}〕
+          </span>
+          <span className="brass-divider flex-1 max-w-[180px] opacity-60" />
+        </div>
+        <p
+          className="mt-1.5 text-manor-inkDim italic"
+          style={{ fontFamily: "var(--font-serif), 'EB Garamond', serif", fontSize: 12 }}
+        >
           {meta.description}
         </p>
       </div>
@@ -129,8 +151,8 @@ export default async function SkillDetailPage({ params }: PageProps) {
       ) : meta.available && slug === "w10" ? (
         <W10Workspace />
       ) : (
-        <div className="flex-1 flex items-center justify-center bg-gray-50">
-          <div className="rounded-lg border border-dashed border-gray-300 bg-white px-6 py-16 text-center text-sm text-gray-500">
+        <div className="flex-1 flex items-center justify-center bg-manor-bg">
+          <div className="rounded-lg border border-dashed border-manor-line2 bg-manor-bg2 px-6 py-16 text-center text-sm text-manor-inkDim">
             该功能即将上线
           </div>
         </div>

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { History, Loader2, X, Plus } from "lucide-react";
+import { ChevronDown, ChevronUp, History, Loader2, X, Plus } from "lucide-react";
 import type { ProgressState, W10ResultRow } from "./SeoTaskCard";
 import { SerpFeatureChips } from "./SerpFeatureChips";
 import { HistoryView } from "./HistoryView";
@@ -106,6 +106,8 @@ export function W10Workspace() {
 
   const [history, setHistory] = useState<HistoryEntry<W10ResultRow>[]>([]);
   const [historyMode, setHistoryMode] = useState(false);
+  const [launchPulse, setLaunchPulse] = useState(false);
+  const [toolbarCollapsed, setToolbarCollapsed] = useState(false);
   const recordedRef = useRef(false);
   const submittedOurDomainRef = useRef("");
   const submittedCompetitorDomainsRef = useRef<string[]>([]);
@@ -376,33 +378,33 @@ export function W10Workspace() {
     (status === "idle" || status === "succeeded" || status === "failed");
 
   let btnLabel = "开始查询";
-  let btnExtraCls = "bg-emerald-600 hover:bg-emerald-700 text-white";
+  let btnExtraCls = "btn-launch-sage";
   if (isRunning) {
     btnLabel = "查询中…";
-    btnExtraCls = "bg-emerald-300 text-white cursor-not-allowed";
+    btnExtraCls = "bg-manor-brassDim text-manor-bg cursor-not-allowed opacity-80";
   } else if (status === "succeeded") {
     btnLabel = "再查一次";
-    btnExtraCls = "bg-emerald-600 hover:bg-emerald-700 text-white";
+    btnExtraCls = "btn-launch-sage";
   } else if (status === "failed") {
     btnLabel = "重试";
-    btnExtraCls = "bg-white border border-red-400 text-red-600 hover:bg-red-50";
+    btnExtraCls = "bg-manor-bg2 border border-manor-oxbloodHi text-manor-oxbloodHi hover:bg-manor-oxbloodDim/20";
   }
 
   let statusText: string;
-  let statusTextCls = "text-gray-500";
+  let statusTextCls = "text-manor-inkDim";
   if (status === "idle") {
-    statusText = "等待提交";
+    statusText = "静候启动";
   } else if (isRunning) {
     statusText = `处理中… ${progress.nodeName ?? ""} (seq ${progress.seq ?? 0}/${progress.totalEstimated ?? 6})`;
-    statusTextCls = "text-emerald-700";
+    statusTextCls = "text-manor-brassHi";
   } else if (status === "succeeded") {
     const parts = [`已完成 · 返回 ${rows.length} 行`];
     if (progress.unitsActual != null) parts.push(`实耗 ${progress.unitsActual}u`);
     statusText = parts.join(" · ");
-    statusTextCls = "text-emerald-700";
+    statusTextCls = "text-manor-brassHi";
   } else {
-    statusText = `查询失败：${progress.errorMessage ?? "调用失败"}`;
-    statusTextCls = "text-red-600";
+    statusText = `查询未果 · ${progress.errorMessage ?? "调用失败"}`;
+    statusTextCls = "text-manor-oxbloodHi";
   }
 
   const reachedMaxCompetitors = competitorDomains.length >= MAX_COMPETITORS;
@@ -410,11 +412,14 @@ export function W10Workspace() {
   return (
     <div className="flex flex-1 min-h-0 flex-col">
       {/* 顶部工具栏 */}
-      <div className="px-5 py-3 border-b border-gray-200 bg-white shrink-0">
+      {!toolbarCollapsed && (
+      <div className="px-5 py-3 border-b border-manor-brass/25 shrink-0 relative">
         {/* 行 1：our_domain + display_limit */}
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-12">
           <div className="lg:col-span-9">
-            <label className="mb-1 block text-[11px] font-medium text-gray-500">
+            <label className="mb-1 flex items-center gap-1.5 text-[11px] font-medium text-manor-inkDim">
+              <span aria-hidden="true" style={{ width: 3, height: 3, transform: "rotate(45deg)", background: "linear-gradient(135deg, #EFD89A 0%, #A08850 100%)", boxShadow: "0 0 4px rgba(239,216,154,.55)" }} />
+              
               我方域名（our_domain，不带 https:// 或 path）
             </label>
             <input
@@ -422,22 +427,24 @@ export function W10Workspace() {
               value={ourDomain}
               onChange={(e) => setOurDomain(e.target.value)}
               className={[
-                "w-full rounded border px-2 py-1.5 text-xs outline-none focus:ring-2",
+                "input-brass w-full rounded border px-2 py-1.5 text-xs",
                 isOurDomainInvalid && ourDomain.length > 0
-                  ? "border-red-300 focus:border-red-400 focus:ring-red-100"
-                  : "border-gray-300 focus:border-emerald-400 focus:ring-emerald-100",
+                  ? "border-manor-oxbloodDim/60 focus:border-manor-oxbloodHi focus:ring-manor-oxblood/30"
+                  : "border-manor-line2 focus:border-manor-brass focus:ring-manor-brass/25",
               ].join(" ")}
               placeholder="weslamic.com"
             />
             {isOurDomainInvalid && ourDomain.length > 0 && (
-              <p className="mt-1 text-[11px] text-red-600">
+              <p className="mt-1 text-[11px] text-manor-oxbloodHi">
                 请输入纯域名（如 weslamic.com）
               </p>
             )}
           </div>
 
           <div className="lg:col-span-3">
-            <label className="mb-1 block text-[11px] font-medium text-gray-500">
+            <label className="mb-1 flex items-center gap-1.5 text-[11px] font-medium text-manor-inkDim">
+              <span aria-hidden="true" style={{ width: 3, height: 3, transform: "rotate(45deg)", background: "linear-gradient(135deg, #EFD89A 0%, #A08850 100%)", boxShadow: "0 0 4px rgba(239,216,154,.55)" }} />
+              
               每维度取词数 N（{MIN_LIMIT}-{MAX_LIMIT}）
             </label>
             <input
@@ -449,14 +456,16 @@ export function W10Workspace() {
                 const n = Number(e.target.value);
                 setDisplayLimit(Number.isFinite(n) ? n : DEFAULT_LIMIT);
               }}
-              className="w-full rounded border border-gray-300 px-2 py-1.5 text-xs outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
+              className="input-brass w-full rounded border border-manor-brass/30 bg-[rgba(8,20,13,.85)] px-2 py-1.5 text-xs text-manor-ink placeholder:text-manor-inkFaint"
             />
           </div>
         </div>
 
         {/* 行 2：竞品域名列表 */}
         <div className="mt-3">
-          <label className="mb-1 block text-[11px] font-medium text-gray-500">
+          <label className="mb-1 flex items-center gap-1.5 text-[11px] font-medium text-manor-inkDim">
+              <span aria-hidden="true" style={{ width: 3, height: 3, transform: "rotate(45deg)", background: "linear-gradient(135deg, #EFD89A 0%, #A08850 100%)", boxShadow: "0 0 4px rgba(239,216,154,.55)" }} />
+              
             竞品域名列表（最多 {MAX_COMPETITORS} 个，不带 https://）
           </label>
           <div className="flex items-center gap-2">
@@ -475,12 +484,12 @@ export function W10Workspace() {
               }}
               disabled={reachedMaxCompetitors}
               className={[
-                "flex-1 rounded border px-2 py-1.5 text-xs outline-none focus:ring-2",
+                "input-brass flex-1 rounded border px-2 py-1.5 text-xs",
                 reachedMaxCompetitors
-                  ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+                  ? "bg-manor-bg3 text-manor-inkFaint border-manor-line cursor-not-allowed"
                   : competitorError
-                    ? "border-red-300 focus:border-red-400 focus:ring-red-100"
-                    : "border-gray-300 focus:border-emerald-400 focus:ring-emerald-100",
+                    ? "border-manor-oxbloodDim/60 focus:border-manor-oxbloodHi focus:ring-manor-oxblood/30"
+                    : "border-manor-line2 focus:border-manor-brass focus:ring-manor-brass/25",
               ].join(" ")}
               placeholder={reachedMaxCompetitors ? "已达 4 个上限" : "amazon.com"}
             />
@@ -491,8 +500,8 @@ export function W10Workspace() {
               className={[
                 "inline-flex items-center gap-1 rounded px-3 py-1.5 text-xs font-medium transition-colors",
                 reachedMaxCompetitors || !competitorInput.trim()
-                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                  : "bg-emerald-600 text-white hover:bg-emerald-700",
+                  ? "bg-manor-bg3 text-manor-inkFaint cursor-not-allowed"
+                  : "bg-manor-sageDim text-manor-ink hover:bg-manor-sageDim",
               ].join(" ")}
             >
               <Plus size={12} />
@@ -500,10 +509,10 @@ export function W10Workspace() {
             </button>
           </div>
           {competitorError && (
-            <p className="mt-1 text-[11px] text-red-600">{competitorError}</p>
+            <p className="mt-1 text-[11px] text-manor-oxbloodHi">{competitorError}</p>
           )}
           {reachedMaxCompetitors && (
-            <p className="mt-1 text-[11px] text-amber-600">已达 4 个竞品域名上限</p>
+            <p className="mt-1 text-[11px] text-manor-brassDim">已达 4 个竞品域名上限</p>
           )}
           {/* 已添加的竞品 chip 列表 */}
           {competitorDomains.length > 0 && (
@@ -511,13 +520,13 @@ export function W10Workspace() {
               {competitorDomains.map((d) => (
                 <span
                   key={d}
-                  className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[11px] text-indigo-700"
+                  className="inline-flex items-center gap-1 rounded-full border border-manor-line2 bg-manor-bg3 px-2 py-0.5 text-[11px] text-manor-brassHi"
                 >
                   {d}
                   <button
                     type="button"
                     onClick={() => removeCompetitor(d)}
-                    className="ml-0.5 rounded-full text-indigo-400 hover:text-indigo-700"
+                    className="ml-0.5 rounded-full text-manor-brass hover:text-manor-brassHi"
                   >
                     <X size={10} />
                   </button>
@@ -526,7 +535,7 @@ export function W10Workspace() {
             </div>
           )}
           {noCompetitor && (
-            <p className="mt-1 text-[11px] text-red-500">至少需要 1 个竞品域名</p>
+            <p className="mt-1 text-[11px] text-manor-oxblood">至少需要 1 个竞品域名</p>
           )}
         </div>
 
@@ -534,7 +543,7 @@ export function W10Workspace() {
         <div className="mt-3 flex flex-wrap items-start gap-4">
           {/* gap_types chips */}
           <div>
-            <p className="mb-1 text-[11px] font-medium text-gray-500">分析维度（可多选）</p>
+            <p className="mb-1 text-[11px] font-medium text-manor-inkDim">分析维度（可多选）</p>
             <div className="flex flex-wrap items-center gap-1.5">
               {GAP_TYPES.map((gt) => {
                 const isUntappedDisabled = gt.value === "untapped" && competitorDomains.length < 2;
@@ -549,10 +558,10 @@ export function W10Workspace() {
                     className={[
                       "inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-medium transition-colors select-none",
                       isUntappedDisabled
-                        ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
+                        ? "border-manor-line bg-manor-bg3 text-manor-inkFaint cursor-not-allowed"
                         : checked
                           ? gapTypeCheckedCls(gt.value)
-                          : "border-gray-300 bg-white text-gray-600 hover:border-gray-400",
+                          : "border-manor-line2 bg-manor-bg2 text-manor-inkDim hover:border-manor-line2",
                     ].join(" ")}
                   >
                     {checked && !isUntappedDisabled && (
@@ -560,20 +569,20 @@ export function W10Workspace() {
                     )}
                     {gt.cn}
                     {isUntappedDisabled && (
-                      <span className="ml-0.5 text-[10px] text-gray-400">（需≥2竞品）</span>
+                      <span className="ml-0.5 text-[10px] text-manor-inkFaint">（需≥2竞品）</span>
                     )}
                   </button>
                 );
               })}
             </div>
             {noGapTypes && (
-              <p className="mt-1 text-[11px] text-red-500">至少选一个分析维度</p>
+              <p className="mt-1 text-[11px] text-manor-oxblood">至少选一个分析维度</p>
             )}
           </div>
 
           {/* 市场多选 */}
           <div>
-            <p className="mb-1 text-[11px] font-medium text-gray-500">市场</p>
+            <p className="mb-1 text-[11px] font-medium text-manor-inkDim">市场</p>
             <div className="flex flex-wrap items-center gap-1.5">
               {MARKETS.map((m) => {
                 const checked = markets.includes(m.value);
@@ -581,17 +590,17 @@ export function W10Workspace() {
                   <label
                     key={m.value}
                     className={[
-                      "inline-flex cursor-pointer items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] transition-colors select-none",
+                      "market-chip inline-flex cursor-pointer items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] select-none",
                       checked
-                        ? "border-emerald-400 bg-emerald-50 text-emerald-700"
-                        : "border-gray-300 bg-white text-gray-700 hover:border-emerald-300",
+                        ? "border-[#EFD89A]/65 bg-[rgba(36,72,50,.85)] text-[#F0DEA0] shadow-[inset_0_1px_0_rgba(240,222,160,.25),0_0_10px_-2px_rgba(123,166,125,.55)]"
+                        : "border-manor-brass/25 bg-[rgba(12,26,18,.85)] text-manor-ink/85 hover:border-[#EFD89A]/60 hover:bg-[rgba(20,42,28,.95)] hover:text-manor-brassHi",
                     ].join(" ")}
                   >
                     <input
                       type="checkbox"
                       checked={checked}
                       onChange={() => toggleMarket(m.value)}
-                      className="h-3 w-3 accent-emerald-600"
+                      className="h-3 w-3 accent-manor-brass"
                     />
                     <span>
                       {m.cn} {m.code}
@@ -601,31 +610,38 @@ export function W10Workspace() {
               })}
             </div>
             {noMarket && (
-              <p className="mt-1 text-[11px] text-red-500">至少选 1 个市场</p>
+              <p className="mt-1 text-[11px] text-manor-oxblood">至少选一处市场</p>
             )}
           </div>
         </div>
 
         {/* 行 4：units 估算 + 操作区 */}
         <div className="mt-3 flex flex-wrap items-center gap-3">
-          <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-[11px] text-gray-500">
+          <span className="inline-flex items-center rounded-full border border-manor-brass/30 bg-[rgba(8,20,13,.85)] px-2 py-0.5 text-[11px] text-manor-brassDim tabnum">
             {competitorDomains.length} 竞品 × {gapTypes.filter((t) => t !== "weak").length} API维度 × {displayLimit} 条 × 80u × {marketCount} 市场 ≈ 预估 {units.toLocaleString()}u
           </span>
           {needsSecondaryAuth && (
-            <span className="text-[11px] text-amber-600">需密码门</span>
+            <span className="text-[11px] text-manor-brassDim">高耗 · 需印玺</span>
           )}
           {!limitInRange && (
-            <span className="text-[11px] text-red-600">N 取值 {MIN_LIMIT}-{MAX_LIMIT}</span>
+            <span className="text-[11px] text-manor-oxbloodHi">N 取值 {MIN_LIMIT}-{MAX_LIMIT}</span>
           )}
 
           {/* 启动 + 历史按钮 */}
           <div className="ml-auto flex items-center gap-2">
             <button
               type="button"
-              onClick={handleSubmit}
+              onClick={() => {
+                if (canSubmit) {
+                  setLaunchPulse(true);
+                  setTimeout(() => setLaunchPulse(false), 750);
+                }
+                handleSubmit();
+              }}
               disabled={!canSubmit}
               className={[
-                "inline-flex items-center justify-center gap-1.5 rounded px-4 py-1.5 text-xs font-medium transition-colors",
+                "dispatch-launch inline-flex items-center justify-center gap-1.5 rounded px-4 py-1.5 text-xs font-medium transition-colors",
+                launchPulse ? "is-launching" : "",
                 btnExtraCls,
                 !canSubmit && !isRunning ? "disabled:opacity-50 disabled:cursor-not-allowed" : "",
               ].join(" ")}
@@ -645,8 +661,8 @@ export function W10Workspace() {
               className={[
                 "inline-flex items-center justify-center gap-1.5 rounded border px-3 py-1.5 text-xs font-medium transition-colors",
                 historyMode
-                  ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                  : "border-gray-300 bg-white text-gray-700 hover:border-emerald-400 hover:text-emerald-700",
+                  ? "border-[#EFD89A]/65 bg-[rgba(36,72,50,.85)] text-[#F0DEA0] shadow-[inset_0_1px_0_rgba(240,222,160,.25),0_0_10px_-2px_rgba(123,166,125,.55)]"
+                  : "border-manor-brass/30 text-manor-ink/85 hover:border-manor-brassHi hover:text-manor-brassHi bg-[rgba(12,26,18,.85)] hover:bg-[rgba(20,42,28,.95)]",
                 history.length === 0
                   ? "disabled:opacity-50 disabled:cursor-not-allowed"
                   : "",
@@ -658,13 +674,15 @@ export function W10Workspace() {
           </div>
         </div>
       </div>
+      )}
 
+      {!historyMode && (<>
       {/* 状态横条 */}
-      <div className="px-5 py-2 border-t border-b border-gray-200 bg-gray-50/50 shrink-0">
+      <div className="px-5 py-2 border-t border-b border-manor-brass/35 shrink-0 bg-[rgba(8,20,13,.85)]">
         <div className="flex items-center gap-3">
           <span className={["text-xs", statusTextCls].join(" ")}>{statusText}</span>
           {isRunning && (
-            <div className="relative h-1 flex-1 max-w-[220px] overflow-hidden rounded-full bg-gray-200">
+            <div className="progress-track relative h-1 flex-1 max-w-[220px] overflow-hidden rounded-full bg-manor-bg4">
               <div
                 className="absolute inset-0 rounded-full"
                 style={{
@@ -677,19 +695,44 @@ export function W10Workspace() {
             </div>
           )}
           {progress.mock && (
-            <span className="ml-auto rounded border border-amber-500 bg-amber-50 px-2 py-0.5 text-xs text-amber-700">
+            <span className="ml-auto rounded border border-manor-brass bg-manor-brassDim/15 px-2 py-0.5 text-xs text-manor-brassHi">
               Mock 模式
             </span>
           )}
         </div>
+      </div></>
+      )}
+
+      {!historyMode && (
+      <div className="px-3 py-1 border-b border-manor-brass/15 shrink-0 bg-[rgba(8,20,13,.6)] flex justify-end">
+        <button
+          type="button"
+          onClick={() => setToolbarCollapsed((v) => !v)}
+          title={toolbarCollapsed ? "展开工具栏" : "收起工具栏 · 让数据区占满"}
+          aria-label={toolbarCollapsed ? "展开工具栏" : "收起工具栏"}
+          className="inline-flex items-center justify-center rounded border px-1.5 py-0.5 transition-colors border-manor-brass/30 text-manor-brassDim hover:border-manor-brassHi hover:text-manor-brassHi bg-[rgba(12,26,18,.85)] hover:bg-[rgba(20,42,28,.95)]"
+        >
+          {toolbarCollapsed ? <ChevronDown size={13} /> : <ChevronUp size={13} />}
+        </button>
       </div>
+      )}
 
       {/* 主体结果区 */}
-      <div className="flex-1 overflow-auto bg-white">
+      <div className="flex-1 overflow-auto bg-[rgba(6,16,11,.6)]">
         {historyMode ? (
           <HistoryView<W10ResultRow>
             entries={history}
             renderTable={(rs) => <GapResultTable rows={rs} />}
+            extraRightControls={
+            <button
+              type="button"
+              onClick={() => setToolbarCollapsed((v) => !v)}
+              title={toolbarCollapsed ? "展开工具栏" : "收起工具栏 · 让数据区占满"}
+              aria-label={toolbarCollapsed ? "展开工具栏" : "收起工具栏"}
+              className="inline-flex items-center justify-center rounded border px-1.5 py-0.5 transition-colors border-manor-brass/30 text-manor-brassDim hover:border-manor-brassHi hover:text-manor-brassHi bg-[rgba(12,26,18,.85)] hover:bg-[rgba(20,42,28,.95)]"
+            >
+              {toolbarCollapsed ? <ChevronDown size={13} /> : <ChevronUp size={13} />}
+            </button>            }
             onClose={() => setHistoryMode(false)}
             onRemove={(id) =>
               removeHistoryEntry<W10ResultRow>(ENDPOINT_KEY, id)
@@ -706,15 +749,15 @@ export function W10Workspace() {
         ) : (
           <>
         {status === "idle" && (
-          <div className="flex h-full min-h-[280px] items-center justify-center px-6 py-12 text-sm text-gray-400">
+          <div className="flex h-full min-h-[280px] items-center justify-center px-6 py-12 text-sm text-manor-inkFaint">
             填写我方域名与竞品域名，选择分析维度后提交，结果将在此展示
           </div>
         )}
 
         {isRunning && (
           <div className="flex h-full min-h-[280px] flex-col items-center justify-center gap-3 px-6 py-12">
-            <Loader2 size={28} className="animate-spin text-emerald-500" />
-            <span className="text-sm text-gray-500">
+            <Loader2 size={28} className="animate-spin text-manor-brass" />
+            <span className="text-sm text-manor-inkDim">
               查询中… 结果表将在完成后显示
             </span>
           </div>
@@ -725,7 +768,7 @@ export function W10Workspace() {
             <GapResultTable rows={rows} />
           ) : (
             <div className="flex h-full min-h-[280px] items-center justify-center px-6 py-12">
-              <div className="rounded border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
+              <div className="rounded border border-manor-line bg-manor-bg px-4 py-3 text-sm text-manor-inkDim">
                 查询完成但未返回数据（可能是 NOTHING_FOUND / EMPTY，或 staging 表中暂无该批次的写入）。
               </div>
             </div>
@@ -733,7 +776,7 @@ export function W10Workspace() {
 
         {status === "failed" && (
           <div className="flex h-full min-h-[280px] items-center justify-center px-6 py-12">
-            <div className="max-w-md rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div className="max-w-md rounded border border-manor-oxbloodDim/40 bg-manor-oxbloodDim/20 px-4 py-3 text-sm text-manor-oxblood">
               <p className="font-medium">查询失败</p>
               <p className="mt-1 text-xs">{progress.errorMessage ?? "调用失败"}</p>
             </div>
@@ -750,13 +793,13 @@ export function W10Workspace() {
           onClick={() => !authSubmitting && setShowAuth(false)}
         >
           <div
-            className="w-80 rounded-lg bg-white p-4 shadow-lg"
+            className="w-80 rounded-lg bg-manor-bg2 p-4 shadow-lg"
             onClick={(e) => e.stopPropagation()}
           >
-            <h4 className="mb-2 text-sm font-semibold text-gray-900">
+            <h4 className="mb-2 text-sm font-semibold text-manor-ink">
               二次验证（&gt; {UNITS_PASSWORD_THRESHOLD}u）
             </h4>
-            <p className="mb-3 text-xs text-gray-500">
+            <p className="mb-3 text-xs text-manor-inkDim">
               请输入 8 位数字密码以继续。本次预估约 {units.toLocaleString()}u。
             </p>
             <input
@@ -764,17 +807,17 @@ export function W10Workspace() {
               value={authPwd}
               onChange={(e) => setAuthPwd(e.target.value)}
               maxLength={8}
-              className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm outline-none focus:border-emerald-400"
+              className="input-brass w-full rounded border border-manor-brass/30 bg-[rgba(8,20,13,.85)] px-2 py-1.5 text-sm text-manor-ink placeholder:text-manor-inkFaint"
               placeholder="••••••••"
               autoFocus
             />
-            {authError && <p className="mt-1 text-xs text-red-600">{authError}</p>}
+            {authError && <p className="mt-1 text-xs text-manor-oxbloodHi">{authError}</p>}
             <div className="mt-3 flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setShowAuth(false)}
                 disabled={authSubmitting}
-                className="rounded border border-gray-300 px-3 py-1 text-xs text-gray-700 hover:bg-gray-50"
+                className="rounded border border-manor-brass/40 px-3 py-1 text-xs text-manor-ink/85 hover:border-manor-brassHi hover:text-manor-brassHi transition-colors" style={{background:"linear-gradient(180deg, rgba(20,42,28,.92), rgba(8,20,13,.96))"}}
               >
                 取消
               </button>
@@ -782,7 +825,7 @@ export function W10Workspace() {
                 type="button"
                 onClick={submitAuth}
                 disabled={authSubmitting || authPwd.length === 0}
-                className="rounded bg-emerald-600 px-3 py-1 text-xs text-white hover:bg-emerald-700 disabled:opacity-50"
+                className="rounded px-3 py-1 text-xs btn-launch-sage disabled:opacity-50"
               >
                 {authSubmitting ? "校验中..." : "确认"}
               </button>
@@ -797,21 +840,21 @@ export function W10Workspace() {
 // 辅助：gap_type chip 颜色
 function gapTypeCheckedCls(value: string): string {
   switch (value) {
-    case "missing":  return "border-red-300 bg-red-50 text-red-700";
-    case "common":   return "border-blue-300 bg-blue-50 text-blue-700";
-    case "untapped": return "border-purple-300 bg-purple-50 text-purple-700";
-    case "weak":     return "border-yellow-300 bg-yellow-50 text-yellow-700";
-    default:         return "border-gray-300 bg-gray-50 text-gray-700";
+    case "missing":  return "border-manor-oxbloodDim/60 bg-manor-oxbloodDim/20 text-manor-oxblood";
+    case "common":   return "border-manor-line2 bg-manor-bg3 text-manor-brassHi";
+    case "untapped": return "border-manor-line2 bg-manor-bg3 text-manor-brassHi";
+    case "weak":     return "border-manor-brassDim bg-manor-brassDim/15 text-manor-brassHi";
+    default:         return "border-manor-line2 bg-manor-bg text-manor-ink";
   }
 }
 
 function gapTypeBadgeCls(value: string | null): string {
   switch (value) {
-    case "missing":  return "border-red-200 bg-red-50 text-red-700";
-    case "common":   return "border-blue-200 bg-blue-50 text-blue-700";
-    case "untapped": return "border-purple-200 bg-purple-50 text-purple-700";
-    case "weak":     return "border-yellow-200 bg-yellow-50 text-yellow-700";
-    default:         return "border-gray-200 bg-gray-50 text-gray-700";
+    case "missing":  return "border-manor-oxbloodDim/40 bg-manor-oxbloodDim/20 text-manor-oxblood";
+    case "common":   return "border-manor-line2 bg-manor-bg3 text-manor-brassHi";
+    case "untapped": return "border-manor-line2 bg-manor-bg3 text-manor-brassHi";
+    case "weak":     return "border-manor-brassDim/50 bg-manor-brassDim/15 text-manor-brassHi";
+    default:         return "border-manor-line bg-manor-bg text-manor-ink";
   }
 }
 
@@ -855,18 +898,18 @@ function GapResultTable({ rows }: { rows: W10ResultRow[] }) {
 
   return (
     <div>
-      <div className="px-5 py-2 flex items-center justify-between border-b border-gray-200">
-        <span className="text-sm font-medium text-gray-700">
+      <div className="px-5 py-2 flex items-center justify-between border-b border-manor-brass/25 bg-manor-bg3/40">
+        <span className="text-sm font-semibold text-manor-brassHi tracking-[0.06em]" style={{ fontFamily: "var(--font-serif), 'EB Garamond', serif" }}>
           域名差距分析 · 共 {rows.length} 行
         </span>
-        <span className="text-[11px] text-gray-400">
+        <span className="text-[10px] tracking-[0.22em] text-manor-brassDim font-sc" style={{ fontFamily: "var(--font-sc), 'Cormorant SC', serif" }}>
           数据源：semrush_gap_staging
         </span>
       </div>
 
       <table className="w-full text-xs">
-        <thead className="sticky top-0 bg-gray-50 text-gray-500">
-          <tr className="border-b border-gray-200">
+        <thead className="thead-sticky-solid text-manor-brassHi tracking-[0.24em] uppercase" style={{backgroundImage:"linear-gradient(180deg, rgba(26,52,36,.97) 0%, rgba(10,24,16,.98) 100%)",boxShadow:"inset 0 1px 0 rgba(224,197,122,.22), inset 0 -1px 0 rgba(0,0,0,.5), 0 1px 0 rgba(224,197,122,.55)"}}>
+          <tr className="border-b border-manor-line">
             <SortableTh active={sortKey === "gap_type"} dir={sortDir} onClick={() => toggle("gap_type")} className={thCls}>维度</SortableTh>
             <SortableTh active={sortKey === "keyword"} dir={sortDir} onClick={() => toggle("keyword")} className={thCls}>关键词</SortableTh>
             <SortableTh active={sortKey === "our_position"} dir={sortDir} align="right" onClick={() => toggle("our_position")} className={thCls}>你的排名</SortableTh>
@@ -883,7 +926,7 @@ function GapResultTable({ rows }: { rows: W10ResultRow[] }) {
           {sorted.map((r, idx) => (
             <tr
               key={`${r.gap_type}-${r.keyword}-${idx}`}
-              className="border-b border-gray-100 hover:bg-emerald-50/30 transition-colors"
+              className="row-brass border-b border-manor-brass/8"
             >
               <td className="px-4 py-2">
                 <span
@@ -895,25 +938,25 @@ function GapResultTable({ rows }: { rows: W10ResultRow[] }) {
                   {GAP_TYPE_LABELS[r.gap_type ?? ""] ?? r.gap_type ?? "—"}
                 </span>
               </td>
-              <td className="px-4 py-2 text-gray-900 font-medium">{r.keyword || "—"}</td>
-              <td className="px-4 py-2 text-right text-gray-700">
+              <td className="px-4 py-2 text-manor-ink font-medium">{r.keyword || "—"}</td>
+              <td className="px-4 py-2 text-right text-manor-ink">
                 {r.our_position === null || r.our_position === 0
-                  ? <span className="text-gray-400">未上榜</span>
+                  ? <span className="text-manor-inkFaint">未上榜</span>
                   : r.our_position}
               </td>
-              <td className="px-4 py-2 text-right text-gray-700">
+              <td className="px-4 py-2 text-right text-manor-ink">
                 {r.competitor_position != null ? r.competitor_position : "—"}
               </td>
-              <td className="px-4 py-2 text-gray-600 truncate max-w-[160px]">
+              <td className="px-4 py-2 text-manor-inkDim truncate max-w-[160px]">
                 {r.competitor_domain ?? "—"}
               </td>
-              <td className="px-4 py-2 text-right text-gray-700">
+              <td className="px-4 py-2 text-right text-manor-ink">
                 {r.search_volume != null ? r.search_volume.toLocaleString() : "—"}
               </td>
-              <td className="px-4 py-2 text-right text-gray-700">
+              <td className="px-4 py-2 text-right text-manor-ink">
                 {r.keyword_difficulty != null ? r.keyword_difficulty : "—"}
               </td>
-              <td className="px-4 py-2 text-right text-gray-700">
+              <td className="px-4 py-2 text-right text-manor-ink">
                 {r.cpc != null ? `$${r.cpc.toFixed(2)}` : "—"}
               </td>
               <td className="px-4 py-2 align-top max-w-[260px]">

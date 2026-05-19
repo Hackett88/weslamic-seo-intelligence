@@ -1,13 +1,16 @@
+import { PageHero, PageEmpty } from "../_components/PageHero";
+
 export default function StrategyPage() {
   return (
-    <div className="flex flex-col gap-4 p-6">
-      <div>
-        <h1 className="text-lg font-semibold text-white">关键词策略</h1>
-        <p className="text-sm text-zinc-500 mt-1">功能开发中，敬请期待</p>
-      </div>
-      <div className="flex items-center justify-center h-64 border border-dashed border-zinc-800 rounded-lg">
-        <p className="text-zinc-600 text-sm">暂无数据</p>
-      </div>
-    </div>
+    <>
+      <PageHero
+        medallion="orn-compass"
+        eyebrow="◆ OFFICINA · 策略"
+        title="关键词策略"
+        latin="STRATEGEMA · VERBORUM"
+        tagline="Cluster · Theme · Plan"
+      />
+      <PageEmpty message="关键词分群与策略规划功能开发中" latin="CONSILIUM IN ORDINE" />
+    </>
   );
 }

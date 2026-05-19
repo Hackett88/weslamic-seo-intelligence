@@ -1,13 +1,16 @@
+import { PageHero, PageEmpty } from "../_components/PageHero";
+
 export default function ContentPage() {
   return (
-    <div className="flex flex-col gap-4 p-6">
-      <div>
-        <h1 className="text-lg font-semibold text-white">内容工坊</h1>
-        <p className="text-sm text-zinc-500 mt-1">功能开发中，敬请期待</p>
-      </div>
-      <div className="flex items-center justify-center h-64 border border-dashed border-zinc-800 rounded-lg">
-        <p className="text-zinc-600 text-sm">暂无数据</p>
-      </div>
-    </div>
+    <>
+      <PageHero
+        medallion="orn-compass"
+        eyebrow="◆ OFFICINA · 内容"
+        title="内容工坊"
+        latin="SCRIPTORIUM · TEXTUS"
+        tagline="Draft · Refine · Publish"
+      />
+      <PageEmpty message="内容生产与素材库功能开发中" latin="CALAMUS DORMIT" />
+    </>
   );
 }

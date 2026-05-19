@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { BaroqueCorners } from "@/components/ManorOrnaments";
 
 interface SecondaryAuthDialogProps {
   open: boolean;
@@ -107,24 +108,47 @@ export function SecondaryAuthDialog({
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-[60] flex items-center justify-center drawer-mask p-4"
       onClick={onCancel}
     >
       <div
         role="dialog"
         aria-modal="true"
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-sm rounded-xl bg-white shadow-2xl"
+        className="relative w-full max-w-sm glass-panel-brass"
+        style={{ borderRadius: 6 }}
       >
+        <BaroqueCorners size={20} />
         <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4">
           <div>
-            <h2 className="text-base font-semibold text-gray-900">二次验证</h2>
-            <p className="text-sm text-gray-500 mt-1">写操作需要输入操作密码</p>
+            <div
+              className="font-sc tracking-[0.32em] text-manor-brassHi/80 mb-1.5"
+              style={{ fontFamily: "var(--font-sc), 'Cormorant SC', serif", fontSize: 10 }}
+            >
+              ◆ SIGILLUM · 二次验证
+            </div>
+            <h2
+              className="text-brass-gradient font-serif font-semibold leading-tight"
+              style={{ fontFamily: "var(--font-serif), 'EB Garamond', serif", fontSize: 20, letterSpacing: "0.02em" }}
+            >
+              请加盖操作印玺
+            </h2>
+            <p
+              className="text-manor-inkDim mt-1.5 italic"
+              style={{ fontFamily: "var(--font-serif), 'EB Garamond', serif", fontSize: 12 }}
+            >
+              写入与高耗动作需重新验印
+            </p>
+            <span className="brass-divider mt-3 opacity-60 block" />
           </div>
 
-          <div className="flex flex-col gap-1">
-            <label htmlFor="sec-pwd" className="text-sm font-medium text-gray-700">
-              操作密码
+          <div className="flex flex-col gap-1.5">
+            <label
+              htmlFor="sec-pwd"
+              className="font-sc tracking-[0.22em] text-manor-brass"
+              style={{ fontFamily: "var(--font-sc), 'Cormorant SC', serif", fontSize: 10 }}
+            >
+              SIGILLUM · 操作密码
             </label>
             <input
               id="sec-pwd"
@@ -135,31 +159,38 @@ export function SecondaryAuthDialog({
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={isLocked || loading}
-              placeholder="请输入 8 位密码"
-              className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:bg-gray-100 disabled:text-gray-400"
+              placeholder="八位密码"
+              className="block w-full bg-manor-void/60 border border-manor-brass/30 px-3 py-2 text-sm text-manor-ink placeholder:text-manor-inkFaint focus:outline-none focus:border-manor-brass focus:ring-1 focus:ring-manor-brass/30 disabled:opacity-50"
+              style={{ borderRadius: 4, fontFamily: "var(--font-serif), 'EB Garamond', serif" }}
             />
           </div>
 
           {error && (
-            <p className="text-sm text-red-600 bg-red-50 rounded-md px-3 py-2">
-              {isLocked ? `账号已锁定，请等待 ${countdown} 秒` : error}
+            <p
+              className="text-xs text-manor-oxbloodHi border border-manor-oxblood/30 bg-manor-oxblood/10 px-3 py-2 flex items-center gap-2"
+              style={{ borderRadius: 3 }}
+            >
+              <span className="diamond bg-manor-oxblood shrink-0" />
+              {isLocked ? `印玺已封 · 请等候 ${countdown} 秒` : error}
             </p>
           )}
 
-          <div className="flex justify-end gap-2 pt-2">
+          <div className="flex justify-end gap-2 pt-1">
             <button
               type="button"
               onClick={onCancel}
-              className="px-4 py-2 text-sm rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+              className="px-4 py-1.5 text-xs font-sc tracking-[0.22em] text-manor-inkDim border border-manor-line2 hover:text-manor-ink hover:border-manor-brass/40 transition-colors"
+              style={{ borderRadius: 3, fontFamily: "var(--font-sc), 'Cormorant SC', serif" }}
             >
-              取消
+              ABROGARE · 取消
             </button>
             <button
               type="submit"
               disabled={isLocked || loading || !password}
-              className="px-4 py-2 text-sm rounded-lg bg-emerald-600 text-white font-medium hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-5 py-1.5 text-xs font-sc tracking-[0.22em] text-manor-bg bg-gradient-to-b from-manor-brassHi to-manor-brassDim hover:from-manor-brass hover:to-manor-brass disabled:opacity-40 disabled:cursor-not-allowed shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_0_8px_rgba(201,169,97,0.35)] transition-colors"
+              style={{ borderRadius: 3, fontFamily: "var(--font-sc), 'Cormorant SC', serif" }}
             >
-              {loading ? "验证中..." : "确认"}
+              {loading ? "验印中..." : "SIGNARE · 确认"}
             </button>
           </div>
         </form>

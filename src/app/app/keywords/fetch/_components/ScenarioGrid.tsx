@@ -78,9 +78,13 @@ const SCENARIOS: Scenario[] = [
 
 export function ScenarioGrid() {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-6 lg:grid-cols-12 auto-rows-[minmax(7rem,auto)]">
-      {SCENARIOS.map((s) => (
-        <div key={s.endpoint} className={s.spanCls}>
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-6 lg:grid-cols-12 auto-rows-[minmax(8rem,auto)]">
+      {SCENARIOS.map((s, i) => (
+        <div
+          key={s.endpoint}
+          className={`${s.spanCls} h-full`}
+          style={{ ["--skill-i" as string]: String(i + 1) }}
+        >
           <SkillCard
             title={s.title}
             description={s.description}

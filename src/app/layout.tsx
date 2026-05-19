@@ -1,20 +1,48 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import {
+  EB_Garamond,
+  Cormorant_SC,
+  Inter,
+  Inter_Tight,
+  JetBrains_Mono,
+} from "next/font/google";
+import { ManorOrnaments } from "@/components/ManorOrnaments";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const ebGaramond = EB_Garamond({
+  variable: "--font-serif",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const cormorantSC = Cormorant_SC({
+  variable: "--font-sc",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const inter = Inter({
+  variable: "--font-sans",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+});
+
+const interTight = Inter_Tight({
+  variable: "--font-tight",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-mono",
+  subsets: ["latin"],
+  weight: ["400", "500"],
 });
 
 export const metadata: Metadata = {
-  title: "WESLAMIC SEO Intelligence",
-  description: "SEO Intelligence App for WESLAMIC",
+  title: "WESLAMIC HALL · SEO Intelligence",
+  description: "WESLAMIC HALL · Anno MMXXVI · SEO Intelligence Workbench",
 };
 
 export default function RootLayout({
@@ -24,10 +52,20 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      lang="zh-CN"
+      className={[
+        ebGaramond.variable,
+        cormorantSC.variable,
+        inter.variable,
+        interTight.variable,
+        jetbrainsMono.variable,
+        "h-full antialiased",
+      ].join(" ")}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col bg-manor-void text-manor-ink">
+        <ManorOrnaments />
+        {children}
+      </body>
     </html>
   );
 }

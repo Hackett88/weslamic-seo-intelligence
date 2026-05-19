@@ -24,7 +24,7 @@ const KeywordsClientDynamic = dynamic(
     ssr: false,
     loading: () => (
       <div className="flex-1 flex items-center justify-center">
-        <span className="text-gray-400 text-sm">加载中...</span>
+        <span className="text-manor-inkFaint text-sm">加载中...</span>
       </div>
     ),
   }

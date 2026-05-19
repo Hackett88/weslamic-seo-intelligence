@@ -105,22 +105,54 @@ export function SortableTh({
         active ? (dir === "asc" ? "ascending" : "descending") : "none"
       }
       className={[
-        "select-none cursor-pointer font-medium hover:text-emerald-700 transition-colors whitespace-nowrap",
+        "sort-th select-none cursor-pointer font-medium whitespace-nowrap",
+        active ? "text-[#F0DEA0]" : "text-manor-brassHi hover:text-[#F0DEA0]",
         align === "right" ? "text-right" : "text-left",
         className ?? "",
       ].join(" ")}
+      style={{
+        textShadow: active ? "0 0 8px rgba(224,197,122,.55)" : undefined,
+      }}
     >
       <span
         className={[
-          "inline-flex w-full items-center gap-1",
+          "inline-flex w-full items-center gap-1.5",
           align === "right" ? "justify-end" : "justify-start",
         ].join(" ")}
       >
+        {active && align === "left" && (
+          <span
+            aria-hidden="true"
+            style={{
+              display: "inline-block",
+              width: 4,
+              height: 4,
+              borderRadius: 9999,
+              background:
+                "radial-gradient(circle at 30% 30%, #F0DEA0, #D4B36F 55%, #A08850)",
+              boxShadow: "0 0 6px rgba(224,197,122,.7)",
+            }}
+          />
+        )}
         <span>{children}</span>
         <Icon
           size={11}
-          className={active ? "text-emerald-600" : "text-gray-300"}
+          className={`sort-icon ${active ? "text-manor-brassHi" : "text-manor-inkGhost"}`}
         />
+        {active && align === "right" && (
+          <span
+            aria-hidden="true"
+            style={{
+              display: "inline-block",
+              width: 4,
+              height: 4,
+              borderRadius: 9999,
+              background:
+                "radial-gradient(circle at 30% 30%, #F0DEA0, #D4B36F 55%, #A08850)",
+              boxShadow: "0 0 6px rgba(224,197,122,.7)",
+            }}
+          />
+        )}
       </span>
     </th>
   );

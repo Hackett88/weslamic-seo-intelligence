@@ -19,5 +19,9 @@ export function CurrentTime() {
   }, []);
 
   if (!time) return null;
-  return <span className="text-zinc-600 text-xs hidden sm:block">{time}</span>;
+  return (
+    <span className="current-time text-manor-inkDim text-xs hidden sm:block tabnum tracking-wider">
+      {time}
+    </span>
+  );
 }
